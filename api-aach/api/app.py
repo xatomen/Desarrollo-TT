@@ -9,8 +9,32 @@ import os
 from dotenv import load_dotenv
 import pymysql
 import mysql.connector
+from fastapi import Depends
+from datetime import date
+from fastapi.middleware.cors import CORSMiddleware
 
+#########################################################
+# Instancia de FastAPI
+#########################################################
+
+app = FastAPI()
+
+#########################################################
+# Configurar Middleware CORS
+#########################################################
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permitir todas las orígenes
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+#########################################################
 # Conexión a la base de datos
+#########################################################
+
 load_dotenv()
 db_user = os.getenv("DB_USER")
 db_password = os.getenv("DB_PASSWORD")
@@ -22,8 +46,11 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Base de datos declarativa
 Base = declarative_base()
 
-# Modelo de datos para la tabla soap
-class SoapModel(Base):
+#########################################################
+# Modelo de Base de Datos (ORM)
+#########################################################
+
+class Soap(Base):
     __tablename__ = 'soap'
     
     num_poliza = Column(Integer, primary_key=True, autoincrement=True)
@@ -32,32 +59,66 @@ class SoapModel(Base):
     rige_hasta = Column(DateTime, nullable=False)
     prima = Column(Integer, nullable=False)
 
+#########################################################
 # Crear las tablas en la base de datos
+#########################################################
 Base.metadata.create_all(bind=engine)
 
+#########################################################
 # Crear una sesión de base de datos
-db = SessionLocal()
+#########################################################
 
-# Modelo de datos para el SOAP
+def get_db():
+    db: Session = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+#########################################################
+# Modelo de API
+#########################################################
+
 class SoapModel(BaseModel):
     num_poliza: int
     ppu: str
-    rige_desde: str  # Fecha en formato ISO 8601
-    rige_hasta: str  # Fecha en formato ISO 8601
+    rige_desde: date  # Fecha en formato ISO 8601
+    rige_hasta: date  # Fecha en formato ISO 8601
     prima: int
+    vigencia: Optional[str] = None  # Vigencia del SOAP, puede ser "Vigente" o "No Vigente"
 
-# Instancia de FastAPI
-app = FastAPI()
+#########################################################
+# Endpoints de la API
+#########################################################
 
-# Crear endpoint inicial
+# GET - Endpoint inicial
 @app.get("/")
 def read_root():
     return {"message": "API de Encargos por Robo"}
 
-# GET para consultar el SOAP
-@app.get("/soap/{ppu}", response_model=SoapModel)
-def get_soap(ppu: str):
-    soap = db.query(SoapModel).filter(SoapModel.ppu == ppu).first()
+# GET - Endpoint para consultar el SOAP a través del PPU
+@app.get("/soap/{ppu}", response_model=SoapModel)   # Para la respuesta usamos el BaseModel
+def get_soap(ppu: str, db: Session = Depends(get_db)):
+    # Obtener la fecha actual
+    fecha_actual = date.today()
+    # Para la Query usamos el modelo de la Base de Datos
+    soap = db.query(Soap).filter(Soap.ppu == ppu).order_by(Soap.rige_hasta).first()
+    # Si recuperamos el SOAP, calculamos la vigencia
+    if soap:
+        # Si la fecha de "rige hasta" es mayor o igual a la fecha actual, el SOAP está vigente
+        # En caso contrario, no está vigente
+        vigencia = "Vigente" if soap.rige_hasta >= fecha_actual else "No Vigente"
+        # Asignamos la vigencia al modelo de respuesta
+        soap.vigencia = vigencia
+    # Si no se encuentra el SOAP, lanzamos una excepción HTTP 404 indicando que no se encontró el SOAP
     if not soap:
         raise HTTPException(status_code=404, detail="SOAP no encontrado")
-    return SoapModel(num_poliza=soap.num_poliza, ppu=soap.ppu, rige_desde=soap.rige_desde, rige_hasta=soap.rige_hasta, prima=soap.prima)
+    # Retornamos el modelo de respuesta con los datos del SOAP
+    return SoapModel(
+        num_poliza=soap.num_poliza,
+        ppu=soap.ppu,
+        rige_desde=soap.rige_desde,
+        rige_hasta=soap.rige_hasta,
+        prima=soap.prima,
+        vigencia=vigencia
+    )
