@@ -12,6 +12,7 @@ import mysql.connector
 from fastapi import Depends
 from datetime import date
 from fastapi.middleware.cors import CORSMiddleware
+from patentes_vehiculares_chile import validar_patente, detectar_tipo_patente, limpiar_patente
 
 #########################################################
 # Instancia de FastAPI
@@ -99,6 +100,10 @@ def read_root():
 # GET - Endpoint para consultar el SOAP a través del PPU
 @app.get("/soap/{ppu}", response_model=SoapModel)   # Para la respuesta usamos el BaseModel
 def get_soap(ppu: str, db: Session = Depends(get_db)):
+    # Validar el formato del PPU
+    resultado_validacion = validar_patente(ppu)
+    if not resultado_validacion:
+        raise HTTPException(status_code=400, detail="Formato de PPU inválido")
     # Obtener la fecha actual
     fecha_actual = date.today()
     # Para la Query usamos el modelo de la Base de Datos
