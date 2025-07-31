@@ -210,14 +210,19 @@ class TokenModel(BaseModel):
     expires_in: int
 
 class TarjetasModel(BaseModel):
-    id: int
     numero_tarjeta: str
     titular: str
-    fecha_vencimiento: date  # Fecha en formato ISO 8601
-    tipo_tarjeta: str  # Puede ser 'credito' o 'debito'
-    banco: str
+    mes_vencimiento: int  # Fecha en formato MM-YY
+    anio_vencimiento: int  # Fecha en formato MM-YY
+    tipo_tarjeta: str  # Puede ser 'crédito' o 'débito'
     cvv: str
-    saldo: int
+
+class ConfirmacionPagoModel(BaseModel):
+    # id: int  # Aquí deberías generar un ID único
+    numero_tarjeta: str
+    monto_pago: int
+    fecha_pago: date  # Fecha en formato ISO 8601
+    estado: str  # Puede ser 'exitoso' o 'fallido'
 
 #########################################################
 # Endpoints de la API
@@ -290,3 +295,42 @@ def validar_credenciales(credenciales: LoginModel, db: Session = Depends(get_db)
         },
         expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
+
+# POST - Endpoint para simular el proceso de pago
+@app.post("/procesar_pago/", response_model=ConfirmacionPagoModel)
+def procesar_pago(tarjeta: TarjetasModel, db: Session = Depends(get_db), monto_pago: int = 0):
+    # Validar el formato del número de tarjeta
+    if len(tarjeta.numero_tarjeta) != 16 or not tarjeta.numero_tarjeta.isdigit():
+        raise HTTPException(status_code=400, detail="Número de tarjeta inválido")
+    # Validar el formato del CVV
+    if len(tarjeta.cvv) != 3 or not tarjeta.cvv.isdigit():
+        raise HTTPException(status_code=400, detail="CVV inválido")
+    # Convertir la fecha de vencimiento a un objeto date
+    try:
+        fecha_vencimiento = date(
+            year=2000+tarjeta.anio_vencimiento, # Ejemplo: 23 para 2023
+            month=tarjeta.mes_vencimiento,      # Ejemplo: 12 para diciembre
+            day=1                               # Asumimos el primer día del mes para simplificar
+        )
+    # Si la fecha de vencimiento no es válida, lanzar una excepción HTTP 400
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Fecha de vencimiento inválida")
+    # Validar la fecha de vencimiento
+    if fecha_vencimiento < date.today():
+        raise HTTPException(status_code=400, detail="Tarjeta vencida")
+    # Validar si la tarjeta coincide con alguna tarjeta registrada en la base de datos
+    existing_tarjeta = db.query(Tarjetas).filter(Tarjetas.numero_tarjeta == tarjeta.numero_tarjeta).first()
+    if not existing_tarjeta:
+        raise HTTPException(status_code=404, detail="Tarjeta inválida o no registrada")
+    # Validar el saldo de la tarjeta
+    if existing_tarjeta.saldo < monto_pago:
+        raise HTTPException(status_code=400, detail="Saldo insuficiente en la tarjeta")
+    # Si todo es válido, proceder con el pago
+    confirmacion_pago = ConfirmacionPagoModel(
+        # id=1,  # Aquí deberías generar un ID único
+        numero_tarjeta=tarjeta.numero_tarjeta,
+        monto_pago=monto_pago,
+        fecha_pago=date.today(),
+        estado="exitoso"
+    )
+    return confirmacion_pago
