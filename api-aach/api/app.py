@@ -2,7 +2,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, Time, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, Date, Time, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, Session
 import os
@@ -56,8 +56,8 @@ class Soap(Base):
     
     num_poliza = Column(Integer, primary_key=True, autoincrement=True)
     ppu = Column(String(10), nullable=False)
-    rige_desde = Column(DateTime, nullable=False)
-    rige_hasta = Column(DateTime, nullable=False)
+    rige_desde = Column(Date, nullable=False)
+    rige_hasta = Column(Date, nullable=False)
     prima = Column(Integer, nullable=False)
 
 #########################################################
@@ -103,7 +103,7 @@ def get_soap(ppu: str, db: Session = Depends(get_db)):
     # Validar el formato del PPU
     resultado_validacion = validar_patente(ppu)
     if not resultado_validacion:
-        raise HTTPException(status_code=400, detail="Formato de PPU inválido")
+        raise HTTPException(status_code=400, detail=f"Formato de PPU inválido: {ppu}")
     # Obtener la fecha actual
     fecha_actual = date.today()
     # Para la Query usamos el modelo de la Base de Datos
@@ -112,7 +112,7 @@ def get_soap(ppu: str, db: Session = Depends(get_db)):
     if soap:
         # Si la fecha de "rige hasta" es mayor o igual a la fecha actual, el SOAP está vigente
         # En caso contrario, no está vigente
-        vigencia = "Vigente" if soap.rige_hasta >= fecha_actual else "No Vigente"
+        vigencia = "Vigente" if soap.rige_hasta.date() >= fecha_actual else "No Vigente"
         # Asignamos la vigencia al modelo de respuesta
         soap.vigencia = vigencia
     # Si no se encuentra el SOAP, lanzamos una excepción HTTP 404 indicando que no se encontró el SOAP
@@ -127,3 +127,32 @@ def get_soap(ppu: str, db: Session = Depends(get_db)):
         prima=soap.prima,
         vigencia=vigencia
     )
+
+#####################################################
+# Endpoints utilizados para validar los formatos de
+# las PPU que agregué para probar la API
+#####################################################
+
+# # GET - Endpoint para devolver el listado de todas las PPU (solo PPU) inválidas en cuanto a formato
+# @app.get("/ppu/invalid", response_model=List[str])
+# def get_invalid_ppu(db: Session = Depends(get_db)):
+#     # Recuperamos todas las PPU de la tabla SOAP
+#     soap_list = db.query(Soap.ppu).all()
+#     # Si no hay SOAP, retornamos una lista vacía
+#     if not soap_list:
+#         return []
+#     # Filtramos las PPU inválidas
+#     invalid_ppu = [soap.ppu for soap in soap_list if not validar_patente(soap.ppu)]
+#     # Retornamos una lista de PPU inválidas
+#     return invalid_ppu
+
+# # GET - Endpoint para devolver el listado de todas las PPU (solo PPU)
+# @app.get("/ppu/list", response_model=List[str])
+# def get_all_ppu(db: Session = Depends(get_db)):
+#     # Recuperamos todas las PPU de la tabla SOAP
+#     soap_list = db.query(Soap.ppu).all()
+#     # Si no hay SOAP, retornamos una lista vacía
+#     if not soap_list:
+#         return []
+#     # Retornamos una lista de PPU
+#     return [soap.ppu for soap in soap_list]
