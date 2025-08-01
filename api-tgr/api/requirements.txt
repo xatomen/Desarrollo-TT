@@ -5,7 +5,7 @@ pydantic
 python-dotenv
 pymysql
 mysql-connector-python
-patentes-vehiculares-chile
+patentes-vehiculares-chile==0.2.0
 python-jose[cryptography]
 passlib[bcrypt]
 python-multipart

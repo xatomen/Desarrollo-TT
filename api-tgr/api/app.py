@@ -18,7 +18,19 @@ from datetime import date
 from fastapi.middleware.cors import CORSMiddleware
 
 # Librerías para validar formatos
-from patentes_vehiculares_chile import validar_patente, detectar_tipo_patente, limpiar_patente
+from patentes_vehiculares_chile import (
+    validar_patente,
+    detectar_tipo_patente,
+    limpiar_patente,
+    validar_rut,
+    validar_patente,
+    generar_patente_vehiculo_antiguo,
+    generar_patente_vehiculo_nuevo,
+    generar_patente_motocicleta_antigua,
+    generar_patente_motocicleta_nueva,
+    generar_rut
+)
+
 from rut_chile import rut_chile
 
 # Librerías para manejo de seguridad y autenticación
@@ -334,3 +346,26 @@ def procesar_pago(tarjeta: TarjetasModel, db: Session = Depends(get_db), monto_p
         estado="exitoso"
     )
     return confirmacion_pago
+
+# GET - Endpoint para generar una cantidad determinada de RUTs y Patentes (de vehiculos y motocicletas nuevos y antiguos)
+@app.get("/generar_datos_prueba/")
+def generar_datos_prueba(cantidad: int, db: Session = Depends(get_db)):
+    # Validar la cantidad
+    if cantidad <= 0:
+        raise HTTPException(status_code=400, detail="La cantidad debe ser un número positivo")
+
+    # Generar los RUTs y Patentes
+    ruts = [generar_rut() for _ in range(cantidad)]
+    patentes_vehiculos_nuevos = [generar_patente_vehiculo_nuevo() for _ in range(cantidad)]
+    patentes_vehiculos_antiguos = [generar_patente_vehiculo_antiguo() for _ in range(cantidad)]
+    patentes_motocicletas_nuevas = [generar_patente_motocicleta_nueva() for _ in range(cantidad)]
+    patentes_motocicletas_antiguas = [generar_patente_motocicleta_antigua() for _ in range(cantidad)]
+
+    # Retornar los datos generados
+    return {
+        "ruts": ruts,
+        "patentes_vehiculos_nuevos": patentes_vehiculos_nuevos,
+        "patentes_vehiculos_antiguos": patentes_vehiculos_antiguos,
+        "patentes_motocicletas_nuevas": patentes_motocicletas_nuevas,
+        "patentes_motocicletas_antiguas": patentes_motocicletas_antiguas
+    }
