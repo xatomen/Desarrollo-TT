@@ -1,4 +1,8 @@
-# API con el framework FastAPI que interactúa con la base de datos MySQL para la base de datos de encargos por robo
+########################################################################
+# API con el framework FastAPI que interactúa con la base de datos MySQL
+# para la base de datos de carabineros
+########################################################################
+
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Optional
@@ -9,8 +13,30 @@ import os
 from dotenv import load_dotenv
 import pymysql
 import mysql.connector
+from fastapi.middleware.cors import CORSMiddleware
 
+##############################
+# Instancia de FastAPI
+##############################
+
+app = FastAPI()
+
+#########################################################
+# Configurar Middleware CORS
+#########################################################
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permitir todas las orígenes
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+#######################################
 # Conexión a la base de datos
+#######################################
+
 load_dotenv()
 db_user = os.getenv("DB_USER")
 db_password = os.getenv("DB_PASSWORD")
@@ -19,9 +45,14 @@ db_name = os.getenv("DB_NAME")
 DATABASE_URL = f"mysql+mysqlconnector://{db_user}:{db_password}@{db_host}/{db_name}"
 engine = create_engine(DATABASE_URL, echo=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 # Base de datos declarativa
 Base = declarative_base()
-# Modelo de datos para la tabla del padrón
+
+####################################################
+# Modelo de datos para la tabla Padron
+####################################################
+
 class PadronModel(Base):
     __tablename__ = 'padron'
     
@@ -37,7 +68,10 @@ class PadronModel(Base):
     num_chasis = Column(String(50), nullable=False)
     fecha_inscripcion = Column(DateTime, nullable=False)
 
+####################################################
 # Modelo de datos para la tabla multas de transito
+####################################################
+
 class MultasTransitoModel(Base):
     __tablename__ = 'multas_transito'
     
@@ -49,16 +83,20 @@ class MultasTransitoModel(Base):
 # Crear las tablas en la base de datos
 Base.metadata.create_all(bind=engine)
 
-# Crear una sesión de base de datos
-# db = SessionLocal()
+#########################################################
+# Dependencia para obtener la sesión de la base de datos
+#########################################################
 
-# Add this dependency function:
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+#################
+# Modelo de API
+#################       
 
 # Modelo de datos para el padron
 class Padron(BaseModel): 
@@ -83,10 +121,16 @@ class MultasTransito(BaseModel):
 # Instancia de FastAPI
 app = FastAPI()
 
+
 # Crear endpoint inicial
 @app.get("/")
 def read_root():
    return {"message": "API de SRCEI"}
+
+#########################
+# Endpoints de la API
+#########################
+
 
 # Get para obtener los padrones de vehiculos de un propietario
 @app.get("/padron/{rut}", response_model=List[Padron])
