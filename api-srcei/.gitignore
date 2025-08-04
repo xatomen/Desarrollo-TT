@@ -1,4 +1,0 @@
-# Ignorar archivos y carpetas innecesarias
-__pycache__/
-db_data/
-
