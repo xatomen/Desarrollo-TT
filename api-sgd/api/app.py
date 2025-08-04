@@ -13,6 +13,44 @@ from patentes_vehiculares_chile import validar_patente
 from fastapi.middleware.cors import CORSMiddleware
 from rut_chile import rut_chile
 
+# Librerías para manejo de seguridad y autenticación
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from datetime import datetime, timedelta
+import secrets
+
+#########################################################
+# Configuración de seguridad
+#########################################################
+
+SECRET_KEY = secrets.token_urlsafe(32)
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 120
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Función para encriptar contraseñas
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+# Función para verificar el token JWT
+def verify_token(token: str, credentials_exception):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        rut: str = payload.get("sub")
+        if rut is None:
+            raise credentials_exception
+        return rut
+    except JWTError:
+        raise credentials_exception
+
 ##############################
 # Instancia de FastAPI
 ##############################
@@ -91,6 +129,18 @@ class SGD(BaseModel):
     rut: str
     contrasena: str
 
+# Modelo para recibir credenciales en el POST
+class CredencialesLogin(BaseModel):
+    rut: str
+    contrasena: str
+
+# Modelo de respuesta para la validación de clave única
+class TokenModel(BaseModel):
+    access_token: str
+    token_type: str
+    user_info: dict
+    expires_in: int
+
 #########################
 # Endpoints de la API
 #########################
@@ -100,19 +150,32 @@ class SGD(BaseModel):
 def read_root():
    return {"message": "API de la secretaría de gobierno digital"}
 
-# Get para consultar validez de clave única
-@app.get("/validar_clave_unica/{rut}/{contrasena}", response_model=SGD)
-def validar_clave_unica(rut: str, contrasena: str, db: Session = Depends(get_db)):
+# POST para consultar validez de clave única
+@app.post("/validar_clave_unica", response_model=TokenModel)
+def validar_clave_unica(credentials: CredencialesLogin, db: Session = Depends(get_db)):
     """Valida la clave única de un usuario"""
-    if not rut_chile.validar_rut(rut):
+    if not rut_chile.validar_rut(credentials.rut):
         raise HTTPException(status_code=400, detail="RUT inválido")
     
-    user = db.query(SGDModel).filter(SGDModel.rut == rut, SGDModel.contrasena == contrasena).first()
+    user = db.query(SGDModel).filter(
+        SGDModel.rut == credentials.rut, 
+        SGDModel.contrasena == credentials.contrasena
+    ).first()
     
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado o contraseña incorrecta")
-    
-    return SGD(id=user.id, rut=user.rut, contrasena=user.contrasena)
+
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.rut}, expires_delta=access_token_expires
+    )
+
+    return TokenModel(
+        access_token=access_token,
+        token_type="bearer",
+        user_info={"id": user.id, "rut": user.rut},
+        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
 
 # # Endpoint para crear datos de prueba (solo para desarrollo)
 # @app.post("/crear_datos_prueba")
