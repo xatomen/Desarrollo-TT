@@ -1,10 +1,11 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
+from itertools import cycle
 
 #validar formato de rut o cambiar por la librería chilena discutir con mis compañeros
 # ---- Utilidad para validar RUT ----
@@ -53,8 +54,17 @@ class MultaRPIResponse(BaseModel):
     nombre_jpl: str
     monto_multa: int
 
+
 app = FastAPI(title="API MTT - Registro de Pasajeros Infractores")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[""],  # Permitir todas las orígenes
+    allow_credentials=True,
+    allow_methods=[""],
+    allow_headers=["*"],
+)
 db = SessionLocal()
+
 
 @app.get("/")
 def home():
