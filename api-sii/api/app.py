@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
@@ -42,7 +42,7 @@ class TasacionFiscal(Base):
 
 class FacturaCompra(Base):
     __tablename__ = "FACTURA_COMPRA"
-    num_factura = Column(String(20), primary_key=True)
+    num_factura = Column(Integer, primary_key=True)
     precio_neto = Column(Integer)
     puertas = Column(Integer)
     asientos = Column(Integer)
@@ -77,6 +77,7 @@ class TasacionFiscalResponse(BaseModel):
     valor_permiso: int
 
 class FacturaCompraResponse(BaseModel):
+    num_factura: int
     precio_neto: int
     puertas: int
     asientos: int
@@ -89,6 +90,14 @@ class FacturaCompraResponse(BaseModel):
     tipo_sello: str
 
 app = FastAPI(title="API SII - Tasación y Factura Vehículos")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[""],  # Permitir todas las orígenes
+    allow_credentials=True,
+    allow_methods=[""],
+    allow_headers=["*"],
+)
+
 db = SessionLocal()
 
 @app.get("/")
@@ -112,7 +121,7 @@ def consultar_tasacion_fiscal(codigo_sii: str):
 
 # Endpoint: Consultar Factura de Venta
 @app.get("/factura_venta", response_model=FacturaCompraResponse)
-def consultar_factura_venta(num_factura: str):
+def consultar_factura_venta(num_factura: int):
     row = db.query(FacturaCompra).filter(FacturaCompra.num_factura == num_factura).first()
     if not row:
         raise HTTPException(status_code=404, detail="El N° de Factura no existe")

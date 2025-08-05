@@ -23,7 +23,7 @@ CREATE TABLE TASACION_FISCAL (
 );
 
 CREATE TABLE FACTURA_COMPRA (
-    num_factura VARCHAR(20) PRIMARY KEY,
+    num_factura INT PRIMARY KEY,
     precio_neto INT,
     puertas INT,
     asientos INT,
