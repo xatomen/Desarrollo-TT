@@ -7,8 +7,10 @@ from sqlalchemy.orm import sessionmaker, Session
 import os
 from dotenv import load_dotenv
 from datetime import date
-from patentes_vehiculares_chile import validar_patente, detectar_tipo_patente, limpiar_patente
+from sqlalchemy.exc import SQLAlchemyError
 
+# Librerías de validación de patente
+from patentes_vehiculares_chile import validar_patente, limpiar_patente
 
 # Cargar variables de entorno
 load_dotenv()
@@ -72,32 +74,38 @@ def read_root():
 # GET para obtener revisiones técnicas por PPU devuelta como objeto y devuelve la mas reciente y aprobada
 @app.get("/revision_tecnica/{ppu}", response_model=RevisionTecnicaModel)
 def get_revision_tecnica(ppu: str):
-    #validar formato de patente
-    resultado_validacion = validar_patente(ppu)
-    if not resultado_validacion:
-        raise HTTPException(status_code=400, detail=f"Formato de PPU inválido: {ppu}")
-    
-    with SessionLocal() as session:
-        revision = session.query(RevisionTecnica).filter(
-            RevisionTecnica.ppu == ppu,
-            RevisionTecnica.estado == 'vigente'
-        ).order_by(RevisionTecnica.fecha.desc()).first()
-        if not revision:
-            raise HTTPException(status_code=404, detail="Revisión técnica no encontrada")
-        #calcular la vigencia, para ser valido la fecha de la peticion debe ser anterior a la fecha de vencimiento y el estado de la revision debe ser aprobado
-        fecha_actual = date.today()
-        if revision.fecha_vencimiento >= fecha_actual and revision.estado == "vigente":
-            vigencia = "Vigente"
-        return RevisionTecnicaModel(
-        {
-            "id_rev_tecnica": revision.id_rev_tecnica,
-            "ppu": revision.ppu,
-            "fecha": str(revision.fecha),
-            "codigo_planta": revision.codigo_planta,
-            "planta": revision.planta,
-            "nom_certificado": revision.nom_certificado,
-            "fecha_vencimiento": str(revision.fecha_vencimiento),
-            "estado": revision.estado,
-            "vigencia": vigencia
-        })
+    try:
+        # Validar formato de patente
+        resultado_validacion = validar_patente(ppu)
+        if not resultado_validacion:
+            raise HTTPException(status_code=400, detail=f"Formato de PPU inválido: {ppu}")
 
+        with SessionLocal() as session:
+            revision = session.query(RevisionTecnica).filter(
+                RevisionTecnica.ppu == ppu,
+                RevisionTecnica.estado == 'vigente'
+            ).order_by(RevisionTecnica.fecha.desc()).first()
+            if not revision:
+                raise HTTPException(status_code=404, detail="Revisión técnica no encontrada")
+            
+            fecha_actual = date.today()
+            if revision.fecha_vencimiento >= fecha_actual and revision.estado == "vigente":
+                vigencia = "Vigente"
+            else:
+                vigencia = "No vigente"
+
+            return RevisionTecnicaModel(
+                id_rev_tecnica=revision.id_rev_tecnica,
+                ppu=revision.ppu,
+                fecha=revision.fecha,
+                codigo_planta=revision.codigo_planta,
+                planta=revision.planta,
+                nom_certificado=revision.nom_certificado,
+                fecha_vencimiento=revision.fecha_vencimiento,
+                estado=revision.estado,
+                vigencia=vigencia
+            )
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500, detail="Error en la base de datos")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
