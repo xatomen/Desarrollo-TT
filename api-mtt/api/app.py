@@ -6,11 +6,15 @@ from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
 from itertools import cycle
+import re
 
 #validar formato de rut o cambiar por la librería chilena discutir con mis compañeros
 # ---- Utilidad para validar RUT ----
-def validar_rut(rut):
-    rut = rut.upper().replace("-", "").replace(".", "")
+def validar_rut(rut: str) -> bool:
+    # Normalizar
+    rut = rut.replace(".", "").replace("-", "").upper()
+    if not re.match(r"^\d{7,8}[0-9K]$", rut):
+        return False
     aux = rut[:-1]
     dv = rut[-1]
     revertido = map(int, reversed(aux))
@@ -72,9 +76,13 @@ def home():
 
 @app.get("/multas_pasajero/", response_model=list[MultaRPIResponse])
 def consultar_multas_pasajero(rut: str = Query(..., description="RUT del propietario")):
+    if not rut:
+        raise HTTPException(status_code=400, detail="Debe ingresar un RUT.")
     if not validar_rut(rut):
-        raise HTTPException(status_code=400, detail="RUT inválido")
+        raise HTTPException(status_code=400, detail="RUT inválido o con formato incorrecto.")
     multas = db.query(MultaRPI).filter(MultaRPI.rut == rut).all()
+    if not multas:
+        raise HTTPException(status_code=404, detail="No se encontraron multas para este RUT.")
     return [MultaRPIResponse(
         rut=multa.rut,
         rol_causa=multa.rol_causa,
