@@ -121,13 +121,23 @@ def consultar_tasacion_fiscal(codigo_sii: str):
 
 # Endpoint: Consultar Factura de Venta
 @app.get("/factura_venta", response_model=FacturaCompraResponse)
-def consultar_factura_venta(num_factura: int):
-    row = db.query(FacturaCompra).filter(FacturaCompra.num_factura == num_factura).first()
+def consultar_factura_venta(num_factura: str):
+    if not num_factura.isdigit():
+        raise HTTPException(status_code=400, detail="N° de Factura incorrecto o formato incorrecto")
+    num_factura_int = int(num_factura)
+    row = db.query(FacturaCompra).filter(FacturaCompra.num_factura == num_factura_int).first()
     if not row:
         raise HTTPException(status_code=404, detail="El N° de Factura no existe")
     return FacturaCompraResponse(
-        precio_neto=row.precio_neto, puertas=row.puertas, asientos=row.asientos,
-        combustible=row.combustible, peso=row.peso, transmision=row.transmision,
-        traccion=row.traccion, cilindrada=row.cilindrada, carga=row.carga,
+        num_factura=row.num_factura,
+        precio_neto=row.precio_neto,
+        puertas=row.puertas,
+        asientos=row.asientos,
+        combustible=row.combustible,
+        peso=row.peso,
+        transmision=row.transmision,
+        traccion=row.traccion,
+        cilindrada=row.cilindrada,
+        carga=row.carga,
         tipo_sello=row.tipo_sello
     )
