@@ -154,7 +154,7 @@ def read_root():
 @app.post("/validar_clave_unica", response_model=TokenModel)
 def validar_clave_unica(credentials: CredencialesLogin, db: Session = Depends(get_db)):
     """Valida la clave única de un usuario"""
-    if not rut_chile.validar_rut(credentials.rut):
+    if not rut_chile.is_valid_rut(credentials.rut):
         raise HTTPException(status_code=400, detail="RUT inválido")
     
     user = db.query(SGDModel).filter(
