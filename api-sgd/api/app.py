@@ -1,6 +1,6 @@
 # API con el framework FastAPI que interactúa con la base de datos MySQL para la base de datos de encargos por robo
 from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import List, Optional
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, Time, Boolean
 from sqlalchemy.ext.declarative import declarative_base
@@ -12,12 +12,14 @@ import mysql.connector
 from patentes_vehiculares_chile import validar_patente
 from fastapi.middleware.cors import CORSMiddleware
 from rut_chile import rut_chile
+import re
 
 # Librerías para manejo de seguridad y autenticación
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 import secrets
+from sqlalchemy import and_, text
 
 #########################################################
 # Configuración de seguridad
@@ -28,6 +30,54 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 120
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+#########################################################
+# Funciones de validación personalizadas
+#########################################################
+
+def validar_rut_chileno(rut: str) -> bool:
+    """
+    Valida si un RUT chileno es válido
+    Maneja excepciones y casos edge
+    """
+    try:
+        # Verificar que no esté vacío
+        if not rut or not rut.strip():
+            return False
+        
+        # Limpiar el RUT
+        rut_clean = rut.strip()
+        
+        # Verificar formato básico con regex
+        # Acepta formatos: 12345678-9, 12.345.678-9, 123456789
+        rut_pattern = r'^[\d]{1,2}\.?[\d]{3}\.?[\d]{3}-?[\dkK]$'
+        if not re.match(rut_pattern, rut_clean):
+            return False
+        
+        # Verificar longitud máxima
+        if len(rut_clean) > 12:
+            return False
+        
+        # Usar la librería rut_chile para validación
+        return rut_chile.is_valid_rut(rut_clean)
+    
+    except Exception as e:
+        # Si hay cualquier excepción, consideramos el RUT como inválido
+        print(f"Error validando RUT {rut}: {e}")
+        return False
+
+def validar_contrasena(contrasena: str) -> bool:
+    """
+    Valida que la contraseña cumpla con requisitos básicos
+    """
+    if not contrasena:
+        return False
+    
+    # Verificar longitud
+    if len(contrasena) < 1 or len(contrasena) > 255:
+        return False
+    
+    return True
 
 # Función para encriptar contraseñas
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -121,7 +171,7 @@ def get_db():
         db.close()
 
 #########################
-# Endpoints de la API
+# Modelos Pydantic
 #########################
 
 class SGD(BaseModel): 
@@ -129,10 +179,35 @@ class SGD(BaseModel):
     rut: str
     contrasena: str
 
-# Modelo para recibir credenciales en el POST
+# Modelo para recibir credenciales en el POST con validaciones
 class CredencialesLogin(BaseModel):
     rut: str
     contrasena: str
+    
+    @validator('rut')
+    def validar_rut_format(cls, v):
+        if not v or not v.strip():
+            raise ValueError('RUT no puede estar vacío')
+        
+        # Verificar longitud máxima
+        if len(v.strip()) > 12:
+            raise ValueError('RUT demasiado largo')
+        
+        # Verificar caracteres básicos
+        if not re.match(r'^[\d\.\-kK\s]+$', v.strip()):
+            raise ValueError('RUT contiene caracteres no válidos')
+        
+        return v.strip()
+    
+    @validator('contrasena')
+    def validar_contrasena_format(cls, v):
+        if not v:
+            raise ValueError('Contraseña no puede estar vacía')
+        
+        if len(v) > 255:
+            raise ValueError('Contraseña demasiado larga')
+        
+        return v
 
 # Modelo de respuesta para la validación de clave única
 class TokenModel(BaseModel):
@@ -154,28 +229,61 @@ def read_root():
 @app.post("/validar_clave_unica", response_model=TokenModel)
 def validar_clave_unica(credentials: CredencialesLogin, db: Session = Depends(get_db)):
     """Valida la clave única de un usuario"""
-    if not rut_chile.is_valid_rut(credentials.rut):
-        raise HTTPException(status_code=400, detail="RUT inválido")
     
-    user = db.query(SGDModel).filter(
-        SGDModel.rut == credentials.rut, 
-        SGDModel.contrasena == credentials.contrasena
-    ).first()
+    try:
+        # Validación adicional del RUT usando nuestra función personalizada
+        if not validar_rut_chileno(credentials.rut):
+            raise HTTPException(status_code=400, detail="RUT inválido")
+        
+        # Validación adicional de la contraseña
+        if not validar_contrasena(credentials.contrasena):
+            raise HTTPException(status_code=400, detail="Contraseña inválida")
+        
+        # Buscar usuario en la base de datos
+        try:
+            user = db.query(SGDModel).filter(
+                and_(
+                    text("BINARY rut = :rut"),
+                    text("BINARY contrasena = :contrasena")
+                )
+            ).params(rut=credentials.rut, contrasena=credentials.contrasena).first()
+        except Exception as db_error:
+            print(f"Error de base de datos: {db_error}")
+            raise HTTPException(status_code=500, detail="Error interno del servidor")
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado o contraseña incorrecta")
+
+        # Generar token JWT
+        try:
+            access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+            access_token = create_access_token(
+                data={"sub": user.rut}, expires_delta=access_token_expires
+            )
+        except Exception as token_error:
+            print(f"Error generando token: {token_error}")
+            raise HTTPException(status_code=500, detail="Error interno del servidor")
+
+        return TokenModel(
+            access_token=access_token,
+            token_type="bearer",
+            user_info={"id": user.id, "rut": user.rut},
+            expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        )
     
-    if not user:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado o contraseña incorrecta")
+    except HTTPException:
+        # Re-lanzar HTTPExceptions tal como están
+        raise
+    except Exception as e:
+        # Capturar cualquier otra excepción no manejada
+        print(f"Error inesperado en validar_clave_unica: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
 
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.rut}, expires_delta=access_token_expires
-    )
-
-    return TokenModel(
-        access_token=access_token,
-        token_type="bearer",
-        user_info={"id": user.id, "rut": user.rut},
-        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60
-    )
+# Manejador de excepciones global para casos no capturados
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    print(f"Error global no manejado: {exc}")
+    return HTTPException(status_code=500, detail="Error interno del servidor")
 
 # # Endpoint para crear datos de prueba (solo para desarrollo)
 # @app.post("/crear_datos_prueba")
