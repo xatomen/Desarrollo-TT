@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  api-prt:
+  api-mtt:
     build:
       context: ./api
       dockerfile: Dockerfile
@@ -11,16 +11,16 @@ services:
     depends_on:
       - mysql
     environment:
-      DB_USER: user
-      DB_PASSWORD: password
+      DB_USER: root
+      DB_PASSWORD: root
       DB_HOST: mysql
-      DB_NAME: prt_db
+      DB_NAME: mtt_db
 
   mysql:
     image: mysql:9.4            # Válido según Docker Hub
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: prt_db
+      MYSQL_DATABASE: mtt_db
       MYSQL_USER: user
       MYSQL_PASSWORD: password
     ports:

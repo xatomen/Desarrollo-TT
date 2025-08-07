@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Query, CORSMiddleware
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
@@ -67,6 +68,7 @@ app.add_middleware(
     allow_methods=[""],
     allow_headers=["*"],
 )
+
 db = SessionLocal()
 
 
@@ -80,13 +82,17 @@ def consultar_multas_pasajero(rut: str = Query(..., description="RUT del propiet
         raise HTTPException(status_code=400, detail="Debe ingresar un RUT.")
     if not validar_rut(rut):
         raise HTTPException(status_code=400, detail="RUT inválido o con formato incorrecto.")
-    multas = db.query(MultaRPI).filter(MultaRPI.rut == rut).all()
-    if not multas:
-        raise HTTPException(status_code=404, detail="No se encontraron multas para este RUT.")
-    return [MultaRPIResponse(
-        rut=multa.rut,
-        rol_causa=multa.rol_causa,
-        anio_causa=multa.anio_causa,
-        nombre_jpl=multa.nombre_jpl,
-        monto_multa=multa.monto_multa
-    ) for multa in multas]
+    
+    try:
+        multas = db.query(MultaRPI).filter(MultaRPI.rut == rut).all()
+        if not multas:
+            raise HTTPException(status_code=404, detail="No se encontraron multas para este RUT.")
+        return [MultaRPIResponse(
+            rut=multa.rut,
+            rol_causa=multa.rol_causa,
+            anio_causa=multa.anio_causa,
+            nombre_jpl=multa.nombre_jpl,
+            monto_multa=multa.monto_multa
+        ) for multa in multas]
+    finally:
+        db.close()

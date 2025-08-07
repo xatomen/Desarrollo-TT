@@ -1,6 +1,6 @@
 -- Si aún no existe la base de datos
-CREATE DATABASE IF NOT EXISTS MTT;
-USE MTT;
+CREATE DATABASE IF NOT EXISTS mtt_db;
+USE mtt_db;
 
 -- Crear la tabla MULTAS_RPI
 CREATE TABLE IF NOT EXISTS MULTAS_RPI (
