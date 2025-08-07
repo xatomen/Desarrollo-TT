@@ -1,0 +1,63 @@
+INSERT INTO TASACION_FISCAL (codigo_sii, tipo, anio, marca, modelo, version, combustible, cilindrada, potencia, marchas, transmision, traccion, puertas, pais, equipamiento, tasacion, num_ejes, valor_permiso) VALUES
+
+-- Sedanes y Hatchbacks
+('SD428391', 'Sedán', 2023, 'Toyota', 'Corolla', 'XEI', 'Gasolina', 1800, 140, 6, 'Automática', '4x2', 4, 'Japón', 'Aire Acondicionado, ABS', 12500000, 2, 125000),
+('SD756182', 'Sedán', 2022, 'Honda', 'Civic', 'EX', 'Gasolina', 1500, 130, 5, 'Manual', '4x2', 4, 'Japón', 'Radio, Cierre Centralizado', 9800000, 2, 98000),
+('HB651473', 'Hatchback', 2021, 'Volkswagen', 'Golf', 'Trendline', 'Gasolina', 1400, 125, 6, 'Manual', '4x2', 5, 'Alemania', 'Bluetooth, Control Crucero', 8500000, 2, 85000),
+
+-- SUVs
+('SV293847', 'SUV', 2024, 'Hyundai', 'Tucson', 'Limited', 'Gasolina', 2000, 155, 6, 'Automática', '4x4', 5, 'Corea', 'GPS, Cámara Retroceso', 18500000, 2, 150000),
+('SV468732', 'SUV', 2023, 'Subaru', 'Forester', 'Premium', 'Gasolina', 2500, 182, 8, 'Automática', 'AWD', 5, 'Japón', 'Tracción Integral, Control Estabilidad', 16500000, 2, 135000),
+
+-- Camionetas
+('CT384925', 'Camioneta', 2023, 'Ford', 'Ranger', 'XLT', 'Diesel', 3200, 200, 6, 'Manual', '4x4', 4, 'Estados Unidos', 'Barra Antivuelco, Tracción 4x4', 22000000, 2, 175000),
+('CT741583', 'Camioneta', 2021, 'Nissan', 'NP300', 'LE', 'Diesel', 2500, 160, 6, 'Manual', '4x4', 4, 'México', 'Baranda Metálica', 14500000, 2, 165000),
+
+-- Motocicletas
+('MT492738', 'Motocicleta', 2023, 'Honda', 'CB600F', 'Hornet', 'Gasolina', 600, 102, 6, 'Manual', 'Trasera', 0, 'Japón', 'ABS', 3500000, 2, 25000),
+('MT856194', 'Motocicleta', 2022, 'Yamaha', 'YZF-R3', 'Standard', 'Gasolina', 320, 42, 6, 'Manual', 'Trasera', 0, 'Japón', 'Frenos Disco', 2800000, 2, 18000),
+
+-- Vehículos comerciales
+('CA837496', 'Camión', 2023, 'Mercedes-Benz', 'Actros', '2645', 'Diesel', 12800, 450, 12, 'Manual', '6x4', 2, 'Alemania', 'Frenos Aire, ABS', 45000000, 3, 280000),
+('FG659281', 'Furgón', 2022, 'Iveco', 'Daily', '35S14', 'Diesel', 3000, 140, 6, 'Manual', '4x2', 2, 'Italia', 'Dirección Asistida', 18500000, 2, 195000);
+
+INSERT INTO FACTURA_COMPRA (
+    num_factura, precio_neto, puertas, asientos, combustible, 
+    peso, transmision, traccion, cilindrada, carga, tipo_sello, 
+    tipo_vehiculo, marca, modelo, num_chasis, num_motor, color, anio
+) VALUES
+
+-- Vehículos Eléctricos
+(1001, 45000000, 5, 5, 'Eléctrico', 1950, 'Automática', '4x2', 0, 0, 'Verde', 
+'Sedán', 'Tesla', 'Model 3', 'XP7H2025TE001', 'EL2025001', 'Blanco', 2025),
+
+(1002, 52000000, 5, 7, 'Eléctrico', 2250, 'Automática', 'AWD', 0, 0, 'Verde', 
+'SUV', 'Hyundai', 'IONIQ 7', 'KM8H2025HY002', 'EL2025002', 'Plata', 2025),
+
+-- Vehículos Híbridos
+(1003, 38500000, 5, 5, 'Híbrido', 1680, 'eCVT', '4x2', 1800, 0, 'Verde', 
+'Hatchback', 'Toyota', 'Prius', 'JT3H2025TY003', 'HB2025003', 'Azul', 2025),
+
+(1004, 42000000, 5, 5, 'Híbrido', 1850, 'Automática', 'AWD', 2000, 0, 'Verde', 
+'SUV', 'Lexus', 'NX', 'LX4H2025LX004', 'HB2025004', 'Negro', 2025),
+
+-- Vehículos Gasolina
+(1005, 28000000, 4, 5, 'Gasolina', 1450, 'Automática', '4x2', 2000, 0, 'Verde', 
+'Sedán', 'Honda', 'Civic', 'CIV2025HN005', 'GA2025005', 'Rojo', 2025),
+
+(1006, 35000000, 5, 5, 'Gasolina', 1680, 'Automática', '4x4', 2500, 0, 'Verde', 
+'SUV', 'Mazda', 'CX-5', 'MZ5H2025MZ006', 'GA2025006', 'Gris', 2025),
+
+-- Vehículos Diesel
+(1007, 48000000, 4, 5, 'Diesel', 2200, 'Automática', '4x4', 3000, 1000, 'Verde', 
+'Camioneta', 'Ford', 'Ranger', 'RNG2025FR007', 'DI2025007', 'Azul Marino', 2025),
+
+(1008, 55000000, 4, 5, 'Diesel', 2300, 'Automática', '4x4', 2800, 1200, 'Verde', 
+'Camioneta', 'Toyota', 'Hilux', 'HIL2025TY008', 'DI2025008', 'Plateado', 2025),
+
+-- Vehículos Comerciales
+(1009, 32000000, 5, 3, 'Diesel', 2500, 'Manual', '4x2', 2200, 2000, 'Verde', 
+'Furgón', 'Mercedes-Benz', 'Sprinter', 'SPR2025MB009', 'DI2025009', 'Blanco', 2025),
+
+(1010, 25000000, 2, 3, 'Diesel', 2800, 'Manual', '4x2', 2500, 3500, 'Verde', 
+'Furgón', 'Peugeot', 'Boxer', 'BOX2025PG010', 'DI2025010', 'Blanco', 2025);

@@ -28,10 +28,17 @@ CREATE TABLE FACTURA_COMPRA (
     puertas INT,
     asientos INT,
     combustible VARCHAR(30),
-    peso VARCHAR(20),
+    peso INT,
     transmision VARCHAR(30),
     traccion VARCHAR(30),
     cilindrada INT,
     carga INT,
-    tipo_sello VARCHAR(30)
+    tipo_sello VARCHAR(30),
+    tipo_vehiculo VARCHAR(50),
+    marca VARCHAR(50),
+    modelo VARCHAR(50),
+    num_chasis VARCHAR(50),
+    num_motor VARCHAR(50),
+    color VARCHAR(30),
+    anio INT
 );
