@@ -12,8 +12,8 @@ services:
     depends_on:
       - mysql
     environment:
-      DB_USER: user
-      DB_PASSWORD: password
+      DB_USER: root
+      DB_PASSWORD: root
       DB_HOST: mysql
       DB_NAME: prt_db 
 

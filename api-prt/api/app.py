@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, CORSMiddleware
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 from sqlalchemy import create_engine, Column, Integer, String, Date, Enum
@@ -36,7 +37,7 @@ class RevisionTecnica(Base):
     planta = Column(String(100))
     nom_certificado = Column(String(100))
     fecha_vencimiento = Column(Date)
-    estado = Column(Enum('vigente', 'rechazada', 'vencida'))
+    estado = Column(Enum('aprobada', 'rechazada'))
 
 # crear las tablas en la base de datos
 Base.metadata.create_all(bind=engine)
@@ -52,7 +53,7 @@ class RevisionTecnicaModel(BaseModel):
     codigo_planta: str
     planta: str
     nom_certificado: str
-    fecha_vencimiento: str
+    fecha_vencimiento: date
     estado: str
     vigencia: str
 
@@ -81,18 +82,30 @@ def get_revision_tecnica(ppu: str):
             raise HTTPException(status_code=400, detail=f"Formato de PPU inválido: {ppu}")
 
         with SessionLocal() as session:
+            # recuperar todas las revisiones técnicas
             revision = session.query(RevisionTecnica).filter(
-                RevisionTecnica.ppu == ppu,
-                RevisionTecnica.estado == 'vigente'
-            ).order_by(RevisionTecnica.fecha.desc()).first()
+                RevisionTecnica.ppu == ppu
+            ).order_by(RevisionTecnica.fecha.desc())
             if not revision:
                 raise HTTPException(status_code=404, detail="Revisión técnica no encontrada")
             
+            # iterar sobre las revisiones y buscar si tenemos al menos una aprobada,en el caso de encontrar una aprobada, verificamos la fecha de vencimiento
+            revision = next((rev for rev in revision if rev.estado == "aprobada"), None)
+            if not revision:
+                raise HTTPException(status_code=404, detail="No hay revisiones técnicas aprobadas para este PPU")
+            # Verificar la vigencia de la revisión técnica
             fecha_actual = date.today()
-            if revision.fecha_vencimiento >= fecha_actual and revision.estado == "vigente":
-                vigencia = "Vigente"
-            else:
-                vigencia = "No vigente"
+            # Obtener la revisión más reciente primero
+            revision = session.query(RevisionTecnica).filter(
+                RevisionTecnica.ppu == ppu,
+                RevisionTecnica.estado == "aprobada"
+            ).order_by(RevisionTecnica.fecha.desc()).first()
+
+            if not revision:
+                raise HTTPException(status_code=404, detail="No hay revisiones técnicas aprobadas para este PPU")
+            
+            # Verificar vigencia
+            vigencia = "Vigente" if revision.fecha_vencimiento >= fecha_actual else "No vigente"
 
             return RevisionTecnicaModel(
                 id_rev_tecnica=revision.id_rev_tecnica,

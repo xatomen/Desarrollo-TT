@@ -1,4 +1,4 @@
---> script de creacion bases de datos y tablas para la API del PRT
+-- script de creacion bases de datos y tablas para la API del PRT
 
 CREATE DATABASE IF NOT EXISTS prt_db;
 USE prt_db;
@@ -12,7 +12,6 @@ CREATE TABLE REVISION_TECNICA (
     PLANTA VARCHAR(100),
     NOM_CERTIFICADO VARCHAR(100),
     FECHA_VENCIMIENTO DATE,
-    ESTADO ENUM('vigente', 'rechazada', 'vencida')
-    FOREIGN KEY (PPU) REFERENCES PADRON(PPU)
+    ESTADO ENUM('aprobada', 'rechazada')
 );
 
