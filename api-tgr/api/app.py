@@ -328,10 +328,11 @@ def validar_credenciales(credenciales: LoginModel, db: Session = Depends(get_db)
     # Verificar que el RUT y la contraseña no estén vacíos
     if not credenciales.rut or not credenciales.contrasena:
         raise HTTPException(status_code=400, detail="RUT y contraseña son obligatorios")
+    # Verificar que el RUT no contenga espacios
+    if credenciales.rut != credenciales.rut.strip():
+        raise HTTPException(status_code=400, detail="RUT no puede contener espacios")
     # Verificar que el RUT tenga un formato válido
-    try:
-        rut_chile.is_valid_rut(credenciales.rut)
-    except ValueError:
+    if not rut_chile.is_valid_rut(credenciales.rut):
         raise HTTPException(status_code=400, detail="RUT inválido")
     # Verificar las credenciales en la base de datos
     usuario = db.query(Credenciales).filter(
