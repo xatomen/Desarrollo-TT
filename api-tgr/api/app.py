@@ -6,7 +6,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, Time, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, Time, Boolean, and_, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, Session
 import os
@@ -256,7 +256,32 @@ def get_permiso_circulacion(ppu: str, db: Session = Depends(get_db)):
     permiso = db.query(PermisoCirculacion).filter(PermisoCirculacion.ppu == ppu).first()
     if not permiso:
         raise HTTPException(status_code=404, detail="Permiso de circulación no encontrado")
-    return PermisoCirculacionModel.from_orm(permiso)
+    return PermisoCirculacionModel(
+        id=permiso.id,
+        ppu=permiso.ppu,
+        rut=permiso.rut,
+        nombre=permiso.nombre,
+        fecha_emision=permiso.fecha_emision,
+        fecha_expiracion=permiso.fecha_expiracion,
+        valor_permiso=permiso.valor_permiso,
+        motor=permiso.motor,
+        chasis=permiso.chasis,
+        tipo_vehiculo=permiso.tipo_vehiculo,
+        color=permiso.color,
+        marca=permiso.marca,
+        modelo=permiso.modelo,
+        anio=permiso.anio,
+        carga=permiso.carga,
+        tipo_sello=permiso.tipo_sello,
+        combustible=permiso.combustible,
+        cilindrada=permiso.cilindrada,
+        transmision=permiso.transmision,
+        pts=permiso.pts,
+        ast=permiso.ast,
+        equipamiento=permiso.equipamiento,
+        codigo_sii=permiso.codigo_sii,
+        tasacion=permiso.tasacion
+    )
 
 # POST - Endpoint para cargar un nuevo Permiso de Circulación
 @app.post("/subir_permiso/", response_model=PermisoCirculacionModel)
@@ -270,7 +295,32 @@ def cargar_permiso_circulacion(permiso: PermisoCirculacionModel, db: Session = D
     db.add(nuevo_permiso)
     db.commit()
     db.refresh(nuevo_permiso)
-    return PermisoCirculacionModel.from_orm(nuevo_permiso)
+    return PermisoCirculacionModel(
+        id=nuevo_permiso.id,
+        ppu=nuevo_permiso.ppu,
+        rut=nuevo_permiso.rut,
+        nombre=nuevo_permiso.nombre,
+        fecha_emision=nuevo_permiso.fecha_emision,
+        fecha_expiracion=nuevo_permiso.fecha_expiracion,
+        valor_permiso=nuevo_permiso.valor_permiso,
+        motor=nuevo_permiso.motor,
+        chasis=nuevo_permiso.chasis,
+        tipo_vehiculo=nuevo_permiso.tipo_vehiculo,
+        color=nuevo_permiso.color,
+        marca=nuevo_permiso.marca,
+        modelo=nuevo_permiso.modelo,
+        anio=nuevo_permiso.anio,
+        carga=nuevo_permiso.carga,
+        tipo_sello=nuevo_permiso.tipo_sello,
+        combustible=nuevo_permiso.combustible,
+        cilindrada=nuevo_permiso.cilindrada,
+        transmision=nuevo_permiso.transmision,
+        pts=nuevo_permiso.pts,
+        ast=nuevo_permiso.ast,
+        equipamiento=nuevo_permiso.equipamiento,
+        codigo_sii=nuevo_permiso.codigo_sii,
+        tasacion=nuevo_permiso.tasacion
+    )
 
 # POST - Endpoint para validar las credenciales de fiscalizador
 @app.post("/validar_credenciales/", response_model=TokenModel)
@@ -285,8 +335,12 @@ def validar_credenciales(credenciales: LoginModel, db: Session = Depends(get_db)
         raise HTTPException(status_code=400, detail="RUT inválido")
     # Verificar las credenciales en la base de datos
     usuario = db.query(Credenciales).filter(
-        Credenciales.rut == credenciales.rut,
-        Credenciales.contrasena == credenciales.contrasena
+        and_(
+            text("BINARY rut = :rut"),
+            text("BINARY contrasena = :contrasena")
+        ).params(
+            {"rut": credenciales.rut, "contrasena": credenciales.contrasena}
+        )
     ).first()
     # Si las credenciales son incorrectas, lanzar una excepción HTTP 401
     if not usuario:
@@ -348,24 +402,24 @@ def procesar_pago(tarjeta: TarjetasModel, db: Session = Depends(get_db), monto_p
     return confirmacion_pago
 
 # GET - Endpoint para generar una cantidad determinada de RUTs y Patentes (de vehiculos y motocicletas nuevos y antiguos)
-@app.get("/generar_datos_prueba/")
-def generar_datos_prueba(cantidad: int, db: Session = Depends(get_db)):
-    # Validar la cantidad
-    if cantidad <= 0:
-        raise HTTPException(status_code=400, detail="La cantidad debe ser un número positivo")
+# @app.get("/generar_datos_prueba/")
+# def generar_datos_prueba(cantidad: int, db: Session = Depends(get_db)):
+#     # Validar la cantidad
+#     if cantidad <= 0:
+#         raise HTTPException(status_code=400, detail="La cantidad debe ser un número positivo")
 
-    # Generar los RUTs y Patentes
-    ruts = [generar_rut() for _ in range(cantidad)]
-    patentes_vehiculos_nuevos = [generar_patente_vehiculo_nuevo() for _ in range(cantidad)]
-    patentes_vehiculos_antiguos = [generar_patente_vehiculo_antiguo() for _ in range(cantidad)]
-    patentes_motocicletas_nuevas = [generar_patente_motocicleta_nueva() for _ in range(cantidad)]
-    patentes_motocicletas_antiguas = [generar_patente_motocicleta_antigua() for _ in range(cantidad)]
+#     # Generar los RUTs y Patentes
+#     ruts = [generar_rut() for _ in range(cantidad)]
+#     patentes_vehiculos_nuevos = [generar_patente_vehiculo_nuevo() for _ in range(cantidad)]
+#     patentes_vehiculos_antiguos = [generar_patente_vehiculo_antiguo() for _ in range(cantidad)]
+#     patentes_motocicletas_nuevas = [generar_patente_motocicleta_nueva() for _ in range(cantidad)]
+#     patentes_motocicletas_antiguas = [generar_patente_motocicleta_antigua() for _ in range(cantidad)]
 
-    # Retornar los datos generados
-    return {
-        "ruts": ruts,
-        "patentes_vehiculos_nuevos": patentes_vehiculos_nuevos,
-        "patentes_vehiculos_antiguos": patentes_vehiculos_antiguos,
-        "patentes_motocicletas_nuevas": patentes_motocicletas_nuevas,
-        "patentes_motocicletas_antiguas": patentes_motocicletas_antiguas
-    }
+#     # Retornar los datos generados
+#     return {
+#         "ruts": ruts,
+#         "patentes_vehiculos_nuevos": patentes_vehiculos_nuevos,
+#         "patentes_vehiculos_antiguos": patentes_vehiculos_antiguos,
+#         "patentes_motocicletas_nuevas": patentes_motocicletas_nuevas,
+#         "patentes_motocicletas_antiguas": patentes_motocicletas_antiguas
+#     }
