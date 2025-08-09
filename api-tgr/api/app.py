@@ -368,10 +368,10 @@ def validar_credenciales(credenciales: LoginModel, db: Session = Depends(get_db)
 def procesar_pago(tarjeta: TarjetasModel, db: Session = Depends(get_db), monto_pago: int = 0):
     # Validar el formato del número de tarjeta
     if len(tarjeta.numero_tarjeta) != 16 or not tarjeta.numero_tarjeta.isdigit():
-        raise HTTPException(status_code=400, detail="Número de tarjeta inválido")
+        raise HTTPException(status_code=400, detail="Datos de tarjeta inválidos")
     # Validar el formato del CVV
     if len(tarjeta.cvv) != 3 or not tarjeta.cvv.isdigit():
-        raise HTTPException(status_code=400, detail="CVV inválido")
+        raise HTTPException(status_code=400, detail="Datos de tarjeta inválidos")
     # Convertir la fecha de vencimiento a un objeto date
     try:
         fecha_vencimiento = date(
@@ -381,14 +381,14 @@ def procesar_pago(tarjeta: TarjetasModel, db: Session = Depends(get_db), monto_p
         )
     # Si la fecha de vencimiento no es válida, lanzar una excepción HTTP 400
     except ValueError:
-        raise HTTPException(status_code=400, detail="Fecha de vencimiento inválida")
+        raise HTTPException(status_code=400, detail="Datos de tarjeta inválidos")
     # Validar la fecha de vencimiento
     if fecha_vencimiento < date.today():
         raise HTTPException(status_code=400, detail="Tarjeta vencida")
     # Validar si la tarjeta coincide con alguna tarjeta registrada en la base de datos
     existing_tarjeta = db.query(Tarjetas).filter(Tarjetas.numero_tarjeta == tarjeta.numero_tarjeta).first()
     if not existing_tarjeta:
-        raise HTTPException(status_code=404, detail="Tarjeta inválida o no registrada")
+        raise HTTPException(status_code=404, detail="Datos de tarjeta inválidos")
     # Validar el saldo de la tarjeta
     if existing_tarjeta.saldo < monto_pago:
         raise HTTPException(status_code=400, detail="Saldo insuficiente en la tarjeta")

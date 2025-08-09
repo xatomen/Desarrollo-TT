@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS permiso_circulacion (
     rut VARCHAR(12) NOT NULL,
     nombre VARCHAR(100) NOT NULL,
     fecha_emision DATE NOT NULL,
-    fecha_expiración DATE NOT NULL,
+    fecha_expiracion DATE NOT NULL,
     valor_permiso INT NOT NULL,
     motor INT NOT NULL,
     chasis VARCHAR(50) NOT NULL,
