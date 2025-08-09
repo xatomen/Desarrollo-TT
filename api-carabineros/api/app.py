@@ -4,7 +4,7 @@
 ########################################################################
 
 from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, Time, Boolean
 from sqlalchemy.ext.declarative import declarative_base
@@ -15,6 +15,7 @@ import pymysql
 import mysql.connector
 from fastapi.middleware.cors import CORSMiddleware
 from patentes_vehiculares_chile import validar_patente
+from datetime import datetime
 
 ##############################
 # Instancia de FastAPI
@@ -55,11 +56,11 @@ Base = declarative_base()
 ####################################################
 
 class EncargoPatenteModel(Base):
-    __tablename__ = 'encargo_patente'
+    __tablename__ = 'ENCARGO_PATENTE' 
 
-    id = Column(Integer, primary_key=True, index=True)
-    ppu = Column(String(10), nullable=False)
-    encargo = Column(Boolean, nullable=False)
+    ID = Column(Integer, primary_key=True, index=True)
+    PPU = Column(String(10), nullable=False)
+    ENCARGO = Column(Boolean, nullable=False)
 
 #######################################
 # Función para crear las tablas
@@ -72,7 +73,6 @@ def create_tables():
         print("Database tables created successfully")
     except Exception as e:
         print(f"Error creating tables: {e}")
-        # Don't crash the app if database is not available
 
 #########################################################
 # Dependencia para obtener la sesión de la base de datos
@@ -86,28 +86,27 @@ def get_db():
         db.close()
 
 #################
-# Modelo de API
+# Modelos de API
 #################
 
-class EncargoPatente(BaseModel): 
-    id: int
+class EncargoResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     ppu: str
     encargo: bool
+    mensaje: str
 
 #########################
 # Endpoints de la API
 #########################
 
-# Crear endpoint inicial
 @app.get("/")
 def read_root():
     return {"message": "API de carabineros"}
 
-# Health check endpoint
 @app.get("/health")
 def health_check():
     try:
-        # Test database connection
         db = SessionLocal()
         db.execute("SELECT 1")
         db.close()
@@ -119,29 +118,40 @@ def health_check():
 # Get para obtener el encargo por robo de una patente
 #######################################################
 
-@app.get("/encargo_patente/{ppu}", response_model=EncargoPatente)
+@app.get("/encargo_patente/{ppu}")
 def get_encargo_patente(ppu: str, db: Session = Depends(get_db)):
-    # Validar la patente
     try:
-        resultado_validacion = validar_patente(ppu)
+        # Validar la patente
+        resultado_validacion = validar_patente(ppu.upper())
         if not resultado_validacion:
-            raise HTTPException(status_code=400, detail="Formato de PPU inválido")
+            raise HTTPException(
+                status_code=400, 
+                detail="Formato de PPU inválido."
+            )
         
-        encargo = db.query(EncargoPatenteModel).filter(EncargoPatenteModel.ppu == ppu).first()
+        # Buscar en base de datos
+        encargo = db.query(EncargoPatenteModel).filter(EncargoPatenteModel.PPU == ppu.upper()).first()
+        
         if not encargo:
-            raise HTTPException(status_code=404, detail="Encargo no encontrado")
+            return EncargoResponse(
+                ppu=ppu.upper(),
+                encargo=False,
+                mensaje=f"La patente {ppu.upper()} no presenta encargo por robo"
+            )
+
+        # Crear respuesta exitosa
+        mensaje = "Vehículo con encargo vigente" if encargo.ENCARGO else "Vehículo sin encargo"
         
-        return EncargoPatente.from_orm(encargo)
+        return EncargoResponse(
+            ppu=encargo.PPU,
+            encargo=encargo.ENCARGO,
+            mensaje=mensaje
+        )
+        
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error de base de datos: {str(e)}")
-
-# #######################################
-# # Evento de inicio para crear tablas
-# #######################################
-
-# @app.on_event("startup")
-# async def startup_event():
-#     """Create tables on startup if database is available"""
-#     create_tables()
+        raise HTTPException(
+            status_code=500, 
+            detail="Error interno del servidor. No se pudo conectar con la base de datos"
+        )
