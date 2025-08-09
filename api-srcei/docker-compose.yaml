@@ -15,7 +15,9 @@ services:
     volumes:
       - ./api:/app
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    restart: unless-stopped
   db:
     image: mysql:9.4
     environment:
@@ -27,3 +29,10 @@ services:
       - "3308:3306"
     volumes:
       - ./db_data/:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
