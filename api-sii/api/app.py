@@ -132,7 +132,7 @@ def validar_codigo_sii(codigo: str) -> bool:
     prefijos_validos = [
         "SD", "SV", "HB", "CB", "MU", "MH", "CM", "CA", "TC", "CT", 
         "RC", "TH", "CT", "FG", "FC", "AR", "BA", "FG", "FC", "RU", 
-        "SR", "TB", "UR", "IU"
+        "SR", "TB", "UR", "IU", "MT"
     ]
     
     # Obtener los primeros 2 caracteres
