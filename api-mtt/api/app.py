@@ -10,8 +10,12 @@ from itertools import cycle
 import re
 
 #validar formato de rut o cambiar por la librería chilena discutir con mis compañeros
-# ---- Utilidad para validar RUT ----
+# ---- Utilidad para validar RUT ---- 
 def validar_rut(rut: str) -> bool:
+    # Verificar que contenga obligatoriamente el guión
+    if "-" not in rut:
+        return False
+    
     # Normalizar
     rut = rut.replace(".", "").replace("-", "").upper()
     if not re.match(r"^\d{7,8}[0-9K]$", rut):
