@@ -35,37 +35,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Funciones de validación personalizadas
 #########################################################
 
-def validar_rut_chileno(rut: str) -> bool:
-    """
-    Valida si un RUT chileno es válido
-    Maneja excepciones y casos edge
-    """
-    try:
-        # Verificar que no esté vacío
-        if not rut or not rut.strip():
-            return False
-        
-        # Limpiar el RUT
-        rut_clean = rut.strip()
-        
-        # Verificar formato básico con regex
-        # Acepta formatos: 12345678-9, 12.345.678-9, 123456789
-        rut_pattern = r'^[\d]{1,2}\.?[\d]{3}\.?[\d]{3}-?[\dkK]$'
-        if not re.match(rut_pattern, rut_clean):
-            return False
-        
-        # Verificar longitud máxima
-        if len(rut_clean) > 12:
-            return False
-        
-        # Usar la librería rut_chile para validación
-        return rut_chile.is_valid_rut(rut_clean)
-    
-    except Exception as e:
-        # Si hay cualquier excepción, consideramos el RUT como inválido
-        print(f"Error validando RUT {rut}: {e}")
-        return False
-
 def validar_contrasena(contrasena: str) -> bool:
     """
     Valida que la contraseña cumpla con requisitos básicos
@@ -231,10 +200,14 @@ def validar_clave_unica(credentials: CredencialesLogin, db: Session = Depends(ge
     """Valida la clave única de un usuario"""
     
     try:
-        # Validación adicional del RUT usando nuestra función personalizada
-        if not validar_rut_chileno(credentials.rut):
+        # Validar que rut no contenga espacios al inicio y al final, comparando la longitud de strings
+        rut_sin_espacios = credentials.rut.strip()
+        if len(credentials.rut) != len(rut_sin_espacios):
             raise HTTPException(status_code=400, detail="RUT inválido")
-        
+        # Validar rut
+        if not rut_chile.is_valid_rut(credentials.rut) or not "-" in credentials.rut:
+            raise HTTPException(status_code=400, detail="RUT inválido")
+
         # Validación adicional de la contraseña
         if not validar_contrasena(credentials.contrasena):
             raise HTTPException(status_code=400, detail="Contraseña inválida")
