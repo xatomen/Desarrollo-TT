@@ -12,6 +12,11 @@ import re
 #validar formato de rut o cambiar por la librería chilena discutir con mis compañeros
 # ---- Utilidad para validar RUT ---- 
 def validar_rut(rut: str) -> bool:
+    # Verificar que no contenga espacios en blanco
+    rut_sin_espacios = rut.strip()
+    if len(rut) != len(rut_sin_espacios):
+        return False
+    
     # Verificar que contenga obligatoriamente el guión
     if "-" not in rut:
         return False
