@@ -16,6 +16,7 @@ import mysql.connector
 from fastapi import Depends
 from datetime import date
 from fastapi.middleware.cors import CORSMiddleware
+import re
 
 # Librerías para validar formatos
 from patentes_vehiculares_chile import (
@@ -331,6 +332,9 @@ def validar_credenciales(credenciales: LoginModel, db: Session = Depends(get_db)
     # Verificar que el RUT no contenga espacios
     if credenciales.rut != credenciales.rut.strip():
         raise HTTPException(status_code=400, detail="RUT no puede contener espacios")
+    # Verificar que no tenga caracteres especiales (Solo puede tener números, un guión y una k)
+    if not re.match(r"^\d{1,8}-[\dkK]$", credenciales.rut):
+        raise HTTPException(status_code=400, detail="RUT inválido")
     # Verificar que el RUT tenga un formato válido
     if not rut_chile.is_valid_rut(credenciales.rut) or "-" not in credenciales.rut:
         raise HTTPException(status_code=400, detail="RUT inválido")
