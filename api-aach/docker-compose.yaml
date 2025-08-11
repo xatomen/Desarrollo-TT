@@ -1,0 +1,29 @@
+# Docker compose para la API de la AACH en Python y MySQL
+
+services:
+  api-aach:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_HOST=db
+      - DB_NAME=aach_db
+    depends_on:
+      - db
+    volumes:
+      - ./api:/app
+  db:
+    image: mysql:9.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: aach_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db_data/:/var/lib/mysql
