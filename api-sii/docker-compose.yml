@@ -5,7 +5,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
     ports:
-      - "8001:8000"
+      - "5005:8000"
     volumes:
       - ./api:/app
     depends_on:
@@ -24,6 +24,6 @@ services:
       MYSQL_USER: user
       MYSQL_PASSWORD: password
     ports:
-      - "3307:3306"
+      - "3005:3306"
     volumes:
       - ./db_data/:/var/lib/mysql

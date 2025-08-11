@@ -6,7 +6,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "5007:8000"
     environment:
       - DB_USER=user
       - DB_PASSWORD=password
@@ -24,6 +24,6 @@ services:
       MYSQL_USER: user
       MYSQL_PASSWORD: password
     ports:
-      - "3306:3306"
+      - "3007:3306"
     volumes:
       - ./db_data/:/var/lib/mysql
