@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from patentes_vehiculares_chile import validar_patente
 from rut_chile import rut_chile
 from datetime import date
+import re
 
 ##############################
 # Instancia de FastAPI
@@ -142,6 +143,10 @@ def get_padron_by_rut(rut: str, db: Session = Depends(get_db)):
     rut_sin_espacios = rut.strip()
     if len(rut) != len(rut_sin_espacios):
         raise HTTPException(status_code=400, detail="RUT inválido")
+    # Validar que el RUT no contenga carácter especial, solo tenga numeros, un guión y una K
+    if not re.match(r'^\d{7,8}-[0-9K]$', rut):
+        raise HTTPException(status_code=400, detail="RUT inválido")
+
     # Validar el RUT
     if not rut_chile.is_valid_rut(rut) or not "-" in rut:
         raise HTTPException(status_code=400, detail="RUT inválido")
