@@ -15,6 +15,18 @@ import mysql.connector
 from fastapi import Depends
 from datetime import date
 from fastapi.middleware.cors import CORSMiddleware
+from patentes_vehiculares_chile import (
+    validar_patente,
+    detectar_tipo_patente,
+    limpiar_patente,
+    validar_rut,
+    validar_patente,
+    generar_patente_vehiculo_antiguo,
+    generar_patente_vehiculo_nuevo,
+    generar_patente_motocicleta_antigua,
+    generar_patente_motocicleta_nueva,
+    generar_rut
+)
 
 # Instanciamos la clase FastAPI
 
