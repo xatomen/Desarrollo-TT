@@ -2,7 +2,8 @@ fastapi
 uvicorn[standard]
 sqlalchemy
 pydantic
-dotenv
+python-dotenv
 pymysql
 mysql-connector-python
 patentes-vehiculares-chile
+rut-chile
