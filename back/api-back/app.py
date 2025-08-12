@@ -72,6 +72,7 @@ from routers.consultar_logs_consultas_realizadas import consultar_logs_consultas
 from routers.consultar_logs_fiscalizacion import consultar_logs_fiscalizacion
 from routers.consultar_logs_obtencion_permisos import consultar_logs_obtencion_permisos
 from routers.consultar_multas_patente import consultar_multas_patente
+from routers.consultar_patente import consultar_patente
 from routers.consultar_permiso_circulacion import consultar_permiso_circulacion
 from routers.consultar_revision_tecnica import consultar_revision_tecnica
 from routers.consultar_rpi import consultar_rpi
@@ -89,6 +90,7 @@ app.include_router(consultar_logs_consultas_realizadas.router)
 app.include_router(consultar_logs_fiscalizacion.router)
 app.include_router(consultar_logs_obtencion_permisos.router)
 app.include_router(consultar_multas_patente.router)
+app.include_router(consultar_patente.router)
 app.include_router(consultar_permiso_circulacion.router)
 app.include_router(consultar_revision_tecnica.router)
 app.include_router(consultar_rpi.router)
