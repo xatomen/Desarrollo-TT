@@ -75,50 +75,47 @@ def read_root():
 # GET para obtener revisiones técnicas por PPU devuelta como objeto y devuelve la mas reciente y aprobada
 @app.get("/revision_tecnica/{ppu}", response_model=RevisionTecnicaModel)
 def get_revision_tecnica(ppu: str):
-    try:
-        # Validar formato de patente
-        resultado_validacion = validar_patente(ppu)
-        if not resultado_validacion:
-            raise HTTPException(status_code=400, detail=f"Formato de PPU inválido: {ppu}")
+    if not ppu.isalnum():
+        raise HTTPException(status_code=400, detail=f"PPU no puede contener caracteres especiales: {ppu}")
+    # Validar formato de patente
+    resultado_validacion = validar_patente(ppu)
+    if not resultado_validacion:
+        raise HTTPException(status_code=400, detail=f"Formato de PPU inválido: {ppu}")
 
-        with SessionLocal() as session:
-            # recuperar todas las revisiones técnicas
-            revision = session.query(RevisionTecnica).filter(
-                RevisionTecnica.ppu == ppu
-            ).order_by(RevisionTecnica.fecha.desc())
-            if not revision:
-                raise HTTPException(status_code=404, detail="Revisión técnica no encontrada")
-            
-            # iterar sobre las revisiones y buscar si tenemos al menos una aprobada,en el caso de encontrar una aprobada, verificamos la fecha de vencimiento
-            revision = next((rev for rev in revision if rev.estado == "aprobada"), None)
-            if not revision:
-                raise HTTPException(status_code=404, detail="No hay revisiones técnicas aprobadas para este PPU")
-            # Verificar la vigencia de la revisión técnica
-            fecha_actual = date.today()
-            # Obtener la revisión más reciente primero
-            revision = session.query(RevisionTecnica).filter(
-                RevisionTecnica.ppu == ppu,
-                RevisionTecnica.estado == "aprobada"
-            ).order_by(RevisionTecnica.fecha.desc()).first()
+    with SessionLocal() as session:
+        # recuperar todas las revisiones técnicas
+        revision = session.query(RevisionTecnica).filter(
+            RevisionTecnica.ppu == ppu
+        ).order_by(RevisionTecnica.fecha.desc())
+        if not revision:
+            raise HTTPException(status_code=404, detail="Revisión técnica no encontrada")
+        
+        # iterar sobre las revisiones y buscar si tenemos al menos una aprobada,en el caso de encontrar una aprobada, verificamos la fecha de vencimiento
+        revision = next((rev for rev in revision if rev.estado == "aprobada"), None)
+        if not revision:
+            raise HTTPException(status_code=404, detail="No hay revisiones técnicas aprobadas para este PPU")
+        # Verificar la vigencia de la revisión técnica
+        fecha_actual = date.today()
+        # Obtener la revisión más reciente primero
+        revision = session.query(RevisionTecnica).filter(
+            RevisionTecnica.ppu == ppu,
+            RevisionTecnica.estado == "aprobada"
+        ).order_by(RevisionTecnica.fecha.desc()).first()
 
-            if not revision:
-                raise HTTPException(status_code=404, detail="No hay revisiones técnicas aprobadas para este PPU")
-            
-            # Verificar vigencia
-            vigencia = "Vigente" if revision.fecha_vencimiento >= fecha_actual else "No vigente"
+        if not revision:
+            raise HTTPException(status_code=404, detail="No hay revisiones técnicas aprobadas para este PPU")
+        
+        # Verificar vigencia
+        vigencia = "Vigente" if revision.fecha_vencimiento >= fecha_actual else "No vigente"
 
-            return RevisionTecnicaModel(
-                id_rev_tecnica=revision.id_rev_tecnica,
-                ppu=revision.ppu,
-                fecha=revision.fecha,
-                codigo_planta=revision.codigo_planta,
-                planta=revision.planta,
-                nom_certificado=revision.nom_certificado,
-                fecha_vencimiento=revision.fecha_vencimiento,
-                estado=revision.estado,
-                vigencia=vigencia
-            )
-    except SQLAlchemyError as e:
-        raise HTTPException(status_code=500, detail="Error en la base de datos")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+        return RevisionTecnicaModel(
+            id_rev_tecnica=revision.id_rev_tecnica,
+            ppu=revision.ppu,
+            fecha=revision.fecha,
+            codigo_planta=revision.codigo_planta,
+            planta=revision.planta,
+            nom_certificado=revision.nom_certificado,
+            fecha_vencimiento=revision.fecha_vencimiento,
+            estado=revision.estado,
+            vigencia=vigencia
+        )
