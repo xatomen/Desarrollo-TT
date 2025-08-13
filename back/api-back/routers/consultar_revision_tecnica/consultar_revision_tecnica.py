@@ -29,7 +29,7 @@ async def consultar_revision_tecnica(ppu: str):
 
     if response.status_code == 200:
         # La respuesta debe entregar el valor de la variable "revision"
-        return {response.json()}
+        return response.json()
     elif response.status_code == 404:
         raise HTTPException(status_code=404, detail="Revisión técnica no encontrada")
     else:     
