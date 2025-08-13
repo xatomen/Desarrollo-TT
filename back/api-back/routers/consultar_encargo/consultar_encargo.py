@@ -29,6 +29,6 @@ async def consultar_encargo(ppu: str):
 
     if response.status_code == 200:
         # La respuesta debe entregar el valor de la variable "encargo"
-        return {response.json().get("encargo")}
+        return {"encargo": response.json().get("encargo")}
     else:
         raise HTTPException(status_code=response.status_code, detail=response.text)
