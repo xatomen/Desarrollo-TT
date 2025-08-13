@@ -10,8 +10,8 @@ from typing import List
 router = APIRouter()
 
 # Configuración de las APIs
-SRCEI_BASE_URL = os.getenv("SRCEI_API_URL", "http://localhost:5001/padron/")
-TGR_BASE_URL = os.getenv("TGR_API_URL", "http://localhost:5007/consultar_permiso/")
+SRCEI_BASE_URL = os.getenv("SRCEI_API_URL", "http://host.docker.internal:5001/padron/")
+TGR_BASE_URL = os.getenv("TGR_API_URL", "http://host.docker.internal:5007/consultar_permiso/")
 
 
 #####################################################
@@ -80,12 +80,13 @@ async def obtener_vehiculos_por_rut(rut: str):
         # Consultar vehículos en el padrón por RUT
         async with httpx.AsyncClient() as client:
             padron_response = await client.get(
-                f"{SRCEI_BASE_URL}rut/{rut}",
+                f"{SRCEI_BASE_URL}{rut}",
                 timeout=30.0
             )
             
             if padron_response.status_code == 404:
                 return []  # No hay vehículos asociados al RUT
+                # return "no se encuentra padrón"
             
             if padron_response.status_code != 200:
                 raise HTTPException(
