@@ -31,7 +31,10 @@ async def consultar_soap(ppu: str):
   if response.status_code != 200:
       return {"detail": "Error al consultar el servicio SOAP"}
 
-  anio_emision = response.json().get("rige_desde")
+  # Convertir "rige_desde" a fecha y obtener el año de emisión
+  rige_desde_str = response.json().get("rige_desde")
+  rige_desde_fecha = date.fromisoformat(rige_desde_str)
+  anio_emision = rige_desde_fecha.year
   if anio_emision == date.today().year:
     vigencia_permiso = "Vigente"
   else:
