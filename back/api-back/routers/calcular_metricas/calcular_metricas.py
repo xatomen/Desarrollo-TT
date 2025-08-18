@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Dict, Any
 import os
 from dotenv import load_dotenv
+import re
 
 # Instanciamos el router
 router = APIRouter()
@@ -365,11 +366,24 @@ async def calcular_metricas(scope: str, period_type: str, from_date: str, to_dat
       "to_date":   "YYYY-MM-DD"
     """
     try:
+        # Limpiar y validar scope
+        scope = scope.strip().lower()
         if scope not in ["fiscalizacion", "consultas", "permisos"]:
             raise HTTPException(status_code=400, detail="Scope inválido. Debe ser uno de: ['fiscalizacion','consultas','permisos']")
+        
+        # Limpiar y validar period_type
+        period_type = period_type.strip().upper()
         if period_type not in ["DIA", "MES", "AÑO"]:
             raise HTTPException(status_code=400, detail="Period type inválido. Debe ser uno de: ['DIA','MES','AÑO']")
 
+        # Limpiar fechas
+        from_date = from_date.strip()
+        to_date = to_date.strip()
+        
+        # Validar que no tengan caracteres especiales (solo números, guiones)
+        if not re.match(r'^[\d-]+$', from_date) or not re.match(r'^[\d-]+$', to_date):
+            raise HTTPException(status_code=400, detail="Las fechas solo pueden contener números y guiones")
+        
         df = _parse_date(from_date)
         dt = _parse_date(to_date)
         if df > dt:
