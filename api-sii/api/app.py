@@ -196,3 +196,29 @@ def consultar_factura_venta(num_factura: str):
         color=row.color,
         anio=row.anio
     )
+
+@app.get("/factura_venta_num_chasis/", response_model=FacturaCompraResponse)
+def consultar_factura_venta_num_chasis(num_chasis: str):
+    row = db.query(FacturaCompra).filter(FacturaCompra.num_chasis == num_chasis).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="El N° de Chasis no existe")
+    return FacturaCompraResponse(
+        num_factura=row.num_factura,
+        precio_neto=row.precio_neto,
+        puertas=row.puertas,
+        asientos=row.asientos,
+        combustible=row.combustible,
+        peso=row.peso,
+        transmision=row.transmision,
+        traccion=row.traccion,
+        cilindrada=row.cilindrada,
+        carga=row.carga,
+        tipo_sello=row.tipo_sello,
+        tipo_vehiculo=row.tipo_vehiculo,
+        marca=row.marca,
+        modelo=row.modelo,
+        num_chasis=row.num_chasis,
+        num_motor=row.num_motor,
+        color=row.color,
+        anio=row.anio
+    )
