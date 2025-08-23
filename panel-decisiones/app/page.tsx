@@ -40,41 +40,26 @@ export default function Home() {
           </form>
         </div>
       </main>
-
-      {/* Footer ancho completo */}
-      <footer className="bg-dark text-light py-4 mt-auto">
-        {/* El color de fondo ocupa todo el ancho;
-            el contenido interno se limita con .container */}
+      <footer className="content-always-on-display">
         <div className="container">
+          <div className="line"></div>
           <div className="row">
-            {/* Secciones */}
-            <div className="col-12 col-md-4 mb-4 mb-md-0">
-              <h6 className="text-uppercase">Secciones</h6>
-              <ul className="list-unstyled mb-0">
-                <li><a href="#" className="text-light">Activa</a></li>
-                <li><a href="#" className="text-light">Instituciones públicas</a></li>
-                <li><a href="#" className="text-light">Términos y condiciones</a></li>
-              </ul>
+            <div className="col-md-3 a11y-fonts-col-12"><img className="mw-100 mb-3" src="/img/favicon/ms-icon-150x150.png"/>
+              <p>La alternativa para digitalizar los trámites de la ciudadanía.</p>
+              <p>Esta plataforma es administrada:</p><img className="mw-100 mb-3" src="/img/gob-footer.svg"/><a className="py-0" href="www.digital.gob.cl">www.digital.gob.cl</a>
             </div>
-
-            {/* Ayuda a ciudadanos */}
-            <div className="col-12 col-md-4 mb-4 mb-md-0">
-              <h6 className="text-uppercase">Ayuda a ciudadanos</h6>
-              <ul className="list-unstyled mb-0">
-                <li><a href="#" className="text-reset">Preguntas frecuentes</a></li>
-                <li>Horario: Lu - Vi / 9:00hrs - 18:00hrs</li>
-                <li>600 397 0000</li>
-              </ul>
+            <div className="col-md-3 a11y-fonts-col-12">
+              <div className="text-uppercase mb-3">Secciones</div><a href="#">Conjuntos de Datos</a><a href="#">Organizaciones</a><a href="#">Categorías</a><a href="#">Documentos</a><a href="#">Ayuda</a><a href="#">Iniciativas Destacadas</a>
             </div>
-
-            {/* Ayuda a instituciones */}
-            <div className="col-12 col-md-4">
-              <h6 className="text-uppercase">Ayuda a instituciones</h6>
-              <ul className="list-unstyled mb-0">
-                <li><a href="#" className="text-reset">Ingreso de solicitud de ayuda</a></li>
-                <li>Horario: Lu - Vi / 9:00hrs - 18:00hrs</li>
-                <li>600 397 0000</li>
-              </ul>
+            <div className="col-md-3 a11y-fonts-col-12">
+              <div className="text-uppercase mb-3">Enlaces internos</div><a href="#">Políticas de Privacidad</a><a href="#">Normativas</a><a href="#">Términos y Condiciones</a><a href="#">Sitios relacinados</a><a href="#">Licenciamiento</a><a href="#">Notificar error</a>
+            </div>
+            <div className="col-md-3 a11y-fonts-col-12">
+              <div className="text-uppercase mb-3">Ayuda institucional</div><a href="#">Ingreso de solicitud de ayuda</a><b className="d-block mt-3">Mesa de Ayuda</b>
+              <p className="mb-0">
+                Horario Lu - Vi / 9:00hrs -
+                18:00hrs
+              </p><a className="py-0" href="tel:6003970000">600 397 0000</a>
             </div>
           </div>
         </div>
@@ -82,3 +67,4 @@ export default function Home() {
     </div>
   );
 }
+
