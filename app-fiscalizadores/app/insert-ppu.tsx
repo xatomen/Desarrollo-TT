@@ -1,33 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
+import Navbar from '@/components/Navbar';
+
 export default function HomeScreen() {
   const [ppu, setPpu] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const handleConsultar = () => {
-    // Aquí conectarás con tu API
-    console.log('Consultando PPU:', ppu);
+  // useEffect para hacer que el mensaje de error desaparezca después de 5 segundos
+  useEffect(() => {
+    if (errorMsg) {
+      const timer = setTimeout(() => {
+        setErrorMsg('');
+      }, 5000); // 5 segundos
+
+      // Limpiar el timer si el componente se desmonta o errorMsg cambia
+      return () => clearTimeout(timer);
+    }
+  }, [errorMsg]);
+
+  const handleConsultar = async () => {
+    setErrorMsg(''); // Limpiar mensaje previo
+    try {
+      const response = await fetch(`http://localhost:8000/consultar_patente/${ppu}`);
+      if (!response.ok) {
+        throw new Error((await response.json()).detail);
+      }
+      const data = await response.json();
+      console.log('Datos del vehículo:', data);
+      // Enviar a la siguiente pantalla con los datos del vehículo
+      router.push({
+        pathname: '/vehicle-details',
+        params: { vehicle: JSON.stringify(data), ppu: ppu }
+      });
+    } catch (error: any) {
+      setErrorMsg(error.message || 'Error al consultar PPU');
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Ionicons name="person-circle-outline" size={24} color="white" />
-          <Text style={styles.headerTitle}>APP Fiscalizadores</Text>
+
+      {/* Navbar */}
+      <Navbar />
+
+      {/* Alert bar */}
+      {errorMsg !== '' && (
+        <View style={styles.warningAlert}>
+          <Text style={styles.warningAlertText}>
+            {errorMsg}
+          </Text>
         </View>
-        <TouchableOpacity style={styles.logoutButton}>
-          <Text style={styles.logoutText}>Cerrar Sesión</Text>
-          <Ionicons name="log-out-outline" size={20} color="white" />
-        </TouchableOpacity>
-      </View>
+      )}
 
       {/* Content */}
       <View style={styles.content}>
@@ -51,7 +82,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.consultarButton}
           onPress={handleConsultar}
         >
@@ -160,6 +191,25 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 24,
     fontWeight: 'bold',
+    fontFamily: 'Roboto',
+  },
+  warningAlert: {
+    color: 'red',
+    textAlign: 'center',
+    backgroundColor: '#ffe6e6',
+    padding: 16,
+    margin: 16,
+    borderColor: 'red',
+    borderWidth: 2,
+    position: 'absolute',
+    top: 150,
+    left: 16,
+    right: 16,
+    zIndex: 10,
+  },
+  warningAlertText: {
+    color: 'red',
+    textAlign: 'center',
     fontFamily: 'Roboto',
   },
 });
