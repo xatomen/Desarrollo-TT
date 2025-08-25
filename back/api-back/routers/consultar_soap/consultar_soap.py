@@ -26,10 +26,10 @@ async def consultar_soap(ppu: str):
   response = requests.get(f"http://host.docker.internal:5003/soap/{ppu}")
   
   if response.status_code == 404:
-      return {"detail": "No se encontró información para la patente proporcionada"}
+      raise HTTPException(status_code=404, detail="No se encontró información para la patente proporcionada")
 
   if response.status_code != 200:
-      return {"detail": "Error al consultar el servicio SOAP"}
+      raise HTTPException(status_code=500, detail="Error al consultar el servicio SOAP")
 
   # Convertir "rige_desde" a fecha y obtener el año de emisión
   rige_desde_str = response.json().get("rige_desde")
