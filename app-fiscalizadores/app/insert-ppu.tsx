@@ -8,11 +8,15 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
+import { useAuth } from './context/AuthContext';
+
 import Navbar from '@/components/Navbar';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function HomeScreen() {
   const [ppu, setPpu] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const { checkTokenValidity } = useAuth();
 
   // useEffect para hacer que el mensaje de error desaparezca después de 5 segundos
   useEffect(() => {
@@ -28,6 +32,16 @@ export default function HomeScreen() {
 
   const handleConsultar = async () => {
     setErrorMsg(''); // Limpiar mensaje previo
+
+    const isTokenValid = await checkTokenValidity();
+    if (!isTokenValid) {
+      setErrorMsg('Su sesión ha expirado. Redirigiendo al login...');
+      setTimeout(() => {
+        router.replace('/login');
+      }, 2000);
+      return;
+    }
+
     try {
       const response = await fetch(`http://localhost:8000/consultar_patente/${ppu}`);
       if (!response.ok) {
@@ -46,6 +60,7 @@ export default function HomeScreen() {
   };
 
   return (
+    <ProtectedRoute>
     <SafeAreaView style={styles.container}>
 
       {/* Navbar */}
@@ -90,6 +105,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
     </SafeAreaView>
+    </ProtectedRoute>
   );
 }
 

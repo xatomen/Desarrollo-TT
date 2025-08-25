@@ -3,28 +3,54 @@ import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } fr
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import Navbar from '@/components/Navbar';
+import { Modal } from 'react-native';
+import { useAuth } from './context/AuthContext';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function VehicleDetailsScreen() {
   const params = useLocalSearchParams();
-  
+  const { token } = useAuth();
+
   // Estados para manejar los datos del vehículo
   const [ppu, setPpu] = useState('');
   
+  // Padrón
 	const [fechaInscripcion, setFechaInscripcion] = useState('');
 
+  // Permiso de circulación
 	const [tipoSello, setTipoSello] = useState('');
 	const [vigenciaPermiso, setVigenciaPermiso] = useState('');
+  const [fechaEmisionPermiso, setFechaEmisionPermiso] = useState('');
+  const [fechaExpiracionPermiso, setFechaExpiracionPermiso] = useState('');
+  const [numMotor, setNumMotor] = useState('');
+  const [numChasis, setNumChasis] = useState('');
+  const [tipoVehiculo, setTipoVehiculo] = useState('');
+  const [color, setColor] = useState('');
+  const [marca, setMarca] = useState('');
+  const [modelo, setModelo] = useState('');
+  const [anio, setAnio] = useState('');
+  const [carga, setCarga] = useState('');
+  const [combustible, setCombustible] = useState('');
+  const [cilindrada, setCilindrada] = useState('');
+  const [transmision, setTransmision] = useState('');
+  const [pts, setPts] = useState('');
 
+  // Revisión Técnica
 	const [revisionTecnica, setRevisionTecnica] = useState('');
+  const [fechaExpiracionRevision, setFechaExpiracionRevision] = useState('');
 
+  // SOAP
 	const [soap, setSoap] = useState('');
+  const [fechaExpiracionSoap, setFechaExpiracionSoap] = useState('');
 
+  // Encargo por Robo
 	const [encargoRobo, setEncargoRobo] = useState('');
 
+  // Estado vehículo
 	const [estadoVehiculo, setEstadoVehiculo] = useState('');
 
 	const [loading, setLoading] = useState(false);
-
+	const [showModal, setShowModal] = useState(false);
 
   // useEffect para setear el estado del vehículo cuando cambien los valores
   useEffect(() => {
@@ -63,6 +89,20 @@ export default function VehicleDetailsScreen() {
 			else {
 				setVigenciaPermiso('Vencido');
 			}
+      setFechaEmisionPermiso(permiso_data.fecha_emision);
+      setFechaExpiracionPermiso(permiso_data.fecha_expiracion);
+      setNumMotor(permiso_data.motor);
+      setNumChasis(permiso_data.chasis);
+      setTipoVehiculo(permiso_data.tipo_vehiculo);
+      setColor(permiso_data.color);
+      setMarca(permiso_data.marca);
+      setModelo(permiso_data.modelo);
+      setAnio(permiso_data.anio);
+      setCarga(permiso_data.carga);
+      setCombustible(permiso_data.combustible);
+      setCilindrada(permiso_data.cilindrada);
+      setTransmision(permiso_data.transmision);
+      setPts(permiso_data.pts);
 
       // Obtener Revisión Técnica
 			const revision_response = await fetch(`http://localhost:8000/consultar_revision_tecnica/${params.ppu}`);
@@ -71,6 +111,7 @@ export default function VehicleDetailsScreen() {
       if (revision_response.status !== 200) {
         setRevisionTecnica('Vencido');
       }
+      setFechaExpiracionRevision(revision_data.fecha_vencimiento);
 
       // Obtener SOAP
 			const soap_response = await fetch(`http://localhost:8000/consultar_soap/${params.ppu}`);
@@ -79,6 +120,7 @@ export default function VehicleDetailsScreen() {
 			if (soap_response.status !== 200) {
 				setSoap('Vencido');
 			}
+      setFechaExpiracionSoap(soap_data.rige_hasta);
 
       // Obtener Encargo por Robo
 			const robo_response = await fetch(`http://localhost:8000/consultar_encargo/${params.ppu}`);
@@ -104,6 +146,7 @@ export default function VehicleDetailsScreen() {
   }, [params.ppu]);
 
   return (
+    <ProtectedRoute>
     <ScrollView style={styles.container}>
       <Navbar />
       <View style={styles.card}>
@@ -170,10 +213,191 @@ export default function VehicleDetailsScreen() {
 					</View>
 				</View>
 
-				{/* Botón para Mostrar Información */}
-				<TouchableOpacity style={styles.showInfoButton} onPress={getInfoVehicle}>
+				{/* Botón para abrir modal Mostrar Información */}
+				<TouchableOpacity style={styles.showInfoButton} onPress={() => setShowModal(true)}>
 					<Text style={styles.showInfoButtonText}>Mostrar Información</Text>
 				</TouchableOpacity>
+
+        {/* Modal Mostrar Información */}
+        <Modal visible={showModal} animationType="slide" transparent={true}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Información Vehículo</Text>
+              <ScrollView style={styles.modalContent}>
+                
+                {/* Tabla: Item | Valor */}
+                <View style={styles.table}>
+                  
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>Fecha de expiración SOAP</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{fechaExpiracionSoap}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>Fecha de expiración revisión</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{fechaExpiracionRevision}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>Fecha de inscripción</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{fechaInscripcion}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>Fecha de emisión permiso</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{fechaEmisionPermiso}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>Fecha de expiración permiso</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{fechaExpiracionPermiso}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>N° Motor</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{numMotor}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>N° Chasis</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{numChasis}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>Tipo de vehículo</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{tipoVehiculo}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>Color de la carrocería</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{color}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>Marca del vehículo</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{marca}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>Modelo</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{modelo}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>Año</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{anio}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>Capacidad de carga</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{carga}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>Tipo de sello</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{tipoSello}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>Tipo de combustible</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{combustible}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>Cilindrada del motor</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{cilindrada}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>Transmisión</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{transmision}</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.tableRowModal}>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableLabel}>PTS</Text>
+                    </View>
+                    <View style={styles.tableCellModal}>
+                      <Text style={styles.tableValue}>{pts}</Text>
+                    </View>
+                  </View>
+
+                </View>
+              </ScrollView>
+              <TouchableOpacity style={styles.backButton} onPress={() => setShowModal(false)}>
+                <Text style={styles.backButtonText}>Cerrar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
 
 				{/* Botón para Volver Atras */}
 				<TouchableOpacity style={styles.backButton} onPress={() => router.push('/insert-ppu')}>
@@ -182,10 +406,58 @@ export default function VehicleDetailsScreen() {
 
 			</ScrollView>
 		</ScrollView>
+    </ProtectedRoute>
 	);
 }
 
 const styles = StyleSheet.create({
+  tableValue: {
+    paddingHorizontal: 16,
+    borderBottomColor: '#e5e7eb',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+    padding: 20,
+    margin: 12,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    fontFamily: 'Roboto',
+    textAlign: 'center',
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 8,
+    fontFamily: 'Roboto',
+  },
+  closeButton: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: '#0051A8',
+    borderRadius: 8,
+  },
+  closeButtonText: {
+    color: 'white',
+    textAlign: 'center',
+  },
+  tableRowModal: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+    backgroundColor: 'white',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+  },
+  tableCellModal: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
@@ -381,5 +653,28 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     fontFamily: 'Roboto',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCard: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    margin: 12,
+    width: '90%',
+    maxWidth: 600,
+    shadowColor: '#000',
+    maxHeight: '90%',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  modalContent: {
+    maxHeight: '100%',
   },
 });
