@@ -92,16 +92,16 @@ export default function LoginScreen() {
       const rutSinPuntos = usuario.replace(/\./g, '');
       
       // Simular login exitoso para testing (quitar esto cuando tengas la API real)
-      const mockData = {
-        access_token: 'fake_token_123',
-        user_info: { name: 'Usuario Test', rut: rutSinPuntos },
-        expires_in: 7200
-      };
+      // const mockData = {
+      //   access_token: 'fake_token_123',
+      //   user_info: { name: 'Usuario Test', rut: rutSinPuntos },
+      //   expires_in: 7200
+      // };
       
-      await login(mockData.access_token, mockData.user_info, mockData.expires_in);
-      router.replace('/insert-ppu');
+      // await login(mockData.access_token, mockData.user_info, mockData.expires_in);
+      // router.replace('/insert-ppu');
       
-      /* 
+      
       // Código real para cuando tengas la API
       const response = await fetch('http://localhost:5007/validar_credenciales/', {
         method: 'POST',
@@ -122,7 +122,7 @@ export default function LoginScreen() {
 
       await login(data.access_token, data.user_info, data.expires_in);
       router.replace('/insert-ppu');
-      */
+      
       
     } catch (error: any) {
       setErrorMsg(error.message || 'Error al iniciar sesión');
