@@ -6,10 +6,12 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "cp node_modules/@gobdigital-cl/gob.cl/dist/js/gob.cl.js public/gobcl.js || echo 'gobcl.js copiado'"
   },
   "dependencies": {
     "@gobdigital-cl/gob.cl": "^3.0.10",
+    "bootstrap-icons": "^1.13.1",
     "next": "15.4.7",
     "react": "19.1.0",
     "react-dom": "19.1.0"

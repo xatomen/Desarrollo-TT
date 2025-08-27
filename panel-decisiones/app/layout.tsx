@@ -1,17 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "@gobdigital-cl/gob.cl/dist/css/gob.cl.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 export const metadata: Metadata = {
   title: "Panel de Decisiones - Gobierno de Chile",
@@ -25,9 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body>
         {children}
-        {/* Scripts cargados al final del body para evitar problemas de hidratación */}
+        
+        {/* Scripts cargados al final del body */}
         <script 
           src="https://code.jquery.com/jquery-3.6.0.min.js"
           integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
