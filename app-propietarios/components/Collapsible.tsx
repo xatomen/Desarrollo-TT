@@ -1,45 +1,80 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { PropsWithChildren, useState } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Text, ViewStyle, TextStyle } from 'react-native';
 
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+interface CollapsibleProps extends PropsWithChildren {
+  title: string;
+  containerStyle?: ViewStyle;
+  headerStyle?: ViewStyle;
+  titleStyle?: TextStyle;
+  contentStyle?: ViewStyle;
+  iconColor?: string;
+}
 
-export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
+export function Collapsible({ 
+  children, 
+  title, 
+  containerStyle,
+  headerStyle,
+  titleStyle,
+  contentStyle,
+  iconColor = "#666"
+}: CollapsibleProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const theme = useColorScheme() ?? 'light';
 
   return (
-    <ThemedView>
+    <View style={[styles.container, containerStyle]}>
       <TouchableOpacity
-        style={styles.heading}
+        style={[
+          styles.heading, 
+          isOpen && styles.headingOpen, // Agregar estilo cuando está abierto
+          headerStyle
+        ]}
         onPress={() => setIsOpen((value) => !value)}
-        activeOpacity={0.8}>
-        <IconSymbol
-          name="chevron.right"
-          size={18}
-          weight="medium"
-          color={theme === 'light' ? Colors.light.icon : Colors.dark.icon}
-          style={{ transform: [{ rotate: isOpen ? '90deg' : '0deg' }] }}
+        activeOpacity={0.8}
+      >
+        <Text style={[styles.title, titleStyle]}>{title}</Text>
+        <Ionicons
+          name={isOpen ? 'chevron-up' : 'chevron-down'}
+          size={20}
+          color={iconColor}
         />
-
-        <ThemedText type="defaultSemiBold">{title}</ThemedText>
       </TouchableOpacity>
-      {isOpen && <ThemedView style={styles.content}>{children}</ThemedView>}
-    </ThemedView>
+      {isOpen && (
+        <View style={[styles.content, contentStyle]}>
+          {children}
+        </View>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
   heading: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    backgroundColor: 'white',
+  },
+  headingOpen: {
+    backgroundColor: '#f3f4f6', // Fondo gris cuando está abierto
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#374151',
+    fontFamily: 'Roboto',
   },
   content: {
-    marginTop: 6,
-    marginLeft: 24,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    backgroundColor: '#ffffff',
   },
 });

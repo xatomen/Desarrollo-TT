@@ -24,8 +24,7 @@ export default function RootLayout() {
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="login" options={{ headerShown: false }} />
-          <Stack.Screen name="insert-ppu" options={{ headerShown: false }} />
-          {/* <Stack.Screen name="vehicle-details" options={{ headerShown: false }} /> */}
+          <Stack.Screen name="vehicle-details" options={{ headerShown: false }} />
           <Stack.Screen name="vehicle-list" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>
