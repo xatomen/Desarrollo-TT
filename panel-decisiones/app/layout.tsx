@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "@gobdigital-cl/gob.cl/dist/css/gob.cl.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
 
 export const metadata: Metadata = {
   title: "Panel de Decisiones - Gobierno de Chile",
