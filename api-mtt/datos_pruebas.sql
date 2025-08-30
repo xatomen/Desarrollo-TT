@@ -28,3 +28,8 @@ INSERT INTO MULTAS_RPI (rut, rol_causa, anio_causa, nombre_jpl, monto_multa) VAL
 
 -- Francisco Torres Medina (1 multa)
 ('22640435-K', '4579-9-2025', 2025, 'Juzgado de Policía Local de Puente Alto', 52000);
+
+INSERT INTO REG_TRANSPORTE (ppu, fecha_entrada_rnt, tipo_servicio, capacidad, estado_vehiculo, fecha_vencimiento_certificado, region, anio_fabricacion, cinturon_obligatorio, antiguedad_vehiculo, marca, modelo) VALUES
+('AB1234', '2025-01-01', 'Transporte de Pasajeros', 50, 'Activo', '2025-12-31', 13, 2020, TRUE, 5, 'Mercedes-Benz', 'Sprinter'),
+('CD5678', '2025-02-01', 'Transporte de Carga', 20, 'Inactivo', '2025-06-30', 5, 2018, FALSE, 7, 'Volvo', 'FH'),
+('EF9012', '2025-03-01', 'Transporte Escolar', 30, 'Activo', '2025-12-31', 7, 2021, TRUE, 4, 'Chevrolet', 'Express');

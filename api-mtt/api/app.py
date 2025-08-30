@@ -1,13 +1,17 @@
+from datetime import date, datetime
+from sqlite3 import Date
+from xmlrpc.client import Boolean
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean as SQLBoolean  # ✅ Agregado DateTime y Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
 from itertools import cycle
 import re
+from patentes_vehiculares_chile import validar_patente
 
 #validar formato de rut o cambiar por la librería chilena discutir con mis compañeros
 # ---- Utilidad para validar RUT ---- 
@@ -58,7 +62,21 @@ class MultaRPI(Base):
     anio_causa = Column(Integer)
     nombre_jpl = Column(String(80))
     monto_multa = Column(Integer)
-# Base.metadata.create_all(bind=engine)  # Descomenta si quieres crear las tablas desde el código
+
+class RegistroTransporte(Base):
+    __tablename__ = "REG_TRANSPORTE"
+    ppu = Column(String(10), primary_key=True)
+    fecha_entrada_rnt = Column(DateTime, nullable=False)  # ✅ Cambiado a DateTime
+    tipo_servicio = Column(String(30), nullable=False)
+    capacidad = Column(Integer, nullable=False)
+    estado_vehiculo = Column(String(30), nullable=False)
+    fecha_vencimiento_certificado = Column(DateTime, nullable=False)  # ✅ Cambiado a DateTime
+    region = Column(Integer, nullable=False)
+    anio_fabricacion = Column(Integer, nullable=False)
+    cinturon_obligatorio = Column(SQLBoolean, nullable=False)  # ✅ Cambiado a SQLBoolean
+    antiguedad_vehiculo = Column(Integer, nullable=False)
+    marca = Column(String(30), nullable=False)
+    modelo = Column(String(30), nullable=False)
 
 # --- Modelos Pydantic ---
 class MultaRPIResponse(BaseModel):
@@ -68,13 +86,26 @@ class MultaRPIResponse(BaseModel):
     nombre_jpl: str
     monto_multa: int
 
+class RegistroTransporteResponse(BaseModel):
+    ppu: str
+    fecha_entrada_rnt: datetime
+    tipo_servicio: str
+    capacidad: int
+    estado_vehiculo: str
+    fecha_vencimiento_certificado: datetime
+    region: int
+    anio_fabricacion: int
+    cinturon_obligatorio: bool
+    antiguedad_vehiculo: int
+    marca: str
+    modelo: str
 
 app = FastAPI(title="API MTT - Registro de Pasajeros Infractores")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[""],  # Permitir todas las orígenes
+    allow_origins=["*"],  # ✅ Corregido de [""] a ["*"]
     allow_credentials=True,
-    allow_methods=[""],
+    allow_methods=["*"],  # ✅ Corregido de [""] a ["*"]
     allow_headers=["*"],
 )
 
@@ -103,5 +134,34 @@ def consultar_multas_pasajero(rut: str = Query(..., description="RUT del propiet
             nombre_jpl=multa.nombre_jpl,
             monto_multa=multa.monto_multa
         ) for multa in multas]
+    finally:
+        db.close()
+
+@app.get("/registro_transporte/", response_model=RegistroTransporteResponse)
+def consultar_registro_transporte(ppu: str = Query(..., description="PPU del vehículo")):
+    if not ppu:
+        raise HTTPException(status_code=400, detail="Debe ingresar un PPU.")
+    # Validar formato PPU
+    if not validar_patente(ppu):
+        raise HTTPException(status_code=400, detail="Formato de PPU inválido.")
+
+    try:
+        registro = db.query(RegistroTransporte).filter(RegistroTransporte.ppu == ppu).first()
+        if not registro:
+            raise HTTPException(status_code=404, detail="No se encontró el registro de transporte para este PPU.")
+        return RegistroTransporteResponse(
+            ppu=registro.ppu,
+            fecha_entrada_rnt=registro.fecha_entrada_rnt,
+            tipo_servicio=registro.tipo_servicio,
+            capacidad=registro.capacidad,
+            estado_vehiculo=registro.estado_vehiculo,
+            fecha_vencimiento_certificado=registro.fecha_vencimiento_certificado,
+            region=registro.region,
+            anio_fabricacion=registro.anio_fabricacion,
+            cinturon_obligatorio=registro.cinturon_obligatorio,
+            antiguedad_vehiculo=registro.antiguedad_vehiculo,
+            marca=registro.marca,
+            modelo=registro.modelo
+        )
     finally:
         db.close()

@@ -12,5 +12,21 @@ CREATE TABLE IF NOT EXISTS MULTAS_RPI (
     monto_multa INT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS REG_TRANSPORTE (
+    ppu VARCHAR(10) PRIMARY KEY,
+    fecha_entrada_rnt DATE NOT NULL,
+    tipo_servicio VARCHAR(30) NOT NULL,
+    capacidad INT NOT NULL,
+    estado_vehiculo VARCHAR(30) NOT NULL,
+    fecha_vencimiento_certificado DATE NOT NULL,
+    region INT NOT NULL,
+    anio_fabricacion INT NOT NULL,
+    cinturon_obligatorio BOOLEAN NOT NULL,
+    antiguedad_vehiculo INT NOT NULL,
+    marca VARCHAR(30) NOT NULL,
+    modelo VARCHAR(30) NOT NULL
+);
+
 -- Índice para búsquedas rápidas por RUT
 CREATE INDEX idx_multa_rut ON MULTAS_RPI (rut);
+CREATE INDEX idx_transporte_ppu ON REG_TRANSPORTE (ppu);
