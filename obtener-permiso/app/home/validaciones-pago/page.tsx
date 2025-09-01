@@ -1,6 +1,6 @@
 'use client';
 
-type EstadoValidacion = 'Vigente' | 'No';
+type EstadoValidacion = 'Vigente' | 'No' | 'Si';
 type DocumentoValidacion = {
   nombre: string;
   estado: EstadoValidacion;
@@ -18,7 +18,7 @@ function EstadoChip({ estado, documento }: { estado: EstadoValidacion; documento
     <span 
       className="badge rounded-pill px-3 py-2 fw-medium text-white"
       style={{ 
-        backgroundColor: esPositivo ? '#2E7D32' : '#6c757d',
+        backgroundColor: esPositivo ? '#2E7D32' : '#CD1E2C',
         fontFamily: '"Dosis", sans-serif'
       }}
     >
@@ -35,6 +35,13 @@ export default function ValidacionesPago() {
     { nombre: 'Multas de Tránsito', estado: 'No' },
     { nombre: 'Multas RPI', estado: 'No' },
   ];
+
+  // Verificar si todos los documentos están en estado ideal
+  const documentosNegativosPositivos = ['Encargo por Robo', 'Multas de Tránsito', 'Multas RPI'];
+  const todosDocumentosValidos = documentos.every(doc => {
+    const esDocumentoNegativo = documentosNegativosPositivos.includes(doc.nombre);
+    return doc.estado === 'Vigente' || (doc.estado === 'No' && esDocumentoNegativo);
+  });
 
   const informacionVehiculo = [
     { label: 'Fecha de expiración SOAP', valor: '-' },
@@ -72,12 +79,12 @@ export default function ValidacionesPago() {
               <span 
                 className="badge rounded-pill px-4 py-2 mb-4 text-white fw-medium"
                 style={{ 
-                  backgroundColor: '#2E7D32',
+                  backgroundColor: todosDocumentosValidos ? '#2E7D32' : '#CD1E2C',
                   fontFamily: '"Dosis", sans-serif',
                   fontWeight: '500'
                 }}
               >
-                Vehículo al Día
+                {todosDocumentosValidos ? 'Vehículo al Día' : 'No Apto'}
               </span>
               
               <div className="mt-4">
@@ -155,11 +162,14 @@ export default function ValidacionesPago() {
           <div className="d-grid">
             <button 
               className="btn btn-lg py-3 text-white fw-bold" 
+              disabled={!todosDocumentosValidos}
               style={{ 
-                backgroundColor: '#0d6efd', 
+                backgroundColor: todosDocumentosValidos ? '#0d6efd' : '#6c757d', 
                 border: 'none',
                 fontFamily: '"Dosis", sans-serif',
-                fontWeight: '600'
+                fontWeight: '600',
+                cursor: todosDocumentosValidos ? 'pointer' : 'not-allowed',
+                opacity: todosDocumentosValidos ? 1 : 0.7
               }}
             >
               Proceder al Pago

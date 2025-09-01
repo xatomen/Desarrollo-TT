@@ -1,13 +1,18 @@
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+
 export default function HomeLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <div>
-      Navbar
-      {children}
-      Footer
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-1">
+        {children}
+      </main>
+      <Footer />
     </div>
   );
 }
