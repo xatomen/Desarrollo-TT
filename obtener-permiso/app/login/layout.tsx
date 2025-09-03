@@ -24,8 +24,8 @@ export default function LoginPageLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    // <html lang="en">
+      <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <nav className="navbar navbar-light navbar-expand-lg">
           <div className="container">
             <a className="navbar-brand" href="/">
@@ -91,7 +91,7 @@ export default function LoginPageLayout({
         </nav>
         {children}
         {/* Scripts*/}
-      </body>
-    </html>
+      </div>
+    // </html>
   );
 }

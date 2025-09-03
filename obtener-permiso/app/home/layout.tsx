@@ -7,12 +7,22 @@ export default function HomeLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div 
+      className="d-flex flex-column" 
+      style={{ 
+        height: '100vh',
+        maxHeight: '100vh'
+      }}
+    >
       <Navbar />
-      <main className="flex-1">
+      <main 
+        className="flex-grow-1" 
+      >
         {children}
       </main>
-      <Footer />
+      <div className="footer-container" style={{ position: 'relative', bottom: 0 }}>
+        <Footer />
+      </div>
     </div>
   );
 }
