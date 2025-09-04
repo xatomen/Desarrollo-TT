@@ -1,5 +1,6 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { relative } from 'path';
 
 export default function HomeLayout({
   children,
@@ -8,21 +9,16 @@ export default function HomeLayout({
 }>) {
   return (
     <div 
-      className="d-flex flex-column" 
       style={{ 
-        height: '100vh',
-        maxHeight: '100vh'
+        minHeight: '100vh',
+        position: 'relative'
       }}
     >
       <Navbar />
-      <main 
-        className="flex-grow-1" 
-      >
+      <div style={{ flex: 1 }}>
         {children}
-      </main>
-      <div className="footer-container" style={{ position: 'relative', bottom: 0 }}>
-        <Footer />
       </div>
+      <Footer />
     </div>
   );
 }

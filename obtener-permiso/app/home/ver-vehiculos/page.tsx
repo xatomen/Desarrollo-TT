@@ -2,6 +2,8 @@
 'use client';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useState, useEffect } from 'react';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 
 type Estado = 'PAGADO' | 'HABILITADO' | 'VENCIDO';
 type Vehiculo = { id: number; plate: string; brand: string; model: string; estado: Estado };
@@ -24,8 +26,15 @@ function EstadoTag({ estado }: { estado: Estado }) {
 
 export default function VerVehiculos() {
 
-  // const rut = '17126452-9';
-  const rut = '20961960-1';
+  const token = Cookies.get('auth_token');
+  let rut = '';
+  if (token) {
+    const decoded: any = jwtDecode(token);
+    console.log('Datos del token:', decoded);
+    // El RUT está en la propiedad 'sub'
+    rut = decoded.sub || '';
+  }
+  console.log('RUT usado:', rut);
 
   const [vehicles, setVehicles] = useState<Vehiculo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,7 +65,7 @@ export default function VerVehiculos() {
       
       return data;
     } catch (error) {
-      console.error('Error al obtener vehículos:', error);
+      // console.error('Error al obtener vehículos:', error);
       setError(error instanceof Error ? error.message : 'Error desconocido');
       return [];
     } finally {

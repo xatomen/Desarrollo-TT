@@ -69,7 +69,7 @@ export default function ConfirmacionPago() {
 
   return (
     <ProtectedRoute>
-      <div className="min-vh-100 d-flex align-items-center justify-content-center pt-3" 
+      <div className="min-vh-100 d-flex align-items-center justify-content-center py-3" 
            style={{ 
              backgroundColor: '#f8f9fa',
              fontFamily: '"Dosis", sans-serif'

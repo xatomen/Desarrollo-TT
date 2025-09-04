@@ -38,6 +38,7 @@ function ValidacionesPagoContent() {
 
   // Valor permiso
   const [valorPermiso, setValorPermiso] = useState<number | null>(null);
+  const [tasacionFiscal, setTasacionFiscal] = useState<number | null>(null);
 
   // Estados para cada API
   const [revisionTecnica, setRevisionTecnica] = useState<EstadoValidacion>('Desconocido');
@@ -359,8 +360,8 @@ function ValidacionesPagoContent() {
               }}
               onClick={() => {
                 if (todosDocumentosValidos) {
-                  // ✅ Crear URL con todos los datos necesarios
-                  const params = new URLSearchParams({
+                    // Enviamos todos los datos recuperados
+                    const params = new URLSearchParams({
                     plate: ppu || '',
                     rut: rut || '',
                     valor: valorPermiso?.toString() || '0',
@@ -368,8 +369,21 @@ function ValidacionesPagoContent() {
                     modelo: modelo,
                     anio: anio,
                     color: color,
-                    tipoVehiculo: tipoVehiculo
-                  });
+                    tipoVehiculo: tipoVehiculo,
+                    fechaExpiracionSoap: fechaExpiracionSoap,
+                    fechaExpiracionRevision: fechaExpiracionRevision,
+                    fechaInscripcion: fechaInscripcion,
+                    numMotor: numMotor,
+                    numChasis: numChasis,
+                    capacidadCarga: capacidadCarga,
+                    tipoSello: tipoSello,
+                    tipoCombustible: tipoCombustible,
+                    revisionTecnica: revisionTecnica,
+                    soap: soap,
+                    encargoRobo: encargoRobo,
+                    multasTransito: multasTransito,
+                    multasRPI: multasRPI
+                    });
                   
                   window.location.href = `/home/formulario-pago?${params.toString()}`;
                 }

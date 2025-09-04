@@ -218,3 +218,8 @@ export function useAuth() {
   }
   return context;
 }
+
+// ✅ Agregar esta función al final del AuthContext
+export function useRut(): string | null {
+  return useAuth().user?.rut || null;
+}

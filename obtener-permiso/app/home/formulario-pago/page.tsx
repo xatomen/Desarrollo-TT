@@ -13,9 +13,51 @@ export default function FormularioPago() {
   const valorPermiso = parseInt(searchParams.get('valor') || '0');
   const marca = searchParams.get('marca') || '';
   const modelo = searchParams.get('modelo') || '';
-  const anio = searchParams.get('anio') || '';
+  const anioVehiculo = searchParams.get('anio') || '';
   const color = searchParams.get('color') || '';
   const tipoVehiculo = searchParams.get('tipoVehiculo') || '';
+
+  // Extraer otros parámetros adicionales
+  const fechaExpiracionSoap = searchParams.get('fechaExpiracionSoap') || '';
+  const fechaExpiracionRevision = searchParams.get('fechaExpiracionRevision') || '';
+  const fechaInscripcion = searchParams.get('fechaInscripcion') || '';
+  const numMotor = searchParams.get('numMotor') || '';
+  const numChasis = searchParams.get('numChasis') || '';
+  const capacidadCarga = searchParams.get('capacidadCarga') || '';
+  const tipoSello = searchParams.get('tipoSello') || '';
+  const tipoCombustible = searchParams.get('tipoCombustible') || '';
+  const revisionTecnica = searchParams.get('revisionTecnica') || '';
+  const soap = searchParams.get('soap') || '';
+  const encargoRobo = searchParams.get('encargoRobo') || '';
+  const multasTransito = searchParams.get('multasTransito') || '';
+  const multasRPI = searchParams.get('multasRPI') || '';
+
+  // Ver info vehículo en consola
+  console.log('Info vehículo:', {
+    ppu,
+    rut,
+    // nombre: nombre,
+    fecha_emision: new Date().toISOString().slice(0, 10),
+    fecha_expiracion: fechaExpiracionRevision || new Date().toISOString().slice(0, 10),
+    valor_permiso: valorPermiso,
+    motor: parseInt(numMotor) || 0,
+    chasis: numChasis,
+    tipo_vehiculo: tipoVehiculo,
+    color: color,
+    marca: marca,
+    modelo: modelo,
+    anio: parseInt(anioVehiculo) || 0,
+    carga: parseInt(capacidadCarga) || 0,
+    tipo_sello: tipoSello,
+    combustible: tipoCombustible,
+    cilindrada: 0,
+    transmision: '',
+    pts: 0,
+    ast: 0,
+    equipamiento: '',
+    codigo_sii: '',
+    tasacion: 0
+  });
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -222,7 +264,7 @@ export default function FormularioPago() {
         mes_vencimiento: mes,
         anio_vencimiento: anio,
         tipo_tarjeta: formData.tipoTarjeta,
-        cvv: formData.codigoSeguridad
+        cvv: parseInt(formData.codigoSeguridad)
       };
 
       // ✅ Construir URL con el monto como query parameter
@@ -245,16 +287,16 @@ export default function FormularioPago() {
         // ✅ Pago exitoso - redirigir a confirmación
         const responseData = await response.json();
         console.log('Pago exitoso:', responseData);
-        
+
         // Opcional: guardar datos del pago en sessionStorage para la página de confirmación
         const pagoInfo = {
-          ppu,
-          rut,
-          valorPermiso,
-          marca,
-          modelo,
-          anio,
-          color,
+          ppu: ppu,
+          rut: rut,
+          valorPermiso: valorPermiso,
+          marca: marca,
+          modelo: modelo,
+          anio: anioVehiculo,
+          color: color,
           tipoVehiculo,
           numeroTarjeta: `****-****-****-${formData.numeroTarjeta.slice(-4)}`,
           titular: formData.nombre,
@@ -263,7 +305,40 @@ export default function FormularioPago() {
           transactionId: responseData.transaction_id || responseData.id // Si la API devuelve ID de transacción
         };
         sessionStorage.setItem('pagoInfo', JSON.stringify(pagoInfo));
-        
+
+        // Cargar permiso de circulación en la base de datos
+        await fetch('http://localhost:5007/subir_permiso', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ppu: ppu,
+            rut: rut,
+            nombre: formData.nombre,
+            fecha_emision: new Date().toISOString().slice(0, 10),
+            fecha_expiracion: fechaExpiracionRevision || new Date().toISOString().slice(0, 10),
+            valor_permiso: valorPermiso,
+            motor: parseInt(numMotor) || 0,
+            chasis: numChasis,
+            tipo_vehiculo: tipoVehiculo,
+            color: color,
+            marca: marca,
+            modelo: modelo,
+            anio: parseInt(anioVehiculo) || 0,
+            carga: parseInt(capacidadCarga) || 0,
+            tipo_sello: tipoSello,
+            combustible: tipoCombustible,
+            cilindrada: 0,
+            transmision: '',
+            pts: 0,
+            ast: 0,
+            equipamiento: '',
+            codigo_sii: '',
+            tasacion: 0
+          }),
+        });
+
         // Redirigir a confirmación
         router.push('/home/confirmacion-pago');
       } else {
@@ -274,40 +349,22 @@ export default function FormularioPago() {
         } catch (e) {
           errorData = { message: 'Error del servidor' };
         }
-        
+
         console.error('Error en pago:', errorData);
-        
+
         // ✅ Determinar el tipo de error específico
         let errorMessage = '';
-        
-        // Saldo insuficiente
-        if (response.status === 400) {
-          errorMessage = '💳 Saldo insuficiente. Verifique el saldo disponible en su tarjeta e intente nuevamente.';
-        } else if (response.status === 401) {
-          // Tarjeta rechazada
-          errorMessage = '❌ Tarjeta rechazada. Verifique los datos de su tarjeta e intente nuevamente.';
-        } else if (response.status === 402) {
-          // Payment required - posible saldo insuficiente
-          errorMessage = '💳 Saldo insuficiente. Verifique el saldo disponible en su tarjeta e intente nuevamente.';
-        } else if (response.status === 403) {
-          // Forbidden - tarjeta bloqueada
-          errorMessage = '🚫 Tarjeta bloqueada. Contacte a su banco para más información.';
-        } else if (response.status === 422) {
-          // Unprocessable entity - datos inválidos
-          errorMessage = '⚠️ Datos de tarjeta inválidos. Verifique la información ingresada.';
-        } else if (response.status >= 500) {
-          // Error del servidor
-          errorMessage = '🔧 Error del servidor. Intente nuevamente en unos momentos.';
+        if (errorData.detail) {
+          errorMessage = errorData.detail;
         } else {
-          // Otros errores
           errorMessage = errorData.message || errorData.error || 'Error al procesar el pago. Intente nuevamente.';
         }
-        
+
         setPaymentError(errorMessage);
       }
     } catch (error) {
       console.error('Error de conexión:', error);
-      setPaymentError('🌐 Error de conexión. Verifique su conexión a internet e intente nuevamente.');
+      setPaymentError('Error de conexión. Intente nuevamente.');
     } finally {
       setIsProcessingPayment(false);
     }
@@ -358,7 +415,7 @@ export default function FormularioPago() {
               <div className="mb-3">
                 <p className="text-muted mb-1" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>Vehículo</p>
                 <p className="fw-medium text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '1rem', fontWeight: '500' }}>
-                  {marca} {modelo} {anio}
+                  {marca} {modelo} {anioVehiculo}
                 </p>
                 <p className="text-muted" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.75rem' }}>
                   {color} - {tipoVehiculo}
@@ -540,9 +597,9 @@ export default function FormularioPago() {
                             style={{ fontFamily: '"Dosis", sans-serif' }}
                           >
                             <option value="">Selecciona el tipo de tarjeta</option>
-                            <option value="credito">Crédito</option>
-                            <option value="debito">Débito</option>
-                            <option value="prepago">Prepago</option>
+                            <option value="Crédito">Crédito</option>
+                            <option value="Débito">Débito</option>
+                            <option value="Prepago">Prepago</option>
                           </select>
                         </div>
                         <small className={errors.tipoTarjeta ? "text-danger" : "text-muted"} style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.75rem' }}>
