@@ -19,6 +19,9 @@ const MOCK: Permiso[] = [
   // agrega más filas según necesites
 ];
 
+//recuperar datos haciendo post a la api http://localhost:8000/calcular-metricas/{scope}/{period_type}/{from_date}/{to_date}
+
+
 export default function RegistroObtencionPermisosPage() {
   // Filtros
   const [groupBy, setGroupBy] = useState<"day" | "month" | "year">("day");
