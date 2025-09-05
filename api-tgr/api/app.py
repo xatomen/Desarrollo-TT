@@ -155,7 +155,7 @@ class Tarjetas(Base):
     fecha_vencimiento = Column(DateTime, nullable=False)
     tipo_tarjeta = Column(String(20), nullable=False)  # Puede ser 'credito' o 'debito'
     banco = Column(String(50), nullable=False)
-    cvv = Column(String(3), nullable=False)
+    cvv = Column(Integer, nullable=False)
     saldo = Column(Integer, nullable=False)
 
 
@@ -205,6 +205,31 @@ class PermisoCirculacionModel(BaseModel):
     codigo_sii: str
     tasacion: int
 
+class PermisoCirculacionUploadModel(BaseModel):
+    ppu: str
+    rut: str
+    nombre: str
+    fecha_emision: date  # Fecha en formato ISO 8601
+    fecha_expiracion: date  # Fecha en formato ISO 8601
+    valor_permiso: int
+    motor: int
+    chasis: str
+    tipo_vehiculo: str
+    color: str
+    marca: str
+    modelo: str
+    anio: int
+    carga: int
+    tipo_sello: str
+    combustible: str
+    cilindrada: int
+    transmision: str
+    pts: int
+    ast: int
+    equipamiento: str
+    codigo_sii: str
+    tasacion: int
+
 class CredencialesModel(BaseModel):
     id: int
     rut: str
@@ -228,7 +253,7 @@ class TarjetasModel(BaseModel):
     mes_vencimiento: int  # Fecha en formato MM-YY
     anio_vencimiento: int  # Fecha en formato MM-YY
     tipo_tarjeta: str  # Puede ser 'crédito' o 'débito'
-    cvv: str
+    cvv: int
 
 class ConfirmacionPagoModel(BaseModel):
     # id: int  # Aquí deberías generar un ID único
@@ -254,7 +279,7 @@ def get_permiso_circulacion(ppu: str, db: Session = Depends(get_db)):
     if not resultado_validacion:
         raise HTTPException(status_code=400, detail="Formato de PPU inválido")
     # Obtener el permiso de circulación desde la base de datos
-    permiso = db.query(PermisoCirculacion).filter(PermisoCirculacion.ppu == ppu).first()
+    permiso = db.query(PermisoCirculacion).filter(PermisoCirculacion.ppu == ppu).order_by(PermisoCirculacion.fecha_emision.desc()).first()
     if not permiso:
         raise HTTPException(status_code=404, detail="Permiso de circulación no encontrado")
     return PermisoCirculacionModel(
@@ -285,19 +310,14 @@ def get_permiso_circulacion(ppu: str, db: Session = Depends(get_db)):
     )
 
 # POST - Endpoint para cargar un nuevo Permiso de Circulación
-@app.post("/subir_permiso/", response_model=PermisoCirculacionModel)
-def cargar_permiso_circulacion(permiso: PermisoCirculacionModel, db: Session = Depends(get_db)):
-    # Verificar si el PPU ya existe
-    existing_permiso = db.query(PermisoCirculacion).filter(PermisoCirculacion.ppu == permiso.ppu).first()
-    if existing_permiso:
-        raise HTTPException(status_code=400, detail="El PPU ya está registrado")
-    # Crear una nueva instancia del modelo de base de datos
+@app.post("/subir_permiso/", response_model=PermisoCirculacionUploadModel)
+def cargar_permiso_circulacion(permiso: PermisoCirculacionUploadModel, db: Session = Depends(get_db)):
+    # # Verificar si el PPU ya existe
     nuevo_permiso = PermisoCirculacion(**permiso.dict())
     db.add(nuevo_permiso)
     db.commit()
     db.refresh(nuevo_permiso)
-    return PermisoCirculacionModel(
-        id=nuevo_permiso.id,
+    return PermisoCirculacionUploadModel(
         ppu=nuevo_permiso.ppu,
         rut=nuevo_permiso.rut,
         nombre=nuevo_permiso.nombre,
@@ -373,9 +393,6 @@ def procesar_pago(tarjeta: TarjetasModel, db: Session = Depends(get_db), monto_p
     # Validar el formato del número de tarjeta
     if len(tarjeta.numero_tarjeta) != 16 or not tarjeta.numero_tarjeta.isdigit():
         raise HTTPException(status_code=400, detail="Datos de tarjeta inválidos")
-    # Validar el formato del CVV
-    if len(tarjeta.cvv) != 3 or not tarjeta.cvv.isdigit():
-        raise HTTPException(status_code=400, detail="Datos de tarjeta inválidos")
     # Convertir la fecha de vencimiento a un objeto date
     try:
         fecha_vencimiento = date(
@@ -385,7 +402,7 @@ def procesar_pago(tarjeta: TarjetasModel, db: Session = Depends(get_db), monto_p
         )
     # Si la fecha de vencimiento no es válida, lanzar una excepción HTTP 400
     except ValueError:
-        raise HTTPException(status_code=400, detail="Datos de tarjeta inválidos")
+        raise HTTPException(status_code=400, detail="Fecha inválida")
     # Validar la fecha de vencimiento
     if fecha_vencimiento < date.today():
         raise HTTPException(status_code=400, detail="Tarjeta vencida")
@@ -393,6 +410,12 @@ def procesar_pago(tarjeta: TarjetasModel, db: Session = Depends(get_db), monto_p
     existing_tarjeta = db.query(Tarjetas).filter(Tarjetas.numero_tarjeta == tarjeta.numero_tarjeta).first()
     if not existing_tarjeta:
         raise HTTPException(status_code=404, detail="Datos de tarjeta inválidos")
+    # Validar que los datos de la tarjeta coincidan
+    if (existing_tarjeta.titular != tarjeta.titular or
+        existing_tarjeta.fecha_vencimiento != fecha_vencimiento or
+        existing_tarjeta.tipo_tarjeta != tarjeta.tipo_tarjeta or
+        existing_tarjeta.cvv != tarjeta.cvv):
+        raise HTTPException(status_code=400, detail="Datos de tarjeta inválidos")
     # Validar el saldo de la tarjeta
     if existing_tarjeta.saldo < monto_pago:
         raise HTTPException(status_code=400, detail="Saldo insuficiente en la tarjeta")
@@ -405,26 +428,3 @@ def procesar_pago(tarjeta: TarjetasModel, db: Session = Depends(get_db), monto_p
         estado="exitoso"
     )
     return confirmacion_pago
-
-# GET - Endpoint para generar una cantidad determinada de RUTs y Patentes (de vehiculos y motocicletas nuevos y antiguos)
-# @app.get("/generar_datos_prueba/")
-# def generar_datos_prueba(cantidad: int, db: Session = Depends(get_db)):
-#     # Validar la cantidad
-#     if cantidad <= 0:
-#         raise HTTPException(status_code=400, detail="La cantidad debe ser un número positivo")
-
-#     # Generar los RUTs y Patentes
-#     ruts = [generar_rut() for _ in range(cantidad)]
-#     patentes_vehiculos_nuevos = [generar_patente_vehiculo_nuevo() for _ in range(cantidad)]
-#     patentes_vehiculos_antiguos = [generar_patente_vehiculo_antiguo() for _ in range(cantidad)]
-#     patentes_motocicletas_nuevas = [generar_patente_motocicleta_nueva() for _ in range(cantidad)]
-#     patentes_motocicletas_antiguas = [generar_patente_motocicleta_antigua() for _ in range(cantidad)]
-
-#     # Retornar los datos generados
-#     return {
-#         "ruts": ruts,
-#         "patentes_vehiculos_nuevos": patentes_vehiculos_nuevos,
-#         "patentes_vehiculos_antiguos": patentes_vehiculos_antiguos,
-#         "patentes_motocicletas_nuevas": patentes_motocicletas_nuevas,
-#         "patentes_motocicletas_antiguas": patentes_motocicletas_antiguas
-#     }
