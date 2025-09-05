@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import "@gobdigital-cl/gob.cl/dist/css/gob.cl.css";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Panel de Decisiones - Gobierno de Chile",
@@ -14,9 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body>
-        {children}
-        
+      <head>        
         {/* Scripts cargados al final del body */}
         <script 
           src="https://code.jquery.com/jquery-3.6.0.min.js"
@@ -40,6 +41,9 @@ export default function RootLayout({
           src="https://cdn.jsdelivr.net/npm/@gobdigital-cl/gob.cl@1.6.0/dist/js/gob.cl.min.js"
           async
         ></script>
+      </head>
+      <body className={inter.className}>
+        {children}
       </body>
     </html>
   );
