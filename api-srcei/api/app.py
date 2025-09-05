@@ -67,7 +67,6 @@ class PadronModel(Base):
     modelo = Column(String(50), nullable=False)
     anio = Column(Integer, nullable=False)
     color = Column(String(50), nullable=False)
-    cilindrada = Column(Integer, nullable=False)
     num_motor = Column(String(50), nullable=False)
     num_chasis = Column(String(50), nullable=False)
     fecha_inscripcion = Column(DateTime, nullable=False)
@@ -111,7 +110,6 @@ class Padron(BaseModel):
     modelo: str
     anio: int
     color: str
-    cilindrada: int
     num_motor: str
     num_chasis: str
     fecha_inscripcion: date 
