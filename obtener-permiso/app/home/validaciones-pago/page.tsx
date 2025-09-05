@@ -38,7 +38,6 @@ function ValidacionesPagoContent() {
 
   // Valor permiso
   const [valorPermiso, setValorPermiso] = useState<number | null>(null);
-  const [tasacionFiscal, setTasacionFiscal] = useState<number | null>(null);
 
   // Estados para cada API
   const [revisionTecnica, setRevisionTecnica] = useState<EstadoValidacion>('Desconocido');
@@ -62,6 +61,15 @@ function ValidacionesPagoContent() {
   const [capacidadCarga, setCapacidadCarga] = useState<string>('-');
   const [tipoSello, setTipoSello] = useState<string>('-');
   const [tipoCombustible, setTipoCombustible] = useState<string>('-');
+  const [codigoSii, setCodigoSii] = useState<string>('-');
+  // Obtener desde consultar valor permiso
+  const [cilindrada, setCilindrada] = useState<string>('-');
+  const [tasacion, setTasacion] = useState<string>('-');
+  const [peso, setPeso] = useState<string>('-');
+  const [asientos, setAsientos] = useState<string>('-');
+  const [puertas, setPuertas] = useState<string>('-');
+  const [transmision, setTransmision] = useState<string>('-');
+  const [equipamiento, setEquipamiento] = useState<string>('-');
 
   // Crear documentos dinámicamente basado en los estados
   const documentos: DocumentoValidacion[] = [
@@ -175,7 +183,8 @@ function ValidacionesPagoContent() {
           setAnio(vehiculoData.anio || '-');
           setCapacidadCarga(vehiculoData.carga || '-');
           setTipoSello(vehiculoData.tipo_sello || '-');
-          setTipoCombustible(vehiculoData.combustible || '-');
+          setCodigoSii(vehiculoData.codigo_sii || '-');
+          // console.log(  'Código SII:', vehiculoData.codigo_sii);
         } catch (error) {
           console.error('Error fetching vehiculo data:', error);
         }
@@ -223,6 +232,15 @@ function ValidacionesPagoContent() {
       }
       const data = await response.json();
       setValorPermiso(data.valor || 0);
+      // Nuevos datos
+      setCilindrada(data.cilindrada || '-');
+      setTasacion(data.tasacion || '-');
+      setPeso(data.peso || '-');
+      setAsientos(data.asientos || '-');
+      setPuertas(data.puertas || '-');
+      setTransmision(data.transmision || '-');
+      setEquipamiento(data.equipamiento || '-');
+      setTipoCombustible(data.combustible || '-');
     } catch (error) {
       console.error('Error fetching valor permiso:', error);
     }
@@ -382,7 +400,15 @@ function ValidacionesPagoContent() {
                     soap: soap,
                     encargoRobo: encargoRobo,
                     multasTransito: multasTransito,
-                    multasRPI: multasRPI
+                    multasRPI: multasRPI,
+                    cilindrada: cilindrada,
+                    tasacion: tasacion,
+                    peso: peso,
+                    asientos: asientos,
+                    puertas: puertas,
+                    transmision: transmision,
+                    equipamiento: equipamiento,
+                    codigoSii: codigoSii
                     });
                   
                   window.location.href = `/home/formulario-pago?${params.toString()}`;

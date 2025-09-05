@@ -17,6 +17,16 @@ export default function FormularioPago() {
   const color = searchParams.get('color') || '';
   const tipoVehiculo = searchParams.get('tipoVehiculo') || '';
 
+  // Obtener datos restantes del vehículo
+  const cilindrada = searchParams.get('cilindrada') || '';
+  const tasacion = searchParams.get('tasacion') || '';
+  const peso = searchParams.get('peso') || '';
+  const asientos = searchParams.get('asientos') || '';
+  const puertas = searchParams.get('puertas') || '';
+  const transmision = searchParams.get('transmision') || '';
+  const equipamiento = searchParams.get('equipamiento') || '';
+  const codigoSii = searchParams.get('codigoSii') || '';
+
   // Extraer otros parámetros adicionales
   const fechaExpiracionSoap = searchParams.get('fechaExpiracionSoap') || '';
   const fechaExpiracionRevision = searchParams.get('fechaExpiracionRevision') || '';
@@ -34,9 +44,8 @@ export default function FormularioPago() {
 
   // Ver info vehículo en consola
   console.log('Info vehículo:', {
-    ppu,
-    rut,
-    // nombre: nombre,
+    ppu: ppu,
+    rut: rut,
     fecha_emision: new Date().toISOString().slice(0, 10),
     fecha_expiracion: fechaExpiracionRevision || new Date().toISOString().slice(0, 10),
     valor_permiso: valorPermiso,
@@ -50,13 +59,21 @@ export default function FormularioPago() {
     carga: parseInt(capacidadCarga) || 0,
     tipo_sello: tipoSello,
     combustible: tipoCombustible,
-    cilindrada: 0,
-    transmision: '',
-    pts: 0,
-    ast: 0,
-    equipamiento: '',
-    codigo_sii: '',
-    tasacion: 0
+    cilindrada: parseInt(cilindrada) || 0,
+    transmision: transmision,
+    pts: parseInt(peso) || 0,
+    ast: parseInt(asientos) || 0,
+    equipamiento: equipamiento,
+    codigo_sii: codigoSii,
+    tasacion: parseInt(tasacion) || 0,
+    puertas: parseInt(puertas) || 0,
+    revision_tecnica: revisionTecnica,
+    soap: soap,
+    encargo_robo: encargoRobo,
+    multas_transito: multasTransito,
+    multas_rpi: multasRPI,
+    fecha_inscripcion: fechaInscripcion,
+    fecha_expiracion_soap: fechaExpiracionSoap
   });
 
   const [formData, setFormData] = useState({
@@ -329,13 +346,13 @@ export default function FormularioPago() {
             carga: parseInt(capacidadCarga) || 0,
             tipo_sello: tipoSello,
             combustible: tipoCombustible,
-            cilindrada: 0,
-            transmision: '',
-            pts: 0,
-            ast: 0,
-            equipamiento: '',
-            codigo_sii: '',
-            tasacion: 0
+            cilindrada: parseInt(cilindrada) || 0,
+            transmision: transmision,
+            pts: parseInt(peso) || 0,
+            ast: parseInt(asientos) || 0,
+            equipamiento: equipamiento,
+            codigo_sii: codigoSii,
+            tasacion: parseInt(tasacion) || 0
           }),
         });
 
