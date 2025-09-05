@@ -4,7 +4,7 @@ from datetime import date
 import os
 from pydantic import BaseModel
 import httpx
-from typing import List
+from typing import List, Optional
 import requests 
 
 # Instanciamos el router
@@ -21,6 +21,15 @@ SRCEI_BASE_URL = os.getenv("SRCEI_API_URL", "http://host.docker.internal:5001/pa
 
 class ValorPermiso(BaseModel):
     valor: int
+    puertas: Optional[int] = None
+    asientos: Optional[int] = None
+    combustible: Optional[str] = None
+    peso: Optional[int] = None
+    transmision: Optional[str] = None
+    cilindrada: Optional[int] = None
+    carga: Optional[int] = None
+    equipamiento: Optional[str] = None
+    tasacion: Optional[int] = None
 
 #####################################################
 # Definimos los endpoints del router
@@ -99,6 +108,17 @@ def tiene_tasa_fija(tipo: str, carga: int) -> int:
 async def consultar_valor_permiso(ppu: str):
     # Consultar si existe un permiso anterior vinculado a la PPU
     valor_permiso = 0
+    
+    # Inicializar variables con valores por defecto
+    puertas = None
+    asientos = None
+    combustible = None
+    peso = None
+    transmision = None
+    cilindrada = None
+    carga = None
+    equipamiento = None
+    tasacion = None
 
     response = requests.get(TGR_BASE_URL.format(ppu=ppu))
     if response.status_code == 200:
@@ -114,11 +134,32 @@ async def consultar_valor_permiso(ppu: str):
         codigo_sii = permiso.get("codigo_sii")
         response = requests.get(SII_BASE_URL.format(codigo_sii=codigo_sii))
         if response.status_code == 200:
-            valor_permiso = tiene_tasa_fija(permiso.get("tipo_vehiculo"), permiso.get("carga"))
+            valor_permiso = tiene_tasa_fija(permiso.get("tipo_vehiculo"), permiso.get("carga", 0))
+            sii_data = response.json()
+            puertas = sii_data.get("puertas")
+            asientos = sii_data.get("asientos")
+            combustible = sii_data.get("combustible")
+            peso = sii_data.get("peso")
+            transmision = sii_data.get("transmision")
+            cilindrada = sii_data.get("cilindrada")
+            carga = sii_data.get("carga")    
+            equipamiento = sii_data.get("equipamiento")
+            tasacion = sii_data.get("tasacion")
             if valor_permiso != 0:
-                return ValorPermiso(valor=valor_permiso)
-            valor_permiso = response.json().get("valor_permiso")
-            combustible = response.json().get("combustible")
+                return ValorPermiso(
+                    valor=valor_permiso,
+                    puertas=puertas,
+                    asientos=asientos,
+                    combustible=combustible,
+                    peso=peso,
+                    transmision=transmision,
+                    cilindrada=cilindrada,
+                    carga=carga,
+                    equipamiento=equipamiento,
+                    tasacion=tasacion
+                )
+            valor_permiso = sii_data.get("valor_permiso", 0)
+            
         elif response.status_code == 404:
             raise HTTPException(status_code=404, detail="El Código SII no existe")
         else:
@@ -139,19 +180,52 @@ async def consultar_valor_permiso(ppu: str):
         response = requests.get(SII_Factura_URL.format(num_chasis=num_chasis))
         if response.status_code == 200:
             factura = response.json()
-            valor_permiso = tiene_tasa_fija(factura.get("tipo_vehiculo"), factura.get("carga"))
-            if valor_permiso != 0:
-                return ValorPermiso(valor=valor_permiso)
-            valor_vehiculo = factura.get("precio_neto")
+            valor_permiso = tiene_tasa_fija(factura.get("tipo_vehiculo"), factura.get("carga", 0))
+            puertas = factura.get("puertas")
+            asientos = factura.get("asientos")
             combustible = factura.get("combustible")
+            peso = factura.get("peso")
+            transmision = factura.get("transmision")
+            cilindrada = factura.get("cilindrada")
+            carga = factura.get("carga")
+            tasacion = factura.get("precio_neto")
+            equipamiento = factura.get("equipamiento")
+            if valor_permiso != 0:
+                return ValorPermiso(
+                    valor=valor_permiso,
+                    puertas=puertas,
+                    asientos=asientos,
+                    combustible=combustible,
+                    peso=peso,
+                    transmision=transmision,
+                    cilindrada=cilindrada,
+                    carga=carga,
+                    equipamiento=equipamiento,
+                    tasacion=tasacion
+                )
+            valor_vehiculo = factura.get("precio_neto", 0)
+            
         elif response.status_code == 404:
             raise HTTPException(status_code=404, detail="La factura no existe")
         else:
             raise HTTPException(status_code=500, detail="Error al consultar la factura")
         # Calcular el valor del permiso
         valor_permiso = calcular_valor_permiso(valor_vehiculo)
+    
     # Verificar si vehiculo es electrico o hibrido
     if combustible in ["Eléctrico", "Híbrido"]:
         valor_permiso *= 0.25
         valor_permiso = int(valor_permiso)
-    return ValorPermiso(valor=valor_permiso)
+    
+    return ValorPermiso(
+        valor=valor_permiso,
+        puertas=puertas,
+        asientos=asientos,
+        combustible=combustible,
+        peso=peso,
+        transmision=transmision,
+        cilindrada=cilindrada,
+        carga=carga,
+        equipamiento=equipamiento,
+        tasacion=tasacion,
+    )
