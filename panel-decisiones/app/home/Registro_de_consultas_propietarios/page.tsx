@@ -47,7 +47,7 @@ type Consulta = {
   modelo: string;
 };
 
-type GroupBy = "DIA" | "MES" | "ANO";
+type GroupBy = "DIA" | "MES" | "AÑO";
 
 export default function RegistroConsultasPropietariosPage() {
   // Estados para datos de la API
@@ -187,7 +187,7 @@ export default function RegistroConsultasPropietariosPage() {
           >
             <option value="DIA">DÍA</option>
             <option value="MES">MES</option>
-            <option value="ANO">AÑO</option>
+            <option value="AÑO">AÑO</option>
           </select>
         </div>
 
