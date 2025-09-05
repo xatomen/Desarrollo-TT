@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
 from sqlalchemy import (
     create_engine, Column, Integer, String, DateTime, Date, Boolean,
-    func, and_, or_, text
+    func, and_, or_, text, case
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
@@ -116,8 +116,7 @@ def _metricas_fiscalizacion(df: datetime, dt: datetime, period_type: str, db: Se
     total = db.query(func.count(text("1"))).filter(filtro).scalar() or 0
 
     al_dia = db.query(func.sum(
-        # case/when para portabilidad
-        func.case(
+        case(
             (
                 and_(
                     LogFiscalizacion.vigencia_permiso == True,
@@ -132,7 +131,7 @@ def _metricas_fiscalizacion(df: datetime, dt: datetime, period_type: str, db: Se
     )).filter(filtro).scalar() or 0
 
     con_prob = db.query(func.sum(
-        func.case(
+        case(
             (
                 or_(
                     LogFiscalizacion.vigencia_permiso == False,
@@ -150,26 +149,37 @@ def _metricas_fiscalizacion(df: datetime, dt: datetime, period_type: str, db: Se
     kpi_bad = round((con_prob/total)*100, 1) if total else 0.0
 
     per = _period_expr(period_type, LogFiscalizacion.fecha)
-
-    serie_cond = (
-        db.query(
-            per.label("periodo"),
-            func.sum(func.case((
-                and_(
-                    LogFiscalizacion.vigencia_permiso == True,
-                    LogFiscalizacion.vigencia_revision == True,
-                    LogFiscalizacion.vigencia_soap == True,
-                    LogFiscalizacion.encargo_robo == False
-                ), 1), else_=0)).label("al_dia"),
-            func.sum(func.case((
-                or_(
-                    LogFiscalizacion.vigencia_permiso == False,
-                    LogFiscalizacion.vigencia_revision == False,
-                    LogFiscalizacion.vigencia_soap == False,
-                    LogFiscalizacion.encargo_robo == True
-                ), 1), else_=0)).label("con_problemas"),
-        ).filter(filtro).group_by(per).order_by(per).all()
-    )
+    serie_cond = db.query(
+        per.label("periodo"),
+        func.sum(
+            case(
+                (
+                    and_(
+                        LogFiscalizacion.vigencia_permiso == True,
+                        LogFiscalizacion.vigencia_revision == True,
+                        LogFiscalizacion.vigencia_soap == True,
+                        LogFiscalizacion.encargo_robo == False
+                    ),
+                    1
+                ),
+                else_=0
+            )
+        ).label("al_dia"),
+        func.sum(
+            case(
+                (
+                    or_(
+                        LogFiscalizacion.vigencia_permiso == False,
+                        LogFiscalizacion.vigencia_revision == False,
+                        LogFiscalizacion.vigencia_soap == False,
+                        LogFiscalizacion.encargo_robo == True
+                    ),
+                    1
+                ),
+                else_=0
+            )
+        ).label("con_problemas")
+    ).filter(filtro).group_by(per).order_by(per).all()
 
     serie_miles = (
         db.query(
@@ -409,5 +419,3 @@ async def calcular_metricas(scope: str, period_type: str, from_date: str, to_dat
     except Exception as e:
         print(f"Error interno en /calcular-metricas: {e}")
         raise HTTPException(status_code=500, detail="Error interno del servidor")
-
-
