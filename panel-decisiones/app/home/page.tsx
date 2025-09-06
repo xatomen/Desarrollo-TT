@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 // -------- utilidades de fecha --------
 function fmt(d: Date) {
@@ -49,10 +50,16 @@ type RespPermisos = {
 };
 
 // -------- client fetch al back --------
-async function fetchMetricas<T>(scope: Scope, period: "DIA" | "MES" | "AÑO", from: string, to: string) {
+async function fetchMetricas<T>(scope: Scope, period: "DIA" | "MES" | "AÑO", from: string, to: string, token: string) {
   const res = await fetch(
     `/api/calcular-metricas/${scope}/${period}/${from}/${to}`,
-    { method: "POST" }
+    { 
+      method: "POST",
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    }
   );
   if (!res.ok) throw new Error("Error cargando métricas");
   const json = (await res.json()) as ApiResp<T>;
@@ -63,6 +70,7 @@ export default function HomePage() {
   const [mounted, setMounted] = useState(false);
   const [days, setDays] = useState<7 | 14 | 30>(7);
   const { from, to } = useMemo(() => rangeDays(days), [days]);
+  const { token, user } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -95,13 +103,15 @@ export default function HomePage() {
 
   // carga de métricas
   const loadAll = async () => {
+    if (!token) return;
+    
     setLoading(true);
     setErr(null);
     try {
       const [c, f, p] = await Promise.all([
-        fetchMetricas<RespConsultas>("consultas", "DIA", from, to),
-        fetchMetricas<RespFiscalizacion>("fiscalizacion", "DIA", from, to),
-        fetchMetricas<RespPermisos>("permisos", "DIA", from, to),
+        fetchMetricas<RespConsultas>("consultas", "DIA", from, to, token),
+        fetchMetricas<RespFiscalizacion>("fiscalizacion", "DIA", from, to, token),
+        fetchMetricas<RespPermisos>("permisos", "DIA", from, to, token),
       ]);
       setConsultas(c);
       setFisc(f);
@@ -114,10 +124,10 @@ export default function HomePage() {
   };
 
   useEffect(() => { 
-    if (mounted) {
+    if (mounted && token) {
       loadAll();
     }
-  }, [from, to, mounted]);
+  }, [from, to, mounted, token]);
 
   // ---- helpers de "cambio drástico" (umbral simple) ----
   function pctChange(current: number, prev: number) {
@@ -187,6 +197,16 @@ export default function HomePage() {
 
   return (
     <div className="container mb-5">
+      {/* Bienvenida del usuario */}
+      <div className="mb-4">
+        <h1 className="h3">Panel de Decisiones</h1>
+        {user && (
+          <p className="text-muted">
+            Bienvenido, {user.nombre || user.email || 'Usuario'}
+          </p>
+        )}
+      </div>
+
       {/* Selector de rango */}
       <div className="d-flex align-items-center gap-2 mb-3">
         <span className="text-muted">Rango:</span>

@@ -2,10 +2,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout, user } = useAuth();
 
   const links = [
     { href: "/Home", label: "Dashboard" },
@@ -28,6 +31,11 @@ export default function Navbar() {
       return pathname === href;
     }
     return pathname.startsWith(href);
+  };
+
+  const handleLogout = () => {
+    logout(); // Esto eliminará las cookies
+    router.push("/Login"); // Redirigir al login
   };
 
   return (
@@ -107,18 +115,33 @@ export default function Navbar() {
               }}
             ></div>
 
+            {/* Información del usuario (opcional) */}
+            {user && (
+              <span
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#6c757d",
+                  marginRight: "0.5rem",
+                }}
+              >
+                {user.nombre || user.email || "Usuario"}
+              </span>
+            )}
+
             {/* Cerrar Sesión */}
-            <Link
-              href="/Login"
+            <button
+              onClick={handleLogout}
               className="btn btn-outline-secondary btn-sm"
               style={{
-                textDecoration: "none",
                 fontSize: "0.85rem",
+                border: "none",
+                backgroundColor: "transparent",
+                color: "#6c757d",
               }}
             >
               <i className="fas fa-sign-out-alt me-1"></i>
               Cerrar Sesión
-            </Link>
+            </button>
           </div>
         </div>
       </div>
