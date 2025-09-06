@@ -121,7 +121,7 @@ export default function LoginScreen() {
       }
 
       await login(data.access_token, data.user_info, data.expires_in);
-      router.replace('/insert-ppu');
+      router.replace('/vehicle-list');
       
       
     } catch (error: any) {
@@ -190,7 +190,6 @@ export default function LoginScreen() {
               />
             </TouchableOpacity>
           </View>
-          <Text style={styles.inputHelp}>Credencial otorgada por la Tesorería General de la República</Text>
         </View>
 
         <TouchableOpacity

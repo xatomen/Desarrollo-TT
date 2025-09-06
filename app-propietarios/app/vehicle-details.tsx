@@ -10,7 +10,7 @@ import { Collapsible } from '@/components/Collapsible';
 
 export default function VehicleDetailsScreen() {
   const params = useLocalSearchParams();
-  const { token } = useAuth();
+  const { token, userInfo } = useAuth();
 
   // Estados para manejar los datos del vehículo
   const [ppu, setPpu] = useState('');
@@ -58,18 +58,69 @@ export default function VehicleDetailsScreen() {
 	const [loading, setLoading] = useState(false);
 	const [showModal, setShowModal] = useState(false);
 
+  // Estados para controlar los logs
+  const [datosCompletos, setDatosCompletos] = useState(false);
+  const [logEnviado, setLogEnviado] = useState(false);
+
   // useEffect para setear el estado del vehículo cuando cambien los valores
   useEffect(() => {
-    if (encargoRobo && vigenciaPermiso && revisionTecnica && soap) {
-      if (encargoRobo === 'Sí') {
-        setEstadoVehiculo('Posee Encargo por Robo');
-      } else if (vigenciaPermiso === 'Vencido' || revisionTecnica === 'Vencido' || soap === 'Vencido') {
+    if (vigenciaPermiso && revisionTecnica && soap) {
+      if (vigenciaPermiso === 'Vencido' || revisionTecnica === 'Vencido' || soap === 'Vencido') {
         setEstadoVehiculo('Documentos Vencidos');
       } else {
         setEstadoVehiculo('Vehículo al Día');
       }
+      setDatosCompletos(true);
     }
   }, [encargoRobo, vigenciaPermiso, revisionTecnica, soap]);
+
+  // Enviar log
+  const enviarLogConsultaPropietario = async () => {
+    console.log('Preparando para enviar log de auditoría...');
+    if (logEnviado || !datosCompletos) {
+      console.log('Log ya enviado o datos incompletos, no se envía de nuevo');
+      return; // Evitar envíos duplicados
+    }
+
+    try {
+      // Recuperar rut desde userInfo
+      const rut = userInfo.rut;
+
+      const logData = {
+        rut,
+        ppu: ppu || params.ppu,
+        fecha: new Date().toISOString().split('T')[0], // Formato YYYY-MM-DD
+      };
+
+      console.log('Enviando log de auditoría:', logData);
+
+      const response = await fetch('http://localhost:8000/logs_consulta_propietario', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(logData),
+      });
+
+      if (response.ok) {
+        console.log('Log de auditoría enviado exitosamente');
+        setLogEnviado(true);
+      } else {
+        const errorData = await response.text();
+        console.error('Error al enviar log de auditoría:', response.status, errorData);
+      }
+    } catch (error) {
+      console.error('Error de conexión al enviar log de auditoría:', error);
+    }
+  };
+
+  console.log('Datos completos:', datosCompletos, 'Log enviado:', logEnviado);
+  
+  useEffect(() => {
+    if (datosCompletos && !logEnviado) {
+      enviarLogConsultaPropietario();
+    }
+  }, [datosCompletos, logEnviado]);
 
   const getInfoVehicle = async () => {
     setLoading(true);
