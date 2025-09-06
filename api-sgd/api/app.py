@@ -114,6 +114,8 @@ class SGDModel(Base):
     id = Column(Integer, primary_key=True, index=True)
     rut = Column(String(12), nullable=False)
     contrasena = Column(String(255), nullable=False)
+    nombre = Column(String(100), nullable=False)
+    email = Column(String(100), nullable=False, unique=True)
 
 #######################################
 # Función para crear las tablas
@@ -147,6 +149,8 @@ class SGD(BaseModel):
     id: int
     rut: str
     contrasena: str
+    nombre: str
+    email: str
 
 # Modelo para recibir credenciales en el POST con validaciones
 class CredencialesLogin(BaseModel):
@@ -240,7 +244,7 @@ def validar_clave_unica(credentials: CredencialesLogin, db: Session = Depends(ge
         return TokenModel(
             access_token=access_token,
             token_type="bearer",
-            user_info={"id": user.id, "rut": user.rut},
+            user_info={"id": user.id, "rut": user.rut, "nombre": user.nombre, "email": user.email},
             expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60
         )
     
