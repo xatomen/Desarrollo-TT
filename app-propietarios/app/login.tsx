@@ -5,6 +5,8 @@ import { router } from 'expo-router';
 import Navbar from '@/components/Navbar';
 import { useAuth } from './context/AuthContext';
 
+import API_CONFIG from '../config/api';
+
 export default function LoginScreen() {
   const [usuario, setUsuario] = useState('');
   const [password, setPassword] = useState('');
@@ -103,7 +105,7 @@ export default function LoginScreen() {
       
       
       // Código real para cuando tengas la API
-      const response = await fetch('http://localhost:5004/validar_clave_unica/', {
+      const response = await fetch(`${API_CONFIG.SGD}validar_clave_unica/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -327,11 +329,14 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     alignItems: 'center',
     marginTop: 12,
-    marginHorizontal: 150,
+    alignSelf: 'center',
+    // marginHorizontal: 150,
+    width: 'auto',
+    maxWidth: '50%',
   },
   backButtonText: {
     color: 'white',
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: 'bold',
     fontFamily: 'Roboto',
   },

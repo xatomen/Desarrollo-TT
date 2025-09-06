@@ -12,6 +12,7 @@ import { useAuth } from './context/AuthContext';
 
 import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import API_CONFIG from '@/config/api';
 
 type Vehicle = {
   ppu: string;
@@ -51,7 +52,7 @@ export default function VehicleListScreen() {
 
   const getVehicles = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/vehiculos_rut/${userRut}`);
+      const response = await fetch(`${API_CONFIG.BACKEND}vehiculos_rut/${userRut}`);
       if (!response.ok) {
         throw new Error((await response.json()).detail);
       }
@@ -122,7 +123,7 @@ export default function VehicleListScreen() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/consultar_patente/${ppu}`);
+      const response = await fetch(`${API_CONFIG.BACKEND}consultar_patente/${ppu}`);
       if (!response.ok) {
         throw new Error((await response.json()).detail);
       }

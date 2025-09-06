@@ -21,8 +21,18 @@ export default function Navbar() {
       
       {/* Solo mostrar el botón de logout si el usuario está autenticado */}
       {isAuthenticated && (
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Cerrar Sesión</Text>
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={handleLogout}
+        >
+          <Text
+            style={styles.logoutText}
+            adjustsFontSizeToFit={true}
+            numberOfLines={1}
+            allowFontScaling={true}
+            minimumFontScale={0.5}
+          >
+            Cerrar Sesión</Text>
           <Ionicons name="log-out-outline" size={20} color="white" />
         </TouchableOpacity>
       )}
@@ -56,10 +66,12 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     flexDirection: 'row',
     alignItems: 'center',
+    width: 'auto',
+    maxWidth: '50%',
   },
   logoutText: {
     color: 'white',
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: 'bold',
     marginRight: 8,
     fontFamily: 'Roboto',
