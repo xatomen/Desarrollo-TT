@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     color: 'white',
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: 'bold',
     marginRight: 8,
     fontFamily: 'Roboto',

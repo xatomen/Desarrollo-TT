@@ -12,6 +12,7 @@ import { useAuth } from './context/AuthContext';
 
 import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import API_CONFIG from '@/config/api';
 
 export default function HomeScreen() {
   const [ppu, setPpu] = useState('');
@@ -43,7 +44,7 @@ export default function HomeScreen() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/consultar_patente/${ppu}`);
+      const response = await fetch(`${API_CONFIG.BACKEND}consultar_patente/${ppu}`);
       if (!response.ok) {
         throw new Error((await response.json()).detail);
       }
@@ -202,10 +203,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     borderRadius: 0,
     alignSelf: 'center',
+    maxWidth: '100%',
+    width: 'auto',
+    // marginHorizontal: 150,
   },
   consultarButtonText: {
     color: 'white',
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: 'bold',
     fontFamily: 'Roboto',
   },

@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import { Modal } from 'react-native';
 import { useAuth } from './context/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import API_CONFIG from '@/config/api';
 
 export default function VehicleDetailsScreen() {
   const params = useLocalSearchParams();
@@ -97,7 +98,7 @@ export default function VehicleDetailsScreen() {
 
       console.log('Enviando log de auditoría:', logData);
 
-      const response = await fetch('http://localhost:8000/logs_fiscalizacion', {
+      const response = await fetch(`${API_CONFIG.BACKEND}logs_fiscalizacion`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -128,7 +129,7 @@ export default function VehicleDetailsScreen() {
     setLoading(true);
     try {
       // Obtener Padrón
-      const padron_response = await fetch(`http://localhost:8000/consultar_patente/${params.ppu}`);
+      const padron_response = await fetch(`${API_CONFIG.BACKEND}consultar_patente/${params.ppu}`);
       const padron_data = await padron_response.json();
       
       setPpu(padron_data.ppu);
@@ -138,7 +139,7 @@ export default function VehicleDetailsScreen() {
       setFechaInscripcion(fecha.toLocaleDateString('es-ES', opciones));
 
       // Obtener Permiso de Circulación
-			const permiso_response = await fetch(`http://localhost:8000/consultar_permiso_circulacion/${params.ppu}`);
+			const permiso_response = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${params.ppu}`);
 			const permiso_data = await permiso_response.json();
 			console.log(permiso_data)
 			setTipoSello(permiso_data.tipo_sello);
@@ -164,7 +165,7 @@ export default function VehicleDetailsScreen() {
       setPts(permiso_data.pts);
 
       // Obtener Revisión Técnica
-			const revision_response = await fetch(`http://localhost:8000/consultar_revision_tecnica/${params.ppu}`);
+			const revision_response = await fetch(`${API_CONFIG.BACKEND}consultar_revision_tecnica/${params.ppu}`);
 			const revision_data = await revision_response.json();
 			setRevisionTecnica(revision_data.vigencia);
       if (revision_response.status !== 200) {
@@ -173,7 +174,7 @@ export default function VehicleDetailsScreen() {
       setFechaExpiracionRevision(revision_data.fecha_vencimiento);
 
       // Obtener SOAP
-			const soap_response = await fetch(`http://localhost:8000/consultar_soap/${params.ppu}`);
+			const soap_response = await fetch(`${API_CONFIG.BACKEND}consultar_soap/${params.ppu}`);
 			const soap_data = await soap_response.json();
 			setSoap(soap_data.vigencia);
 			if (soap_response.status !== 200) {
@@ -182,7 +183,7 @@ export default function VehicleDetailsScreen() {
       setFechaExpiracionSoap(soap_data.rige_hasta);
 
       // Obtener Encargo por Robo
-			const robo_response = await fetch(`http://localhost:8000/consultar_encargo/${params.ppu}`);
+			const robo_response = await fetch(`${API_CONFIG.BACKEND}consultar_encargo/${params.ppu}`);
 			const robo_data = await robo_response.json();
 			if (robo_data.encargo === "true") {
 				setEncargoRobo('Sí');
@@ -690,11 +691,14 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     alignItems: 'center',
     marginTop: 0,
-    marginHorizontal: 150,
+    // marginHorizontal: 150,
+    width: '50%',
+    maxWidth: '90%',
+    alignSelf: 'center',
   },
   showInfoButtonText: {
     color: 'white',
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: 'bold',
     fontFamily: 'Roboto',
   },
@@ -705,11 +709,14 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     alignItems: 'center',
     marginTop: 12,
-    marginHorizontal: 150,
+    // marginHorizontal: 150,
+    width: '50%',
+    maxWidth: '90%',
+    alignSelf: 'center',
   },
   backButtonText: {
     color: 'white',
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: 'bold',
     fontFamily: 'Roboto',
   },
