@@ -9,7 +9,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function VehicleDetailsScreen() {
   const params = useLocalSearchParams();
-  const { token } = useAuth();
+  const { token, userInfo } = useAuth();
 
   // Estados para manejar los datos del vehículo
   const [ppu, setPpu] = useState('');
@@ -52,6 +52,10 @@ export default function VehicleDetailsScreen() {
 	const [loading, setLoading] = useState(false);
 	const [showModal, setShowModal] = useState(false);
 
+  // Estados para controlar los logs
+  const [datosCompletos, setDatosCompletos] = useState(false);
+  const [logEnviado, setLogEnviado] = useState(false);
+
   // useEffect para setear el estado del vehículo cuando cambien los valores
   useEffect(() => {
     if (encargoRobo && vigenciaPermiso && revisionTecnica && soap) {
@@ -63,7 +67,62 @@ export default function VehicleDetailsScreen() {
         setEstadoVehiculo('Vehículo al Día');
       }
     }
+    // Marcar que los datos fueron completados
+    setDatosCompletos(true)
   }, [encargoRobo, vigenciaPermiso, revisionTecnica, soap]);
+
+  // Enviar log
+  const enviarLogFiscalizacion = async () => {
+    if (logEnviado || !datosCompletos) return; // Evitar envíos duplicados
+
+    try {
+      // Recuperar rut desde user_info del local storage
+      const rutFiscalizador = userInfo.rut;
+      
+      // Convertir valores de texto a números (0 = vigente, 1 = vencido/sí)
+      const vigenciaPermisoNum = vigenciaPermiso === 'Vigente' ? 1 : 0;
+      const vigenciaRevisionNum = revisionTecnica === 'Vigente' ? 1 : 0;
+      const vigenciaSoapNum = soap === 'Vigente' ? 1 : 0;
+      const encargoRoboNum = encargoRobo === 'No' ? 0 : 1;
+
+      const logData = {
+        ppu: ppu || params.ppu,
+        rut_fiscalizador: rutFiscalizador,
+        fecha: new Date().toISOString().split('T')[0], // Formato YYYY-MM-DD
+        vigencia_permiso: vigenciaPermisoNum,
+        vigencia_revision: vigenciaRevisionNum,
+        vigencia_soap: vigenciaSoapNum,
+        encargo_robo: encargoRoboNum
+      };
+
+      console.log('Enviando log de auditoría:', logData);
+
+      const response = await fetch('http://localhost:8000/logs_fiscalizacion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(logData),
+      });
+
+      if (response.ok) {
+        console.log('Log de auditoría enviado exitosamente');
+        console.log(logData);
+        setLogEnviado(true);
+      } else {
+        const errorData = await response.text();
+        console.error('Error al enviar log de auditoría:', response.status, errorData);
+      }
+    } catch (error) {
+      console.error('Error de conexión al enviar log de auditoría:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (datosCompletos && !logEnviado) {
+      enviarLogFiscalizacion();
+    }
+  }, [datosCompletos, logEnviado]);
 
   const getInfoVehicle = async () => {
     setLoading(true);
@@ -75,7 +134,7 @@ export default function VehicleDetailsScreen() {
       setPpu(padron_data.ppu);
 			// Transformar fecha. Ejemplo: 01 de Marzo de 1992
       const fecha = new Date(padron_data.fecha_inscripcion);
-      const opciones = { day: '2-digit', month: 'long', year: 'numeric' as const };
+      const opciones = { day: '2-digit' as const, month: 'long' as const, year: 'numeric' as const };
       setFechaInscripcion(fecha.toLocaleDateString('es-ES', opciones));
 
       // Obtener Permiso de Circulación
