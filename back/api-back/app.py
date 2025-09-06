@@ -19,7 +19,6 @@ from patentes_vehiculares_chile import (
     validar_patente,
     detectar_tipo_patente,
     limpiar_patente,
-    validar_rut,
     validar_patente,
     generar_patente_vehiculo_antiguo,
     generar_patente_vehiculo_nuevo,
@@ -83,6 +82,7 @@ from routers.emitir_permiso_circulacion import emitir_permiso_circulacion
 from routers.mostrar_informacion_vehicular import mostrar_informacion_vehicular
 from routers.obtener_vehiculos_rut import obtener_vehiculos_rut
 from routers.recepcionar_solicitud import recepcionar_solicitud
+from routers.login_admin import login_admin
 
 app.include_router(calcular_metricas.router)
 app.include_router(consultar_encargo.router)
@@ -101,6 +101,4 @@ app.include_router(emitir_permiso_circulacion.router)
 app.include_router(mostrar_informacion_vehicular.router)
 app.include_router(obtener_vehiculos_rut.router)
 app.include_router(recepcionar_solicitud.router)
-
-
-
+app.include_router(login_admin.router)

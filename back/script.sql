@@ -49,3 +49,12 @@ CREATE TABLE IF NOT EXISTS permiso_circulacion (
     codigo_sii VARCHAR(20) NOT NULL,
     tasacion INT NOT NULL
 );
+
+-- Usuarios administradores
+CREATE TABLE IF NOT EXISTS usuarios_admin (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    rut VARCHAR(12) NOT NULL UNIQUE,
+    nombre VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
