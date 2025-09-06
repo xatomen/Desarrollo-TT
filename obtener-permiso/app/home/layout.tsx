@@ -11,11 +11,20 @@ export default function HomeLayout({
     <div 
       style={{ 
         minHeight: '100vh',
-        position: 'relative'
+        display: 'flex',        // ✅ Agregar display flex
+        flexDirection: 'column', // ✅ Dirección vertical
       }}
     >
       <Navbar />
-      <div style={{ flex: 1 }}>
+      <div style={{ 
+        flex: 1, 
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        // alignItems: 'center',
+        padding: '2rem', // Espaciado para el contenido
+        backgroundColor: '#f3f3f3ff'  // Color de fondo claro
+       }}>
         {children}
       </div>
       <Footer />

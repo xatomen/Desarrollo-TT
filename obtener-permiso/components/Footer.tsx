@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="bg-slate-800 text-white py-6">
+    <footer className="text-white py-6 mt-auto" style={{ backgroundColor: '#092039'}}>
       <div className="container mx-auto px-6">
         <div className="border-t border-slate-600 mb-6"></div>
         

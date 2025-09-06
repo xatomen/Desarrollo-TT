@@ -7,7 +7,6 @@ interface UserData {
   rut: string;
   nombre?: string;
   email?: string;
-  // Agregar más campos según tu token JWT
 }
 
 interface AuthContextType {
@@ -21,7 +20,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Función para decodificar JWT (básico, sin verificación de firma)
+// Función para decodificar JWT
 function decodeJWT(token: string): any {
   try {
     const payload = token.split('.')[1];
@@ -46,6 +45,34 @@ function isTokenExpired(token: string): boolean {
   }
 }
 
+// Funciones para manejar datos del usuario en cookies
+function saveUserToCookies(userData: UserData) {
+  try {
+    Cookies.set('user_data', JSON.stringify(userData), {
+      expires: 1, // 1 día
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    });
+  } catch (error) {
+    console.error('Error guardando datos del usuario en cookies:', error);
+  }
+}
+
+function getUserFromCookies(): UserData | null {
+  try {
+    const userData = Cookies.get('user_data');
+    return userData ? JSON.parse(userData) : null;
+  } catch (error) {
+    console.error('Error obteniendo datos del usuario desde cookies:', error);
+    return null;
+  }
+}
+
+function clearUserCookies() {
+  Cookies.remove('auth_token');
+  Cookies.remove('user_data');
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserData | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -54,35 +81,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Rutas públicas que no requieren autenticación
   const publicRoutes = ['/login', '/'];
 
-  // Función para inicializar la autenticación desde cookies
+  // Función mejorada para inicializar autenticación
   const initializeAuth = () => {
     try {
-      const savedToken = Cookies.get('auth_token');
+      console.log('Inicializando autenticación...');
       
-      if (savedToken && !isTokenExpired(savedToken)) {
+      const savedToken = Cookies.get('auth_token');
+      const savedUserData = getUserFromCookies();
+      
+      console.log('Token encontrado:', !!savedToken);
+      console.log('Datos de usuario encontrados:', !!savedUserData);
+      
+      if (savedToken && !isTokenExpired(savedToken) && savedUserData) {
+        // Usar datos guardados en cookies
+        setToken(savedToken);
+        setUser(savedUserData);
+        setIsAuthenticated(true);
+        console.log('Usuario restaurado desde cookies:', savedUserData);
+      } else if (savedToken && !isTokenExpired(savedToken)) {
+        // Fallback: obtener datos del token si no hay datos en cookies
         const userData = decodeJWT(savedToken);
-        if (userData) {
-          setToken(savedToken);
-          setUser({
+        if (userData && userData.rut) {
+          const userInfo = {
             rut: userData.rut,
             nombre: userData.nombre,
             email: userData.email,
-          });
+          };
+          
+          setToken(savedToken);
+          setUser(userInfo);
           setIsAuthenticated(true);
+          
+          // Guardar en cookies para la próxima vez
+          saveUserToCookies(userInfo);
+          console.log('Usuario restaurado desde token y guardado en cookies:', userInfo);
+        } else {
+          console.log('Token no contiene datos válidos del usuario');
+          clearUserCookies();
         }
       } else {
-        // Token expirado o inválido, limpiar cookies
-        Cookies.remove('auth_token');
+        console.log('Token no encontrado, expirado o datos incompletos');
+        clearUserCookies();
         setToken(null);
         setUser(null);
         setIsAuthenticated(false);
       }
     } catch (error) {
       console.error('Error inicializando autenticación:', error);
-      Cookies.remove('auth_token');
+      clearUserCookies();
       setToken(null);
       setUser(null);
       setIsAuthenticated(false);
@@ -91,7 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Función para hacer login
+  // Función de login actualizada
   const login = async (rut: string, claveUnica: string): Promise<boolean> => {
     try {
       setIsLoading(true);
@@ -108,9 +156,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }),
       });
       
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-
       if (!response.ok) {
         const errorData = await response.text();
         console.error('Error response:', errorData);
@@ -118,29 +163,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await response.json();
-      console.log('Response data:', data);
       
       if (data.access_token) {
-        // Guardar token en cookies (expira en 24 horas)
+        // Guardar token
         Cookies.set('auth_token', data.access_token, { 
-          expires: 1, // 1 día
+          expires: 1,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict'
         });
 
-        // Decodificar y guardar datos del usuario
+        // Preparar y guardar datos del usuario
         const userData = decodeJWT(data.access_token);
-        console.log('User data from token:', userData);
+        const userInfo = {
+          rut: data.user_info?.rut || userData?.rut || rut,
+          nombre: data.user_info?.nombre || userData?.nombre,
+          email: data.user_info?.email || userData?.email,
+        };
         
+        // Guardar en estado y cookies
         setToken(data.access_token);
-        setUser({
-          rut: data.user_info?.rut || rut, // ✅ Usar datos de user_info si están disponibles
-          nombre: userData.nombre || data.user_info?.nombre,
-          email: userData.email || data.user_info?.email,
-          id: data.user_info?.id, // ✅ Agregar el ID si lo necesitas
-        });
+        setUser(userInfo);
         setIsAuthenticated(true);
+        saveUserToCookies(userInfo);
         
+        console.log('Login exitoso. Usuario guardado:', userInfo);
         return true;
       }
       
@@ -153,43 +199,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Función para hacer logout
+  // Función de logout actualizada
   const logout = () => {
-    Cookies.remove('auth_token');
+    clearUserCookies();
     setToken(null);
     setUser(null);
     setIsAuthenticated(false);
     router.push('/login');
   };
 
-  // Verificar autenticación al cargar y en cambios de ruta
+  // useEffect para actualizar cookies cuando cambie el usuario
+  useEffect(() => {
+    if (user && isAuthenticated) {
+      saveUserToCookies(user);
+    }
+  }, [user, isAuthenticated]);
+
   useEffect(() => {
     initializeAuth();
   }, []);
 
-  // Redireccionar según estado de autenticación
   useEffect(() => {
     if (!isLoading) {
       const isPublicRoute = publicRoutes.includes(pathname);
       
       if (!isAuthenticated && !isPublicRoute) {
-        // Usuario no autenticado intentando acceder a ruta protegida
         router.push('/login');
       } else if (isAuthenticated && pathname === '/login') {
-        // Usuario autenticado intentando acceder al login
         router.push('/home');
       }
     }
   }, [isAuthenticated, isLoading, pathname]);
 
-  // Verificar token periódicamente
   useEffect(() => {
     if (token) {
       const interval = setInterval(() => {
         if (isTokenExpired(token)) {
           logout();
         }
-      }, 60000); // Verificar cada minuto
+      }, 60000);
 
       return () => clearInterval(interval);
     }
@@ -219,7 +267,16 @@ export function useAuth() {
   return context;
 }
 
-// ✅ Agregar esta función al final del AuthContext
 export function useRut(): string | null {
   return useAuth().user?.rut || null;
+}
+
+// ✅ Hooks adicionales para acceso directo desde cookies
+export function getUserDataFromCookies(): UserData | null {
+  return getUserFromCookies();
+}
+
+export function getRutFromCookies(): string | null {
+  const userData = getUserFromCookies();
+  return userData?.rut || null;
 }

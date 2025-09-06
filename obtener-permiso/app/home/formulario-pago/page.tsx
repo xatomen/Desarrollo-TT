@@ -2,79 +2,128 @@
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useAuth, getRutFromCookies } from '@/contexts/AuthContext';
+
+interface DatosVehiculo {
+  // Datos básicos
+  ppu: string;
+  rut: string;
+  valorPermiso: number;
+  
+  // Información del vehículo
+  marca: string;
+  modelo: string;
+  anio: string;
+  color: string;
+  tipoVehiculo: string;
+  
+  // Fechas importantes
+  fechaExpiracionSoap: string;
+  fechaExpiracionRevision: string;
+  fechaInscripcion: string;
+  
+  // Identificadores
+  numMotor: string;
+  numChasis: string;
+  codigoSii: string;
+  
+  // Características técnicas
+  capacidadCarga: string;
+  tipoSello: string;
+  tipoCombustible: string;
+  cilindrada: string;
+  tasacion: string;
+  peso: string;
+  asientos: string;
+  puertas: string;
+  transmision: string;
+  equipamiento: string;
+  
+  // Estados de validación
+  revisionTecnica: string;
+  soap: string;
+  encargoRobo: string;
+  multasTransito: string;
+  multasRPI: string;
+  
+  // Metadatos
+  fechaConsulta: string;
+  todosDocumentosValidos: boolean;
+}
 
 export default function FormularioPago() {
-  const searchParams = useSearchParams();
   const router = useRouter();
   
-  // ✅ Obtener datos de la URL
-  const ppu = searchParams.get('plate') || '';
-  const rut = searchParams.get('rut') || '';
-  const valorPermiso = parseInt(searchParams.get('valor') || '0');
-  const marca = searchParams.get('marca') || '';
-  const modelo = searchParams.get('modelo') || '';
-  const anioVehiculo = searchParams.get('anio') || '';
-  const color = searchParams.get('color') || '';
-  const tipoVehiculo = searchParams.get('tipoVehiculo') || '';
+  const { user } = useAuth();
+  const nombre_propietario = user?.nombre || '';
 
-  // Obtener datos restantes del vehículo
-  const cilindrada = searchParams.get('cilindrada') || '';
-  const tasacion = searchParams.get('tasacion') || '';
-  const peso = searchParams.get('peso') || '';
-  const asientos = searchParams.get('asientos') || '';
-  const puertas = searchParams.get('puertas') || '';
-  const transmision = searchParams.get('transmision') || '';
-  const equipamiento = searchParams.get('equipamiento') || '';
-  const codigoSii = searchParams.get('codigoSii') || '';
+  const [datosVehiculo, setDatosVehiculo] = useState<DatosVehiculo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
 
-  // Extraer otros parámetros adicionales
-  const fechaExpiracionSoap = searchParams.get('fechaExpiracionSoap') || '';
-  const fechaExpiracionRevision = searchParams.get('fechaExpiracionRevision') || '';
-  const fechaInscripcion = searchParams.get('fechaInscripcion') || '';
-  const numMotor = searchParams.get('numMotor') || '';
-  const numChasis = searchParams.get('numChasis') || '';
-  const capacidadCarga = searchParams.get('capacidadCarga') || '';
-  const tipoSello = searchParams.get('tipoSello') || '';
-  const tipoCombustible = searchParams.get('tipoCombustible') || '';
-  const revisionTecnica = searchParams.get('revisionTecnica') || '';
-  const soap = searchParams.get('soap') || '';
-  const encargoRobo = searchParams.get('encargoRobo') || '';
-  const multasTransito = searchParams.get('multasTransito') || '';
-  const multasRPI = searchParams.get('multasRPI') || '';
+  // ✅ Cargar datos desde sessionStorage al montar el componente
+  useEffect(() => {
+    try {
+      const datosGuardados = sessionStorage.getItem('datos_vehiculo_permiso');
+      
+      if (datosGuardados) {
+        const datos: DatosVehiculo = JSON.parse(datosGuardados);
+        
+        // ✅ Validar que los datos no sean muy antiguos (30 minutos)
+        const fechaConsulta = new Date(datos.fechaConsulta);
+        const ahora = new Date();
+        const diferenciaMinutos = (ahora.getTime() - fechaConsulta.getTime()) / (1000 * 60);
+        
+        if (diferenciaMinutos > 30) {
+          setError('Los datos del vehículo han expirado. Por favor, vuelva a realizar las validaciones.');
+          sessionStorage.removeItem('datos_vehiculo_permiso');
+        } else {
+          setDatosVehiculo(datos);
+          console.log('Datos del vehículo cargados desde sessionStorage:', datos);
+        }
+      } else {
+        setError('No se encontraron datos del vehículo. Por favor, realice las validaciones primero.');
+      }
+    } catch (error) {
+      console.error('Error cargando datos desde sessionStorage:', error);
+      setError('Error al cargar los datos del vehículo.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  // Ver info vehículo en consola
-  console.log('Info vehículo:', {
-    ppu: ppu,
-    rut: rut,
-    fecha_emision: new Date().toISOString().slice(0, 10),
-    fecha_expiracion: fechaExpiracionRevision || new Date().toISOString().slice(0, 10),
-    valor_permiso: valorPermiso,
-    motor: parseInt(numMotor) || 0,
-    chasis: numChasis,
-    tipo_vehiculo: tipoVehiculo,
-    color: color,
-    marca: marca,
-    modelo: modelo,
-    anio: parseInt(anioVehiculo) || 0,
-    carga: parseInt(capacidadCarga) || 0,
-    tipo_sello: tipoSello,
-    combustible: tipoCombustible,
-    cilindrada: parseInt(cilindrada) || 0,
-    transmision: transmision,
-    pts: parseInt(peso) || 0,
-    ast: parseInt(asientos) || 0,
-    equipamiento: equipamiento,
-    codigo_sii: codigoSii,
-    tasacion: parseInt(tasacion) || 0,
-    puertas: parseInt(puertas) || 0,
-    revision_tecnica: revisionTecnica,
-    soap: soap,
-    encargo_robo: encargoRobo,
-    multas_transito: multasTransito,
-    multas_rpi: multasRPI,
-    fecha_inscripcion: fechaInscripcion,
-    fecha_expiracion_soap: fechaExpiracionSoap
-  });
+  // Extraer datos del vehículo para uso directo en el componente
+  const ppu = datosVehiculo?.ppu || '';
+  const rut = datosVehiculo?.rut || '';
+  const valorPermiso = datosVehiculo?.valorPermiso || 0;
+  const marca = datosVehiculo?.marca || '';
+  const modelo = datosVehiculo?.modelo || '';
+  const anioVehiculo = datosVehiculo?.anio || '';
+  const color = datosVehiculo?.color || '';
+  const tipoVehiculo = datosVehiculo?.tipoVehiculo || '';
+  const fechaExpiracionSoap = datosVehiculo?.fechaExpiracionSoap || '';
+  const fechaExpiracionRevision = datosVehiculo?.fechaExpiracionRevision || '';
+  const fechaInscripcion = datosVehiculo?.fechaInscripcion || '';
+  const numMotor = datosVehiculo?.numMotor || '';
+  const numChasis = datosVehiculo?.numChasis || '';
+  const codigoSii = datosVehiculo?.codigoSii || '';
+  const capacidadCarga = datosVehiculo?.capacidadCarga || '';
+  const tipoSello = datosVehiculo?.tipoSello || '';
+  const tipoCombustible = datosVehiculo?.tipoCombustible || '';
+  const cilindrada = datosVehiculo?.cilindrada || '';
+  const tasacion = datosVehiculo?.tasacion || '';
+  const peso = datosVehiculo?.peso || '';
+  const asientos = datosVehiculo?.asientos || '';
+  const puertas = datosVehiculo?.puertas || '';
+  const transmision = datosVehiculo?.transmision || '';
+  const equipamiento = datosVehiculo?.equipamiento || '';
+  const revisionTecnica = datosVehiculo?.revisionTecnica || '';
+  const soap = datosVehiculo?.soap || '';
+  const encargoRobo = datosVehiculo?.encargoRobo || '';
+  const multasTransito = datosVehiculo?.multasTransito || '';
+  const multasRPI = datosVehiculo?.multasRPI || '';
+  const fechaConsulta = datosVehiculo?.fechaConsulta || '';
+  const todosDocumentosValidos = datosVehiculo?.todosDocumentosValidos || false;
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -332,7 +381,7 @@ export default function FormularioPago() {
           body: JSON.stringify({
             ppu: ppu,
             rut: rut,
-            nombre: formData.nombre,
+            nombre: nombre_propietario,
             fecha_emision: new Date().toISOString().slice(0, 10),
             fecha_expiracion: fechaExpiracionRevision || new Date().toISOString().slice(0, 10),
             valor_permiso: valorPermiso,
@@ -412,18 +461,25 @@ export default function FormularioPago() {
       <div className="row g-4">
         {/* Columna izquierda - Resumen del vehículo */}
         <div className="col-lg-4 align-self-center">
-          <div className="card border-0 shadow-sm">
+          <div className="card-like border-0 shadow p-4">
             <div className="card-body text-center p-4">
               <h6 className="text-muted mb-2" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
                 Patente a pagar
               </h6>
-              <h1 className="display-4 fw-bold mb-3 text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700' }}>
+              <h1 className="display-4 fw-bold mb-3" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700' }}>
                 {ppu || 'AA BB 11'}
               </h1>
-              
+
+              <div><p className="text-muted mb-1" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>Nombre</p>
+                <p className="fw-bold text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '1.25rem', fontWeight: '600' }}>
+                  {nombre_propietario || '-'}
+                </p>
+              </div>
+
+
               <div className="mb-3">
                 <p className="text-muted mb-1" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>RUT</p>
-                <p className="fw-bold text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '1.25rem', fontWeight: '600' }}>
+                <p className="fw-bold" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '1.25rem', fontWeight: '600' }}>
                   {rut || '12.345.678-9'}
                 </p>
               </div>
@@ -431,7 +487,7 @@ export default function FormularioPago() {
               {/* ✅ Mostrar información del vehículo */}
               <div className="mb-3">
                 <p className="text-muted mb-1" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>Vehículo</p>
-                <p className="fw-medium text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '1rem', fontWeight: '500' }}>
+                <p className="fw-medium" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '1rem', fontWeight: '500' }}>
                   {marca} {modelo} {anioVehiculo}
                 </p>
                 <p className="text-muted" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.75rem' }}>
@@ -443,7 +499,7 @@ export default function FormularioPago() {
                 <h6 className="text-muted mb-2" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
                   Valor Permiso de Circulación
                 </h6>
-                <h2 className="fw-bold mb-0 text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700', fontSize: '2.5rem' }}>
+                <h2 className="fw-bold mb-0" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700', fontSize: '2.5rem' }}>
                   ${valorPermiso.toLocaleString('es-CL')}
                 </h2>
               </div>
@@ -481,8 +537,8 @@ export default function FormularioPago() {
             <div className="row g-4">
               {/* Datos de Facturación */}
               <div className="col-12">
-                <div className="card border-0 shadow-sm">
-                  <div className="card-header bg-light">
+                <div className="card-like border-0 shadow">
+                  <div className="card-body text-center border-bottom">
                     <h5 className="mb-0 fw-bold text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '600', fontSize: '1.125rem' }}>
                       Datos de Facturación
                     </h5>
@@ -550,8 +606,8 @@ export default function FormularioPago() {
 
               {/* Datos de Tarjeta */}
               <div className="col-12 p-3">
-                <div className="card border-0 shadow-sm">
-                  <div className="card-header bg-light">
+                <div className="card-like shadow">
+                  <div className="card-body text-center border-bottom">
                     <h5 className="mb-0 fw-bold text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '600', fontSize: '1.125rem' }}>
                       Datos de Tarjeta
                     </h5>

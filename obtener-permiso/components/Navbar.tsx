@@ -34,7 +34,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-slate-800 text-white px-6 py-4">
+    <nav className="text-white px-6 py-4" style={{ backgroundColor: '#092039'}}>
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <span className="text-xl font-semibold">Permisos de Circulación</span>
@@ -73,7 +73,7 @@ const Navbar = () => {
                 {/* ✅ Agregar información adicional del usuario */}
                 <div className="px-4 py-2 text-xs text-gray-500 border-b">
                   <p>RUT: {user?.rut || 'No disponible'}</p>
-                  {user?.id && <p>ID: {user.id}</p>}
+                  {/* {user?.id && <p>ID: {user.id}</p>} */}
                 </div>
 
                 <button

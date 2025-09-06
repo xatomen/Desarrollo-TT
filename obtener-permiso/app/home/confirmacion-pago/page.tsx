@@ -71,14 +71,14 @@ export default function ConfirmacionPago() {
     <ProtectedRoute>
       <div className="min-vh-100 d-flex align-items-center justify-content-center py-3" 
            style={{ 
-             backgroundColor: '#f8f9fa',
+            //  backgroundColor: '#f8f9fa',
              fontFamily: '"Dosis", sans-serif'
            }}>
         <div className="container">
           <div className="row justify-content-center">
             <div className="col-lg-6 col-md-8 col-sm-10">
               {/* Tarjeta principal de confirmación */}
-              <div className="card border-0 shadow-lg">
+              <div className="card-like border-0 shadow">
                 <div className="card-body text-center p-5">
                   {/* Ícono de éxito */}
                   <div className="mb-4">

@@ -4,6 +4,53 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 
+interface DatosVehiculo {
+  // Datos básicos
+  ppu: string;
+  rut: string;
+  valorPermiso: number;
+  
+  // Información del vehículo
+  marca: string;
+  modelo: string;
+  anio: string;
+  color: string;
+  tipoVehiculo: string;
+  
+  // Fechas importantes
+  fechaExpiracionSoap: string;
+  fechaExpiracionRevision: string;
+  fechaInscripcion: string;
+  
+  // Identificadores
+  numMotor: string;
+  numChasis: string;
+  codigoSii: string;
+  
+  // Características técnicas
+  capacidadCarga: string;
+  tipoSello: string;
+  tipoCombustible: string;
+  cilindrada: string;
+  tasacion: string;
+  peso: string;
+  asientos: string;
+  puertas: string;
+  transmision: string;
+  equipamiento: string;
+  
+  // Estados de validación
+  revisionTecnica: string;
+  soap: string;
+  encargoRobo: string;
+  multasTransito: string;
+  multasRPI: string;
+  
+  // Metadatos
+  fechaConsulta: string;
+  todosDocumentosValidos: boolean;
+}
+
 type EstadoValidacion = 'Vigente' | 'No' | 'Si' | 'Desconocido';
 type DocumentoValidacion = {
   nombre: string;
@@ -33,9 +80,18 @@ function EstadoChip({ estado, documento }: { estado: EstadoValidacion; documento
 
 function ValidacionesPagoContent() {
   const searchParams = useSearchParams();
-  const ppu = searchParams.get('plate'); // Obtener la PPU de la URL
-  const rut = searchParams.get('RUT'); // Obtener el RUT de la URL
 
+  const [ppu, setPpu] = useState<string | null>(null);
+  const [rut, setRut] = useState<string | null>(null);
+
+  // Recuperar PPU del sessionStorage
+  useEffect(() => {
+    const storedPpu = sessionStorage.getItem('ppu');
+    const storedRut = sessionStorage.getItem('rut');
+    setPpu(storedPpu);
+    setRut(storedRut);
+  }, []);
+  
   // Valor permiso
   const [valorPermiso, setValorPermiso] = useState<number | null>(null);
 
@@ -270,7 +326,7 @@ function ValidacionesPagoContent() {
           {/* Columna izquierda */}
           <div className="col-lg-6">
             {/* Card de patente */}
-          <div className="card mb-4 border-0 shadow-sm">
+          <div className="card-like mb-4 shadow">
             <div className="card-body text-center p-4">
               <h6 className="text-muted mb-2" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
                 Patente a pagar
@@ -304,8 +360,8 @@ function ValidacionesPagoContent() {
           </div>
 
           {/* Card de validaciones */}
-          <div className="card border-0 shadow-sm">
-            <div className="card-header text-white" style={{ backgroundColor: '#0d6efd' }}>
+          <div className="card border shadow">
+            <div className="card-header text-white " style={{ backgroundColor: '#0d6efd' }}>
               <div className="row">
                 <div className="col-6">
                   <h6 className="mb-0 fw-bold" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '600' }}>
@@ -319,9 +375,9 @@ function ValidacionesPagoContent() {
                 </div>
               </div>
             </div>
-            <div className="card-body p-0">
+            <div className="card-body">
               {documentos.map((doc, index) => (
-                <div key={index} className={`row align-items-center py-3 px-3 ${index % 2 === 1 ? 'bg-light' : 'bg-white'} ${index !== documentos.length - 1 ? 'border-bottom border-light' : ''}`}>
+                <div key={index} className={`row align-items-center py-3 px-0 ${index % 2 === 1 ? 'bg-light' : 'bg-white'} ${index !== documentos.length - 1 ? 'border-bottom border-light' : ''}`}>
                   <div className="col-6">
                     <span className="fw-medium text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '500' }}>
                       {doc.nombre}
@@ -339,13 +395,13 @@ function ValidacionesPagoContent() {
         {/* Columna derecha */}
         <div className="col-lg-6">
           {/* Card información del vehículo */}
-          <div className="card border-0 shadow-sm mb-4">
-            <div className="card-header bg-light border-bottom text-center">
+          <div className="card-like border-0 shadow mb-4">
+            <div className="card-body border-bottom text-center">
               <h5 className="mb-0 fw-bold text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '600', fontSize: '1.125rem' }}>
                 Información Vehículo
               </h5>
             </div>
-            <div className="card-body bg-white">
+            <div className="card-body">
               {informacionVehiculo.map((item, index) => (
                 <div key={index} className={`row py-2 ${index !== informacionVehiculo.length - 1 ? 'border-bottom border-light' : ''}`}>
                   <div className="col-8">
@@ -378,40 +434,65 @@ function ValidacionesPagoContent() {
               }}
               onClick={() => {
                 if (todosDocumentosValidos) {
-                    // Enviamos todos los datos recuperados
-                    const params = new URLSearchParams({
-                    plate: ppu || '',
+                  // ✅ Crear objeto con todos los datos
+                  const datosVehiculo: DatosVehiculo = {
+                    // Datos básicos
+                    ppu: ppu || '',
                     rut: rut || '',
-                    valor: valorPermiso?.toString() || '0',
-                    marca: marca,
-                    modelo: modelo,
-                    anio: anio,
-                    color: color,
-                    tipoVehiculo: tipoVehiculo,
-                    fechaExpiracionSoap: fechaExpiracionSoap,
-                    fechaExpiracionRevision: fechaExpiracionRevision,
-                    fechaInscripcion: fechaInscripcion,
-                    numMotor: numMotor,
-                    numChasis: numChasis,
-                    capacidadCarga: capacidadCarga,
-                    tipoSello: tipoSello,
-                    tipoCombustible: tipoCombustible,
-                    revisionTecnica: revisionTecnica,
-                    soap: soap,
-                    encargoRobo: encargoRobo,
-                    multasTransito: multasTransito,
-                    multasRPI: multasRPI,
-                    cilindrada: cilindrada,
-                    tasacion: tasacion,
-                    peso: peso,
-                    asientos: asientos,
-                    puertas: puertas,
-                    transmision: transmision,
-                    equipamiento: equipamiento,
-                    codigoSii: codigoSii
-                    });
+                    valorPermiso: valorPermiso || 0,
+                    
+                    // Información del vehículo
+                    marca,
+                    modelo,
+                    anio,
+                    color,
+                    tipoVehiculo,
+                    
+                    // Fechas importantes
+                    fechaExpiracionSoap,
+                    fechaExpiracionRevision,
+                    fechaInscripcion,
+                    
+                    // Identificadores
+                    numMotor,
+                    numChasis,
+                    codigoSii,
+                    
+                    // Características técnicas
+                    capacidadCarga,
+                    tipoSello,
+                    tipoCombustible,
+                    cilindrada,
+                    tasacion,
+                    peso,
+                    asientos,
+                    puertas,
+                    transmision,
+                    equipamiento,
+                    
+                    // Estados de validación
+                    revisionTecnica,
+                    soap,
+                    encargoRobo,
+                    multasTransito,
+                    multasRPI,
+                    
+                    // Metadatos
+                    fechaConsulta: new Date().toISOString(),
+                    todosDocumentosValidos
+                  };
                   
-                  window.location.href = `/home/formulario-pago?${params.toString()}`;
+                  // ✅ Guardar en sessionStorage
+                  try {
+                    sessionStorage.setItem('datos_vehiculo_permiso', JSON.stringify(datosVehiculo));
+                    console.log('Datos guardados en sessionStorage:', datosVehiculo);
+                    
+                    // ✅ Redirigir sin parámetros en la URL
+                    window.location.href = '/home/formulario-pago';
+                  } catch (error) {
+                    console.error('Error guardando datos en sessionStorage:', error);
+                    alert('Error al preparar los datos. Intente nuevamente.');
+                  }
                 }
               }}
             >
