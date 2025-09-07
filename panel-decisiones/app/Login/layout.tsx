@@ -33,9 +33,6 @@ export default function LoginPageLayout({
           </a>
           <div className="navbar-collapse">
             <ul className="navbar-nav ml-auto">
-              <li className="nav-item">
-                <a className="btn btn-primary" href="/Home">Panel de Decisiones</a>
-              </li>
             </ul>
           </div>
         </div>
