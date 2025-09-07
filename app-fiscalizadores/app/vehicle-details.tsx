@@ -81,9 +81,9 @@ export default function VehicleDetailsScreen() {
       const rutFiscalizador = userInfo.rut;
       
       // Convertir valores de texto a números (0 = vigente, 1 = vencido/sí)
-      const vigenciaPermisoNum = vigenciaPermiso === 'Vigente' ? 1 : 0;
-      const vigenciaRevisionNum = revisionTecnica === 'Vigente' ? 1 : 0;
-      const vigenciaSoapNum = soap === 'Vigente' ? 1 : 0;
+      const vigenciaPermisoNum = vigenciaPermiso === 'Vigente' ? 0 : 1;
+      const vigenciaRevisionNum = revisionTecnica === 'Vigente' ? 0 : 1;
+      const vigenciaSoapNum = soap === 'Vigente' ? 0 : 1;
       const encargoRoboNum = encargoRobo === 'No' ? 0 : 1;
 
       const logData = {
@@ -98,10 +98,11 @@ export default function VehicleDetailsScreen() {
 
       console.log('Enviando log de auditoría:', logData);
 
-      const response = await fetch(`${API_CONFIG.BACKEND}logs_fiscalizacion`, {
+      const response = await fetch(`${API_CONFIG.BACKEND}logs_fiscalizacion/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify(logData),
       });

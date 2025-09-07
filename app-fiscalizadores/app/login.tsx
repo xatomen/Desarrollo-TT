@@ -108,6 +108,7 @@ export default function LoginScreen() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({
           rut: rutSinPuntos,
