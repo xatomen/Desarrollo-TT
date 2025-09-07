@@ -258,11 +258,10 @@ export default function RegistroConsultasPropietariosPage() {
                   <thead className="table-light">
                     <tr>
                       <th>RUT Propietario</th>
-                      <th>Nombre</th>
+                      {/* <th>Nombre</th> */}
                       <th>PPU</th>
-                      <th>Vehículo</th>
+                      {/* <th>Vehículo</th> */}
                       <th>Fecha/Hora</th>
-                      <th className="text-center">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -277,18 +276,13 @@ export default function RegistroConsultasPropietariosPage() {
                     {currentRows.map((r, i) => (
                       <tr key={`${r.rut}-${i}`}>
                         <td><code>{r.rut}</code></td>
-                        <td>{r.nombre}</td>
+                        {/* <td>{r.nombre}</td> */}
                         <td><strong>{r.ppu}</strong></td>
-                        <td>
+                        {/* <td>
                           <small className="text-muted">{r.marca}</small><br/>
                           {r.modelo}
-                        </td>
+                        </td> */}
                         <td>{formatDateTime(r.fecha)}</td>
-                        <td className="text-center">
-                          <button className="btn btn-sm btn-outline-secondary">
-                            <i className="bi bi-eye"></i> Ver
-                          </button>
-                        </td>
                       </tr>
                     ))}
                   </tbody>

@@ -40,7 +40,7 @@ export default function Navbar() {
 
   return (
     <nav
-      className="navbar navbar-light navbar-expand-lg"
+      className="navbar navbar-light navbar-expand-lg py-3"
       style={{
         backgroundColor: "#ffffff",
         borderBottom: "1px solid #e9ecef",
@@ -69,11 +69,11 @@ export default function Navbar() {
               fontSize: "1.1rem",
             }}
           >
-            <img
+            {/* <img
               src="/img/gob-header.svg"
               alt="Gobierno de Chile"
               style={{ height: 32 }}
-            />
+            /> */}
             Panel de Decisiones
           </Link>
 
@@ -116,7 +116,7 @@ export default function Navbar() {
             ></div>
 
             {/* Información del usuario (opcional) */}
-            {user && (
+            {/* {user && (
               <span
                 style={{
                   fontSize: "0.85rem",
@@ -126,17 +126,17 @@ export default function Navbar() {
               >
                 {user.nombre || user.email || "Usuario"}
               </span>
-            )}
+            )} */}
 
             {/* Cerrar Sesión */}
             <button
               onClick={handleLogout}
-              className="btn btn-outline-secondary btn-sm"
+              className="btn btn-outline-secondary"
               style={{
-                fontSize: "0.85rem",
-                border: "none",
-                backgroundColor: "transparent",
-                color: "#6c757d",
+                // fontSize: "0.85rem",
+                // border: "none",
+                // backgroundColor: "transparent",
+                // color: "#6c757d",
               }}
             >
               <i className="fas fa-sign-out-alt me-1"></i>

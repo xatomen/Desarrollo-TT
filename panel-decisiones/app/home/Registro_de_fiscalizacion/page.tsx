@@ -305,7 +305,7 @@ export default function RegistroFiscalizacionPage() {
       )}
 
       {/* Estadísticas rápidas */}
-      <div className="row mt-4">
+      <div className="row mt-4 text-center align-items-center">
         <div className="col-12 col-md-6 col-lg-3">
           <div className="card text-center">
             <div className="card-body">
@@ -346,13 +346,13 @@ export default function RegistroFiscalizacionPage() {
                   <thead className="table-light">
                     <tr>
                       <th>PPU</th>
-                      <th>Vehículo</th>
+                      {/* <th>Vehículo</th> */}
                       <th>Permiso</th>
                       <th>Revisión</th>
                       <th>SOAP</th>
                       <th>Encargo</th>
                       <th>Fecha</th>
-                      <th className="text-center">Estado</th>
+                      {/* <th className="text-center">Estado</th> */}
                     </tr>
                   </thead>
                   <tbody>
@@ -373,10 +373,10 @@ export default function RegistroFiscalizacionPage() {
                       return (
                         <tr key={`${r.ppu}-${i}`} className={alDia ? "" : "table-warning"}>
                           <td><strong>{r.ppu}</strong></td>
-                          <td>
+                          {/* <td>
                             <small className="text-muted">{r.marca}</small><br/>
                             {r.modelo} ({r.anio})
-                          </td>
+                          </td> */}
                           <td>
                             <span className={`badge ${r.permiso === "Vigente" ? "bg-success" : "bg-danger"}`}>
                               {r.permiso}
@@ -398,9 +398,9 @@ export default function RegistroFiscalizacionPage() {
                             </span>
                           </td>
                           <td>{formatDateTime(r.fecha)}</td>
-                          <td className="text-center">
-                            <i className={`bi ${alDia ? "bi-check-circle-fill text-success" : "bi-exclamation-triangle-fill text-warning"}`}></i>
-                          </td>
+                          {/* <td className="text-center">
+                            <i className={`bi ${alDia ? "bi-check-circle-fill text-success" : "bi-exclamation-triangle-fill text-warning"}`}>{alDia ? "Al día" : "Con problemas"}</i>
+                          </td> */}
                         </tr>
                       );
                     })}
