@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 import { useAuth, getRutFromCookies } from '@/contexts/AuthContext';
+import API_CONFIG from '@/config/api';
 
 type Estado = 'PAGADO' | 'HABILITADO' | 'VENCIDO';
 type Vehiculo = { id: number; plate: string; brand: string; model: string; estado: Estado };
@@ -53,8 +54,8 @@ export default function VerVehiculos() {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await fetch(`http://localhost:8000/vehiculos_rut/${rut}`);
+
+      const response = await fetch(`${API_CONFIG.BACKEND}vehiculos_rut/${rut}`);
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }

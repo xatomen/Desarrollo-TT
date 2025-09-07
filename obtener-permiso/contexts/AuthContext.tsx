@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Cookies from 'js-cookie';
+import API_CONFIG from '@/config/api';
 
 interface UserData {
   rut: string;
@@ -143,8 +144,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (rut: string, claveUnica: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      
-      const response = await fetch(`http://localhost:5004/validar_clave_unica`, {
+
+      const response = await fetch(`${API_CONFIG.SGD}validar_clave_unica`, {
         method: 'POST',
         headers: {
           'accept': 'application/json',

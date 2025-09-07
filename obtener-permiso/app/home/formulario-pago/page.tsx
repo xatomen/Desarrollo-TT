@@ -3,6 +3,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth, getRutFromCookies } from '@/contexts/AuthContext';
+import API_CONFIG from '@/config/api';
 
 interface DatosVehiculo {
   // Datos básicos
@@ -330,11 +331,12 @@ export default function FormularioPago() {
         mes_vencimiento: mes,
         anio_vencimiento: anio,
         tipo_tarjeta: formData.tipoTarjeta,
-        cvv: parseInt(formData.codigoSeguridad)
+        cvv: parseInt(formData.codigoSeguridad),
+        monto_pago: valorPermiso // Monto del permiso de circulación
       };
 
       // ✅ Construir URL con el monto como query parameter
-      const url = `http://localhost:5007/procesar_pago?monto_pago=${valorPermiso}`;
+      const url = `${API_CONFIG.TGR}procesar_pago/`;
 
       console.log('Enviando datos de pago:', paymentData);
       console.log('URL con monto:', url);
@@ -343,6 +345,7 @@ export default function FormularioPago() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify(paymentData),
       });
@@ -373,7 +376,7 @@ export default function FormularioPago() {
         sessionStorage.setItem('pagoInfo', JSON.stringify(pagoInfo));
 
         // Cargar permiso de circulación en la base de datos TGR
-        await fetch('http://localhost:5007/subir_permiso', {
+        await fetch(`${API_CONFIG.TGR}subir_permiso/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -405,7 +408,7 @@ export default function FormularioPago() {
           }),
         });
         // Cargar permiso de circulación en la base de datos local
-        await fetch('http://localhost:8000/emitir_permiso_circulacion/', {
+        await fetch(`${API_CONFIG.BACKEND}emitir_permiso_circulacion/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

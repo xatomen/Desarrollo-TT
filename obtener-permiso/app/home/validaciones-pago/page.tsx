@@ -1,5 +1,6 @@
 'use client';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import API_CONFIG from '@/config/api';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
@@ -147,7 +148,7 @@ function ValidacionesPagoContent() {
       try {
         // Obtener fecha de inscripción desde el padrón
         try {
-          const inscripcionRes = await fetch(`http://localhost:8000/consultar_patente/${ppu}`);
+          const inscripcionRes = await fetch(`${API_CONFIG.BACKEND}consultar_patente/${ppu}`);
           const inscripcionData = await inscripcionRes.json();
           console.log('Fecha de inscripción:', inscripcionData.fecha_inscripcion);
           setFechaInscripcion(inscripcionData.fecha_inscripcion || '-');
@@ -158,7 +159,7 @@ function ValidacionesPagoContent() {
 
         // Obtener Revisión Técnica
         try {
-          const revisionRes = await fetch(`http://localhost:8000/consultar_revision_tecnica/${ppu}`);
+          const revisionRes = await fetch(`${API_CONFIG.BACKEND}consultar_revision_tecnica/${ppu}`);
           const revisionData = await revisionRes.json();
           setRevisionTecnica(revisionData.vigencia || 'Desconocido');
           // Obtener fecha de expiración de revisión técnica
@@ -170,7 +171,7 @@ function ValidacionesPagoContent() {
 
         // Obtener SOAP
         try {
-          const soapRes = await fetch(`http://localhost:8000/consultar_soap/${ppu}`);
+          const soapRes = await fetch(`${API_CONFIG.BACKEND}consultar_soap/${ppu}`);
           const soapData = await soapRes.json();
           setSoap(soapData.vigencia_permiso || 'Desconocido');
           // Obtener fecha de expiración SOAP
@@ -182,7 +183,7 @@ function ValidacionesPagoContent() {
 
         // Obtener Encargo por Robo
         try {
-          const roboRes = await fetch(`http://localhost:8000/consultar_encargo/${ppu}`);
+          const roboRes = await fetch(`${API_CONFIG.BACKEND}consultar_encargo/${ppu}`);
           const roboData = await roboRes.json();
           if (roboData.encargo) {
             setEncargoRobo(roboData.encargo);
@@ -196,7 +197,7 @@ function ValidacionesPagoContent() {
 
         // Obtener Multas de Tránsito
         try {
-          const transitoRes = await fetch(`http://localhost:8000/consultar_multas/${ppu}`);
+          const transitoRes = await fetch(`${API_CONFIG.BACKEND}consultar_multas/${ppu}`);
           const transitoData = await transitoRes.json();
           if (transitoData.total_multas != 0) {
             setMultasTransito('Si');
@@ -210,7 +211,7 @@ function ValidacionesPagoContent() {
 
         // Obtener Multas RPI
         try {
-          const rpiRes = await fetch(`http://localhost:8000/consultar-multas-rpi/${rut}`);
+          const rpiRes = await fetch(`${API_CONFIG.BACKEND}consultar-multas-rpi/${rut}`);
           const rpiData = await rpiRes.json();
           if (rpiData.cantidad_multas != 0) {
             setMultasRPI('Si');
@@ -224,7 +225,7 @@ function ValidacionesPagoContent() {
 
         // ✅ Mover el fetch de información del vehículo aquí
         try {
-          const vehiculoRes = await fetch(`http://localhost:8000/consultar_permiso_circulacion/${ppu}`);
+          const vehiculoRes = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${ppu}`);
           const vehiculoData = await vehiculoRes.json();
           console.log('Vehículo data:', vehiculoData);
           
@@ -282,7 +283,7 @@ function ValidacionesPagoContent() {
   // Obtener valor permiso de circulación
   const fetchValorPermiso = async (ppu: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/consultar_valor_permiso/${ppu}`);
+      const response = await fetch(`${API_CONFIG.BACKEND}consultar_valor_permiso/${ppu}`);
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
