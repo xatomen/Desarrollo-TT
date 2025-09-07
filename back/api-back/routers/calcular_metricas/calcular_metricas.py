@@ -184,7 +184,7 @@ def _metricas_fiscalizacion(df: datetime, dt: datetime, period_type: str, db: Se
     serie_miles = (
         db.query(
             per.label("periodo"),
-            func.round(func.count(text("1"))/1000.0, 2).label("miles_fiscalizados")
+            func.round(func.count(text("1")), 2).label("miles_fiscalizados")
         ).filter(filtro).group_by(per).order_by(per).all()
     )
 
@@ -318,7 +318,7 @@ def _metricas_permisos(df: datetime, dt: datetime, period_type: str, db: Session
     emisiones = (
         db.query(
             per.label("periodo"),
-            func.round(func.count(text("1"))/1000.0, 2).label("miles")
+            func.round(func.count(text("1")), 2).label("miles")
         ).filter(filtro).group_by(per).order_by(per).all()
     )
 
