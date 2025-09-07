@@ -372,8 +372,40 @@ export default function FormularioPago() {
         };
         sessionStorage.setItem('pagoInfo', JSON.stringify(pagoInfo));
 
-        // Cargar permiso de circulación en la base de datos
+        // Cargar permiso de circulación en la base de datos TGR
         await fetch('http://localhost:5007/subir_permiso', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ppu: ppu,
+            rut: rut,
+            nombre: nombre_propietario,
+            fecha_emision: new Date().toISOString().slice(0, 10),
+            fecha_expiracion: fechaExpiracionRevision || new Date().toISOString().slice(0, 10),
+            valor_permiso: valorPermiso,
+            motor: parseInt(numMotor) || 0,
+            chasis: numChasis,
+            tipo_vehiculo: tipoVehiculo,
+            color: color,
+            marca: marca,
+            modelo: modelo,
+            anio: parseInt(anioVehiculo) || 0,
+            carga: parseInt(capacidadCarga) || 0,
+            tipo_sello: tipoSello,
+            combustible: tipoCombustible,
+            cilindrada: parseInt(cilindrada) || 0,
+            transmision: transmision,
+            pts: parseInt(peso) || 0,
+            ast: parseInt(asientos) || 0,
+            equipamiento: equipamiento,
+            codigo_sii: codigoSii,
+            tasacion: parseInt(tasacion) || 0
+          }),
+        });
+        // Cargar permiso de circulación en la base de datos local
+        await fetch('http://localhost:8000/emitir_permiso_circulacion/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
