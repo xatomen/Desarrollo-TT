@@ -11,23 +11,23 @@ export default function Navbar() {
   const { logout, user } = useAuth();
 
   const links = [
-    { href: "/Home", label: "Dashboard" },
+    { href: "/home", label: "Inicio" },
     {
-      href: "/Home/Registro_de_consultas_propietarios",
+      href: "/home/registro_de_consultas_propietarios",
       label: "Consultas Propietarios",
     },
     {
-      href: "/Home/Registro_de_fiscalizacion",
+      href: "/home/registro_de_fiscalizacion",
       label: "Fiscalización",
     },
     {
-      href: "/Home/Registro_de_obtencion_de_permisos",
+      href: "/home/registro_de_obtencion_de_permisos",
       label: "Obtención de Permisos",
     },
   ];
 
   const isActive = (href: string) => {
-    if (href === "/Home") {
+    if (href === "/home") {
       return pathname === href;
     }
     return pathname.startsWith(href);
@@ -35,7 +35,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     logout(); // Esto eliminará las cookies
-    router.push("/Login"); // Redirigir al login
+    router.push("/login"); // Redirigir al login
   };
 
   return (
@@ -57,7 +57,7 @@ export default function Navbar() {
         >
           {/* Brand */}
           <Link
-            href="/Home"
+            href="/home"
             className="navbar-brand"
             style={{
               display: "flex",
@@ -67,8 +67,10 @@ export default function Navbar() {
               textDecoration: "none",
               fontWeight: "700",
               fontSize: "1.1rem",
+              fontFamily: "Roboto",
             }}
           >
+            <i className="bi bi-speedometer2 me-2 text-primary"></i>
             {/* <img
               src="/img/gob-header.svg"
               alt="Gobierno de Chile"

@@ -18,7 +18,7 @@ export default function LoginPage() {
   // Redirección automática si ya está autenticado
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push('/Home');
+      router.push('/home');
     }
   }, [isAuthenticated, isLoading, router]);
 
@@ -57,7 +57,7 @@ export default function LoginPage() {
       });
 
       if (success) {
-        router.push('/Home'); // Redirigir a la página principal
+        router.push('/home'); // Redirigir a la página principal
       } else {
         setError('Credenciales inválidas. Por favor, verifique su RUT y clave.');
       }

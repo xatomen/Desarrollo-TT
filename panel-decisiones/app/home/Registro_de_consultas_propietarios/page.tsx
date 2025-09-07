@@ -1,6 +1,27 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+import API_CONFIG from "@/config/api";
+
+// Registrar componentes de Chart.js
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 // Tipos para la respuesta de la API
 type ApiResponse = {
@@ -75,8 +96,8 @@ export default function RegistroConsultasPropietariosPage() {
     setError(null);
     
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${baseUrl}/calcular-metricas/consultas/${groupBy}/${desde}/${hasta}`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || API_CONFIG.BACKEND;
+      const response = await fetch(`${baseUrl}calcular-metricas/consultas/${groupBy}/${desde}/${hasta}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -139,20 +160,97 @@ export default function RegistroConsultasPropietariosPage() {
     };
   }, [apiData]);
 
-  // Series para minigráficos (últimos 7 días de los datos)
-  const recentData = useMemo(() => {
-    const consultasRecent = chartData.consultas.slice(-7).map(item => ({
-      label: formatDateLabel(item.periodo),
-      v: item.consultas
-    }));
+  // Configuración para gráficos Chart.js
+  const consultasChartData = useMemo(() => {
+    const periodsToShow = groupBy === "AÑO" ? 3 : groupBy === "MES" ? 6 : 7;
+    const recentData = chartData.consultas.slice(-periodsToShow);
+    return {
+      labels: recentData.map(item => formatDateLabel(item.periodo, groupBy)),
+      datasets: [
+        {
+          label: 'Consultas',
+          data: recentData.map(item => item.consultas),
+          backgroundColor: '#0d6efd',
+          borderColor: '#0d6efd',
+          borderWidth: 1,
+        },
+      ],
+    };
+  }, [chartData, groupBy]);
 
-    const usuariosRecent = chartData.usuarios.slice(-7).map(item => ({
-      label: formatDateLabel(item.periodo),
-      v: item.usuarios_unicos
-    }));
+  const usuariosChartData = useMemo(() => {
+    const periodsToShow = groupBy === "AÑO" ? 3 : groupBy === "MES" ? 6 : 7;
+    const recentData = chartData.usuarios.slice(-periodsToShow);
+    return {
+      labels: recentData.map(item => formatDateLabel(item.periodo, groupBy)),
+      datasets: [
+        {
+          label: 'Usuarios únicos',
+          data: recentData.map(item => item.usuarios_unicos),
+          backgroundColor: '#198754',
+          borderColor: '#198754',
+          borderWidth: 1,
+        },
+      ],
+    };
+  }, [chartData, groupBy]);
 
-    return { consultas: consultasRecent, usuarios: usuariosRecent };
-  }, [chartData]);
+  // Opciones comunes para los gráficos
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: 'white',
+        bodyColor: 'white',
+        borderColor: '#ddd',
+        borderWidth: 1,
+        callbacks: {
+          label: function(context: any) {
+            const datasetLabel = context.dataset.label;
+            return `${datasetLabel}: ${context.parsed.y.toLocaleString('es-CL')}`;
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          callback: function(value: any) {
+            return Number.isInteger(value) ? value.toLocaleString('es-CL') : '';
+          },
+          font: {
+            size: 11,
+          },
+        },
+        grid: {
+          color: '#e9ecef',
+        },
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: {
+            size: 11,
+          },
+          maxRotation: 45,
+        },
+      },
+    },
+    elements: {
+      bar: {
+        borderRadius: 4,
+      },
+    },
+  };
 
   // Actualizar localStorage cuando se genere PDF
   function handleGeneratePDF() {
@@ -164,7 +262,7 @@ export default function RegistroConsultasPropietariosPage() {
   }
 
   return (
-    <div className="container my-4">
+    <div className="my-4">
       <header className="mb-4">
         <h2 className="h3 d-flex align-items-center gap-2">
           <span role="img" aria-label="chart">📊</span>
@@ -175,57 +273,74 @@ export default function RegistroConsultasPropietariosPage() {
           Usuarios únicos: <strong>{apiData?.kpi?.usuarios_unicos_acumulados || 0}</strong>
         </p>
       </header>
-
+      
       {/* Filtros */}
-      <form onSubmit={(e) => { e.preventDefault(); fetchData(); }} className="row g-3 align-items-end">
-        <div className="col-12 col-md-3">
-          <label className="form-label">Agrupar por</label>
-          <select
-            className="form-select"
-            value={groupBy}
-            onChange={(e) => setGroupBy(e.target.value as GroupBy)}
-          >
-            <option value="DIA">DÍA</option>
-            <option value="MES">MES</option>
-            <option value="AÑO">AÑO</option>
-          </select>
-        </div>
+      <div className="card">
+        <h5 className="card-header text-center" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>Filtros</h5>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            fetchData();
+          }}
+          className="row g-3 align-items-end p-4"
+        >
+          <div className="col-12 col-md-2">
+            <label className="form-label">Agrupar por</label>
+            <select
+              className="form-control"
+              value={groupBy}
+              onChange={(e) => setGroupBy(e.target.value as GroupBy)}
+              style={{ 
+                height: '38px',
+                fontSize: '14px',
+                borderColor: '#ced4da',
+                borderRadius: '0.375rem'
+              }}
+            >
+              <option value="DIA">DÍA</option>
+              <option value="MES">MES</option>
+              <option value="AÑO">AÑO</option>
+            </select>
+          </div>
 
-        <div className="col-6 col-md-3">
-          <label className="form-label">Desde</label>
-          <input
-            className="form-control"
-            type="date"
-            value={desde}
-            onChange={(e) => setDesde(e.target.value)}
-            required
-          />
-        </div>
+          <div className="col-6 col-md-3">
+            <label className="form-label">Desde</label>
+            <input
+              className="form-control"
+              type="date"
+              value={desde}
+              onChange={(e) => setDesde(e.target.value)}
+              required
+            />
+          </div>
 
-        <div className="col-6 col-md-3">
-          <label className="form-label">Hasta</label>
-          <input
-            className="form-control"
-            type="date"
-            value={hasta}
-            onChange={(e) => setHasta(e.target.value)}
-            required
-          />
-        </div>
+          <div className="col-6 col-md-3">
+            <label className="form-label">Hasta</label>
+            <input
+              className="form-control"
+              type="date"
+              value={hasta}
+              onChange={(e) => setHasta(e.target.value)}
+              required
+            />
+          </div>
 
-        <div className="col-12 col-md-3 d-grid">
-          <button type="submit" className="btn btn-success" disabled={loading}>
-            {loading ? 'Consultando...' : 'Consultar Datos'}
-          </button>
-        </div>
-      </form>
+          <div className="col-12 col-md-2 d-grid">
+            <button type="submit" className="btn btn-success w-100" disabled={loading}>
+              {loading ? 'Filtrando...' : 'Filtrar'}
+            </button>
+          </div>
 
-      <div className="row mt-2">
-        <div className="col-12 col-md-3 d-grid">
-          <button className="btn btn-primary" onClick={handleGeneratePDF}>
-            Generar Informe (PDF)
-          </button>
-        </div>
+          <div className="col-12 col-md-2 d-grid">
+            <button
+              type="button"
+              className="btn btn-primary w-100"
+              onClick={handleGeneratePDF}
+            >
+              Generar Informe
+            </button>
+          </div>
+        </form>
       </div>
 
       {/* Mensajes de estado */}
@@ -249,8 +364,46 @@ export default function RegistroConsultasPropietariosPage() {
 
       {/* Contenido */}
       <div className="row mt-4">
+
+        {/* Gráficos con Chart.js */}
+        <div className="col-12 col-lg-6 mt-4 mt-lg-0">
+          <div className="card shadow-sm mb-3">
+            <h6 className="card-header" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+              Consultas — Últimos períodos
+              </h6>
+            <div className="card-body">
+              <div style={{ height: '200px' }}>
+                {consultasChartData.datasets[0].data.length > 0 ? (
+                  <Bar data={consultasChartData} options={chartOptions} />
+                ) : (
+                  <div className="d-flex align-items-center justify-content-center h-100">
+                    <span className="text-muted">Sin datos disponibles</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="card shadow-sm">
+            <h6 className="card-header" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+              Usuarios únicos — Últimos períodos
+            </h6>
+            <div className="card-body">
+              <div style={{ height: '200px' }}>
+                {usuariosChartData.datasets[0].data.length > 0 ? (
+                  <Bar data={usuariosChartData} options={chartOptions} />
+                ) : (
+                  <div className="d-flex align-items-center justify-content-center h-100">
+                    <span className="text-muted">Sin datos disponibles</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Tabla */}
-        <div className="col-12 col-lg-7">
+        <div className="col-12 col-lg-6">
           <div className="card shadow-sm">
             <div className="card-body p-0">
               <div className="table-responsive">
@@ -258,16 +411,14 @@ export default function RegistroConsultasPropietariosPage() {
                   <thead className="table-light">
                     <tr>
                       <th>RUT Propietario</th>
-                      {/* <th>Nombre</th> */}
                       <th>PPU</th>
-                      {/* <th>Vehículo</th> */}
                       <th>Fecha/Hora</th>
                     </tr>
                   </thead>
                   <tbody>
                     {currentRows.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="text-center py-5 text-muted">
+                        <td colSpan={3} className="text-center py-5 text-muted">
                           {loading ? 'Cargando...' : 'Sin resultados'}
                         </td>
                       </tr>
@@ -276,12 +427,7 @@ export default function RegistroConsultasPropietariosPage() {
                     {currentRows.map((r, i) => (
                       <tr key={`${r.rut}-${i}`}>
                         <td><code>{r.rut}</code></td>
-                        {/* <td>{r.nombre}</td> */}
                         <td><strong>{r.ppu}</strong></td>
-                        {/* <td>
-                          <small className="text-muted">{r.marca}</small><br/>
-                          {r.modelo}
-                        </td> */}
                         <td>{formatDateTime(r.fecha)}</td>
                       </tr>
                     ))}
@@ -337,116 +483,7 @@ export default function RegistroConsultasPropietariosPage() {
           </div>
         </div>
 
-        {/* Gráficos */}
-        <div className="col-12 col-lg-5 mt-4 mt-lg-0">
-          <div className="card shadow-sm mb-3">
-            <div className="card-body">
-              <h6 className="mb-3">Consultas — Últimos períodos</h6>
-              <MiniBars data={recentData.consultas} height={140} />
-            </div>
-          </div>
-
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <h6 className="mb-3">Usuarios únicos — Últimos períodos</h6>
-              <MiniBars data={recentData.usuarios} height={140} />
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
-  );
-}
-
-/* ===== Mini chart (SVG) ===== */
-function MiniBars({
-  data,
-  height = 120,
-}: {
-  data: { label: string; v: number }[];
-  height?: number;
-}) {
-  if (!data || data.length === 0) {
-    return (
-      <div className="d-flex align-items-center justify-content-center" style={{ height }}>
-        <span className="text-muted">Sin datos</span>
-      </div>
-    );
-  }
-
-  const max = Math.max(1, ...data.map((d) => d.v));
-  const barW = 28;
-  const gap = 16;
-  const padLeft = 50; // Aumentamos padding para mostrar números más grandes
-  const padRight = 10;
-  const width = padLeft + data.length * barW + (data.length - 1) * gap + padRight;
-  const padBottom = 22;
-  const padTop = 10;
-
-  // Calcular valores del eje Y con números enteros
-  const step = Math.max(1, Math.ceil(max / 4));
-  const yAxisValues = [0, step, step * 2, step * 3, max];
-
-  return (
-    <div>
-      {/* Etiqueta del eje Y */}
-      <div className="text-center mb-2">
-        <small className="text-muted">Cantidad de Consultas</small>
-      </div>
-      <svg width="100%" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="barras">
-        {/* líneas guía y etiquetas del eje Y */}
-        {[0, 0.25, 0.5, 0.75, 1].map((p, index) => {
-          const y = padTop + (height - padTop - padBottom) * (1 - p);
-          return (
-            <g key={p}>
-              <line x1={padLeft} y1={y} x2={width - padRight} y2={y} stroke="#eee" />
-              <text 
-                x={padLeft - 5} 
-                y={y + 3} 
-                textAnchor="end" 
-                fontSize="10" 
-                fill="#6c757d"
-              >
-                {yAxisValues[index]}
-              </text>
-            </g>
-          );
-        })}
-
-        {data.map((d, i) => {
-          const x = padLeft + i * (barW + gap);
-          const h = ((height - padTop - padBottom) * d.v) / max;
-          const y = height - padBottom - h;
-
-          return (
-            <g key={i}>
-              <rect
-                x={x}
-                y={y}
-                width={barW}
-                height={h}
-                rx={4}
-                fill="#0d6efd"
-                opacity={0.85}
-              />
-              {/* Mostrar valor encima de cada barra */}
-              <text 
-                x={x + barW / 2} 
-                y={y - 3} 
-                textAnchor="middle" 
-                fontSize="10" 
-                fill="#495057"
-                fontWeight="bold"
-              >
-                {d.v}
-              </text>
-              <text x={x + barW / 2} y={height - 6} textAnchor="middle" fontSize="11" fill="#6c757d">
-                {d.label}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
     </div>
   );
 }
@@ -469,10 +506,30 @@ function formatDateTime(dateString: string) {
   });
 }
 
-function formatDateLabel(dateString: string) {
-  const d = new Date(dateString);
-  return d.toLocaleDateString("es-CL", {
-    month: "short",
-    day: "numeric",
-  });
+function formatDateLabel(dateString: string, periodType: string = "DIA") {
+  switch (periodType) {
+    case "AÑO":
+      // Si es solo un año (como "2025"), devolverlo directamente
+      if (dateString.length === 4 && !isNaN(Number(dateString))) {
+        return dateString;
+      }
+      // Si es una fecha completa, extraer el año
+      const yearDate = new Date(dateString); // Asegurar que se interprete como fecha local
+      return yearDate.getFullYear().toString();
+      
+    case "MES":
+      const monthDate = new Date(dateString + 'T00:00:00'); // Asegurar que se interprete como fecha local
+      return monthDate.toLocaleDateString("es-CL", {
+        month: "long", // Nombre completo del mes
+      });
+      
+    case "DIA":
+    default:
+      const dayDate = new Date(dateString + 'T00:00:00'); // Asegurar que se interprete como fecha local
+      return dayDate.toLocaleDateString("es-CL", {
+        day: "numeric",
+        month: "short", // Mes abreviado
+      });
+  }
 }
+

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import API_CONFIG from '../config/api';
 
 interface LoginRequest {
   rut: string;
@@ -92,7 +93,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (credentials: LoginRequest): Promise<boolean> => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:8000/login_admin', {
+      const response = await fetch(`${API_CONFIG.BACKEND}login_admin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

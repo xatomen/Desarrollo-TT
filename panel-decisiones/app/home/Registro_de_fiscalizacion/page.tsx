@@ -2,6 +2,27 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+import API_CONFIG from "@/config/api";
+
+// Registrar componentes de Chart.js
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 // Tipos para la respuesta de la API
 type ApiResponse = {
@@ -87,8 +108,8 @@ export default function RegistroFiscalizacionPage() {
     setError(null);
     
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${baseUrl}/calcular-metricas/fiscalizacion/${groupBy}/${desde}/${hasta}`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || API_CONFIG.BACKEND;
+      const response = await fetch(`${baseUrl}calcular-metricas/fiscalizacion/${groupBy}/${desde}/${hasta}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -163,24 +184,216 @@ export default function RegistroFiscalizacionPage() {
     };
   }, [apiData]);
 
-  // Series para minigráficos (últimos períodos según el tipo)
-  const recentData = useMemo(() => {
-    // Determinar cuántos períodos mostrar según el tipo
+  // Datos para Chart.js - Vehículos por condición (gráfico apilado)
+  const vehiculosChartData = useMemo(() => {
     const periodsToShow = groupBy === "AÑO" ? 3 : groupBy === "MES" ? 6 : 7;
-    
-    const vehiculosRecent = chartData.vehiculos.slice(-periodsToShow).map(item => ({
-      label: formatDateLabel(item.periodo, groupBy),
-      alDia: item.al_dia,
-      conProblemas: item.con_problemas
-    }));
+    const recentData = chartData.vehiculos.slice(-periodsToShow);
 
-    const milesRecent = chartData.miles.slice(-periodsToShow).map(item => ({
-      label: formatDateLabel(item.periodo, groupBy),
-      v: item.miles
-    }));
-
-    return { vehiculos: vehiculosRecent, miles: milesRecent };
+    return {
+      labels: recentData.map(item => formatDateLabel(item.periodo, groupBy)),
+      datasets: [
+        {
+          label: 'Al día',
+          data: recentData.map(item => item.al_dia),
+          backgroundColor: '#198754',
+          borderColor: '#198754',
+          borderWidth: 1,
+          stack: 'stack1',
+        },
+        {
+          label: 'Con problemas',
+          data: recentData.map(item => item.con_problemas),
+          backgroundColor: '#dc3545',
+          borderColor: '#dc3545',
+          borderWidth: 1,
+          stack: 'stack1',
+        },
+      ],
+    };
   }, [chartData, groupBy]);
+
+  // Datos para Chart.js - Miles fiscalizados
+  const milesChartData = useMemo(() => {
+    const periodsToShow = groupBy === "AÑO" ? 3 : groupBy === "MES" ? 6 : 7;
+    const recentData = chartData.miles.slice(-periodsToShow);
+
+    return {
+      labels: recentData.map(item => formatDateLabel(item.periodo, groupBy)),
+      datasets: [
+        {
+          label: 'Vehículos fiscalizados',
+          data: recentData.map(item => item.miles), // Ya son unidades individuales, no miles
+          backgroundColor: '#0d6efd',
+          borderColor: '#0d6efd',
+          borderWidth: 1,
+        },
+      ],
+    };
+  }, [chartData, groupBy]);
+
+  // Opciones para gráfico apilado
+  const stackedChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'index' as const,
+      intersect: false,
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'bottom' as const,
+        labels: {
+          boxWidth: 12,
+          padding: 15,
+          font: {
+            size: 11,
+          },
+        },
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: 'white',
+        bodyColor: 'white',
+        borderColor: '#ddd',
+        borderWidth: 1,
+        callbacks: {
+          afterLabel: function(context: any) {
+            const dataIndex = context.dataIndex;
+            const datasets = context.chart.data.datasets;
+            
+            // Calcular el total correctamente para este período específico
+            let total = 0;
+            datasets.forEach((dataset: any) => {
+              if (dataset.data[dataIndex] !== undefined && dataset.data[dataIndex] !== null) {
+                total += dataset.data[dataIndex];
+              }
+            });
+            
+            // Obtener el valor real del dataset actual
+            const currentValue = context.dataset.data[dataIndex];
+            const percentage = total > 0 ? ((currentValue / total) * 100).toFixed(1) : 0;
+            return `${percentage}% del total de este período`;
+          },
+          footer: function(context: any) {
+            if (context.length === 0) return '';
+            
+            const dataIndex = context[0].dataIndex;
+            const datasets = context[0].chart.data.datasets;
+            
+            // Calcular el total correctamente para este período
+            let total = 0;
+            datasets.forEach((dataset: any) => {
+              if (dataset.data[dataIndex] !== undefined && dataset.data[dataIndex] !== null) {
+                total += dataset.data[dataIndex];
+              }
+            });
+            
+            return `Total: ${total} vehículos`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        stacked: true,
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: {
+            size: 11,
+          },
+          maxRotation: 45,
+        },
+      },
+      y: {
+        stacked: true,
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          callback: function(value: any) {
+            return Number.isInteger(value) ? value : '';
+          },
+          font: {
+            size: 11,
+          },
+        },
+        grid: {
+          color: '#e9ecef',
+        },
+      },
+    },
+    elements: {
+      bar: {
+        borderRadius: 0,
+        borderSkipped: false,
+      },
+    },
+  };
+
+  // Opciones para gráfico simple
+  const simpleChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: 'white',
+        bodyColor: 'white',
+        borderColor: '#ddd',
+        borderWidth: 1,
+        callbacks: {
+          label: function(context: any) {
+            return `Vehículos fiscalizados: ${context.parsed.y.toLocaleString('es-CL')}`;
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          callback: function(value: any) {
+            return Number.isInteger(value) ? value.toLocaleString('es-CL') : '';
+          },
+          font: {
+            size: 11,
+          },
+        },
+        grid: {
+          color: '#e9ecef',
+        },
+        title: {
+          display: true,
+          text: 'Vehículos fiscalizados (unidades)',
+          font: {
+            size: 12,
+          },
+        },
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: {
+            size: 11,
+          },
+          maxRotation: 45,
+        },
+      },
+    },
+    elements: {
+      bar: {
+        borderRadius: 4,
+      },
+    },
+  };
 
   // Calcular estadísticas
   const stats = useMemo(() => {
@@ -221,7 +434,7 @@ export default function RegistroFiscalizacionPage() {
   }
 
   return (
-    <div className="container my-4">
+    <div className="my-4">
       <header className="mb-4">
         <h2 className="h3 d-flex align-items-center gap-2">
           <span role="img" aria-label="shield">🛡️</span>
@@ -234,57 +447,65 @@ export default function RegistroFiscalizacionPage() {
       </header>
 
       {/* Filtros */}
-      <form onSubmit={handleFilterSubmit} className="row g-3 align-items-end">
-        <div className="col-12 col-md-3">
-          <label className="form-label">Agrupar por</label>
-          <select
-            className="form-select"
-            value={groupBy}
-            onChange={(e) => setGroupBy(e.target.value as Grupo)}
-          >
-            <option value="DIA">DÍA</option>
-            <option value="MES">MES</option>
-            <option value="AÑO">AÑO</option>
-          </select>
-        </div>
+      <div className="card">
+        <h5 className="card-header text-center" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>Filtros</h5>
+        <form onSubmit={handleFilterSubmit} className="row g-3 align-items-end p-4">
+          <div className="col-12 col-md-2">
+            <label className="form-label">Agrupar por</label>
+            <select
+              className="form-control"
+              value={groupBy}
+              onChange={(e) => setGroupBy(e.target.value as Grupo)}
+              style={{ 
+                height: '38px',
+                fontSize: '14px',
+                borderColor: '#ced4da',
+                borderRadius: '0.375rem'
+              }}
+            >
+              <option value="DIA">DÍA</option>
+              <option value="MES">MES</option>
+              <option value="AÑO">AÑO</option>
+            </select>
+          </div>
 
-        <div className="col-6 col-md-3">
-          <label className="form-label">Desde</label>
-          <input
-            className="form-control"
-            type="date"
-            value={desde}
-            onChange={(e) => setDesde(e.target.value)}
-            required
-          />
-        </div>
+          <div className="col-6 col-md-3">
+            <label className="form-label">Desde</label>
+            <input
+              className="form-control"
+              type="date"
+              value={desde}
+              onChange={(e) => setDesde(e.target.value)}
+              required
+            />
+          </div>
 
-        <div className="col-6 col-md-3">
-          <label className="form-label">Hasta</label>
-          <input
-            className="form-control"
-            type="date"
-            value={hasta}
-            onChange={(e) => setHasta(e.target.value)}
-            required
-          />
-        </div>
+          <div className="col-6 col-md-3">
+            <label className="form-label">Hasta</label>
+            <input
+              className="form-control"
+              type="date"
+              value={hasta}
+              onChange={(e) => setHasta(e.target.value)}
+              required
+            />
+          </div>
 
-        <div className="col-12 col-md-3 d-grid">
-          <button type="submit" className="btn btn-success" disabled={loading}>
-            {loading ? 'Filtrando...' : 'Filtrar'}
-          </button>
-        </div>
-      </form>
+          <div className="col-12 col-md-2 d-grid">
+            <button type="submit" className="btn btn-success w-100" disabled={loading}>
+              {loading ? 'Filtrando...' : 'Filtrar'}
+            </button>
+          </div>
 
-      <div className="row mt-2">
-        <div className="col-12 col-md-3 d-grid">
-          <button className="btn btn-primary" onClick={handleGeneratePDF}>
-            Generar Informe (PDF)
-          </button>
-        </div>
+          <div className="col-12 col-md-2 d-grid">
+            <button type="button" className="btn btn-primary w-100" onClick={handleGeneratePDF}>
+              Generar Informe
+            </button>
+          </div>
+
+        </form>
       </div>
-
+      
       {/* Mensajes de estado */}
       {loading && (
         <div className="alert alert-info mt-3" role="status">
@@ -305,40 +526,93 @@ export default function RegistroFiscalizacionPage() {
       )}
 
       {/* Estadísticas rápidas */}
-      <div className="row mt-4 text-center align-items-center">
-        <div className="col-12 col-md-6 col-lg-3">
-          <div className="card text-center">
-            <div className="card-body">
-              <h5 className="card-title text-success">Al día</h5>
-              <p className="display-6 mb-0">{stats.alDia}</p>
-              <small className="text-muted">{stats.pctAlDia.toFixed(1)}%</small>
+      <div className="card mt-4">
+        <h5 className="card-header text-center" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>Resumen fiscalizaciones</h5>
+        <div className="row p-4">
+          <div className="col-12 col-md-6 col-lg-4">
+            <div className="card text-center">
+              <div className="card-body" style={{ backgroundColor: '#e6ffe6', border: '1px solid #b3ffb3' }}>
+                <h3 className="card-title text-success" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>Al día</h3>
+                <h3 className="display-6" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>{stats.alDia}</h3>
+                <h4 className="text-muted" style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>{stats.pctAlDia.toFixed(1)}%</h4>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="col-12 col-md-6 col-lg-3">
-          <div className="card text-center">
-            <div className="card-body">
-              <h5 className="card-title text-danger">Con problemas</h5>
-              <p className="display-6 mb-0">{stats.conProblemas}</p>
-              <small className="text-muted">{stats.pctConProblemas.toFixed(1)}%</small>
+          <div className="col-12 col-md-6 col-lg-4">
+            <div className="card text-center">
+              <div className="card-body" style={{ backgroundColor: '#ffe6e6', border: '1px solid #ffb3b3' }}>
+                <h3 className="card-title text-danger" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>Con problemas</h3>
+                <h3 className="display-6" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>{stats.conProblemas}</h3>
+                <h4 className="text-muted" style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>{stats.pctConProblemas.toFixed(1)}%</h4>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="col-12 col-md-6 col-lg-3">
-          <div className="card text-center">
-            <div className="card-body">
-              <h5 className="card-title">Total</h5>
-              <p className="display-6 mb-0">{tableData.length}</p>
-              <small className="text-muted">vehículos</small>
+          <div className="col-12 col-md-6 col-lg-4">
+            <div className="card text-center">
+              <div className="card-body" style={{ backgroundColor: '#e6f0ff', border: '1px solid #b3d1ff' }}>
+                <h3 className="card-title" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>Total</h3>
+                <h3 className="display-6" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>{tableData.length}</h3>
+                <h4 className="text-muted" style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>vehículos</h4>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
+      
       {/* Contenido principal */}
       <div className="row mt-4">
+
+        {/* Gráficos con Chart.js */}
+        <div className="col-12 col-lg-6 mt-4 mt-lg-0">
+          <div className="card shadow-sm mb-3">
+            <div className="card-header bg-light">
+              <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                <i className="bi bi-bar-chart-fill text-primary"></i>
+                Vehículos por condición (apilado)
+              </h6>
+            </div>
+            <div className="card-body">
+              <div style={{ height: '250px' }}> {/* Altura un poco mayor para la leyenda */}
+                {vehiculosChartData.datasets[0].data.length > 0 ? (
+                  <Bar data={vehiculosChartData} options={stackedChartOptions} />
+                ) : (
+                  <div className="d-flex align-items-center justify-content-center h-100">
+                    <span className="text-muted">Sin datos disponibles</span>
+                  </div>
+                )}
+              </div>
+              {/* Información adicional */}
+              <div className="mt-2 text-center">
+                <small className="text-muted">
+                  Cada barra muestra la composición de vehículos al día (verde) vs con problemas (rojo) por período
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <div className="card shadow-sm">
+            <div className="card-header bg-light">
+              <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                <i className="bi bi-speedometer2 text-info"></i>
+                Vehículos fiscalizados (unidades)
+              </h6>
+            </div>
+            <div className="card-body">
+              <div style={{ height: '200px' }}>
+                {milesChartData.datasets[0].data.length > 0 ? (
+                  <Bar data={milesChartData} options={simpleChartOptions} />
+                ) : (
+                  <div className="d-flex align-items-center justify-content-center h-100">
+                    <span className="text-muted">Sin datos disponibles</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Tabla */}
-        <div className="col-12 col-lg-8">
+        <div className="col-12 col-lg-6">
           <div className="card shadow-sm">
             <div className="card-body p-0">
               <div className="table-responsive">
@@ -346,19 +620,17 @@ export default function RegistroFiscalizacionPage() {
                   <thead className="table-light">
                     <tr>
                       <th>PPU</th>
-                      {/* <th>Vehículo</th> */}
                       <th>Permiso</th>
                       <th>Revisión</th>
                       <th>SOAP</th>
                       <th>Encargo</th>
                       <th>Fecha</th>
-                      {/* <th className="text-center">Estado</th> */}
                     </tr>
                   </thead>
                   <tbody>
                     {currentRows.length === 0 && (
                       <tr>
-                        <td colSpan={8} className="text-center py-5 text-muted">
+                        <td colSpan={6} className="text-center py-5 text-muted">
                           {loading ? 'Cargando...' : 'Sin resultados'}
                         </td>
                       </tr>
@@ -373,34 +645,27 @@ export default function RegistroFiscalizacionPage() {
                       return (
                         <tr key={`${r.ppu}-${i}`} className={alDia ? "" : "table-warning"}>
                           <td><strong>{r.ppu}</strong></td>
-                          {/* <td>
-                            <small className="text-muted">{r.marca}</small><br/>
-                            {r.modelo} ({r.anio})
-                          </td> */}
                           <td>
-                            <span className={`badge ${r.permiso === "Vigente" ? "bg-success" : "bg-danger"}`}>
+                            <span className={`badge ${r.permiso === "Vigente" ? "bg-success" : "bg-danger"}`} style={{ borderRadius: '0.5rem', color: 'white', fontWeight: '400', width: '75px', display: 'inline-block', textAlign: 'center' }}>
                               {r.permiso}
                             </span>
                           </td>
                           <td>
-                            <span className={`badge ${r.revision === "Vigente" ? "bg-success" : "bg-danger"}`}>
+                            <span className={`badge ${r.revision === "Vigente" ? "bg-success" : "bg-danger"}`} style={{ borderRadius: '0.5rem', color: 'white', fontWeight: '400', width: '75px', display: 'inline-block', textAlign: 'center' }}>
                               {r.revision}
                             </span>
                           </td>
                           <td>
-                            <span className={`badge ${r.soap === "Vigente" ? "bg-success" : "bg-danger"}`}>
+                            <span className={`badge ${r.soap === "Vigente" ? "bg-success" : "bg-danger"}`} style={{ borderRadius: '0.5rem', color: 'white', fontWeight: '400', width: '75px', display: 'inline-block', textAlign: 'center' }}>
                               {r.soap}
                             </span>
                           </td>
                           <td>
-                            <span className={`badge ${r.encargo === "NO" ? "bg-success" : "bg-danger"}`}>
+                            <span className={`badge ${r.encargo === "NO" ? "bg-success" : "bg-danger"}`} style={{ borderRadius: '0.5rem', color: 'white', fontWeight: '400', width: '75px', display: 'inline-block', textAlign: 'center' }}>
                               {r.encargo}
                             </span>
                           </td>
                           <td>{formatDateTime(r.fecha)}</td>
-                          {/* <td className="text-center">
-                            <i className={`bi ${alDia ? "bi-check-circle-fill text-success" : "bi-exclamation-triangle-fill text-warning"}`}>{alDia ? "Al día" : "Con problemas"}</i>
-                          </td> */}
                         </tr>
                       );
                     })}
@@ -456,272 +721,7 @@ export default function RegistroFiscalizacionPage() {
           </div>
         </div>
 
-        {/* Gráficos */}
-        <div className="col-12 col-lg-4 mt-4 mt-lg-0">
-          <div className="card shadow-sm mb-3">
-            <div className="card-header bg-light">
-              <h6 className="mb-0 d-flex align-items-center gap-2">
-                <i className="bi bi-bar-chart-fill text-primary"></i>
-                Vehículos por condición
-              </h6>
-            </div>
-            <div className="card-body">
-              <StackedMiniChart data={recentData.vehiculos} height={160} />
-            </div>
-          </div>
-
-          <div className="card shadow-sm">
-            <div className="card-header bg-light">
-              <h6 className="mb-0 d-flex align-items-center gap-2">
-                <i className="bi bi-speedometer2 text-info"></i>
-                Miles fiscalizados
-              </h6>
-            </div>
-            <div className="card-body">
-              <MiniBars data={recentData.miles} height={160} />
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
-  );
-}
-
-/* ===== Componentes de gráficos ===== */
-
-// Gráfico de barras apiladas para vehículos al día vs con problemas
-function StackedMiniChart({
-  data,
-  height = 140,
-}: {
-  data: { label: string; alDia: number; conProblemas: number }[];
-  height?: number;
-}) {
-  if (!data || data.length === 0) {
-    return (
-      <div className="d-flex align-items-center justify-content-center" style={{ height }}>
-        <span className="text-muted">Sin datos disponibles</span>
-      </div>
-    );
-  }
-
-  const max = Math.max(1, ...data.map((d) => d.alDia + d.conProblemas));
-  const barWidth = Math.min(40, Math.max(20, 250 / data.length));
-  const gap = 8;
-  const totalWidth = data.length * barWidth + (data.length - 1) * gap;
-  const padBottom = 25;
-  const padTop = 15;
-  const padSides = 20;
-
-  return (
-    <div style={{ width: '100%', height: height, position: 'relative' }}>
-      <svg 
-        width="100%" 
-        height={height} 
-        viewBox={`0 0 ${totalWidth + padSides * 2} ${height}`} 
-        style={{ overflow: 'visible' }}
-      >
-        {/* Grid lines */}
-        {[0.25, 0.5, 0.75, 1].map((ratio, i) => {
-          const y = padTop + (height - padTop - padBottom) * (1 - ratio);
-          return (
-            <line 
-              key={i}
-              x1={padSides} 
-              y1={y} 
-              x2={totalWidth + padSides} 
-              y2={y} 
-              stroke="#e9ecef" 
-              strokeWidth="1"
-            />
-          );
-        })}
-        
-        {data.map((d, i) => {
-          const x = padSides + i * (barWidth + gap);
-          const total = d.alDia + d.conProblemas;
-          const barHeight = total > 0 ? ((height - padTop - padBottom) * total) / max : 0;
-          
-          const problemasHeight = total > 0 ? (barHeight * d.conProblemas) / total : 0;
-          const alDiaHeight = barHeight - problemasHeight;
-          
-          const yBase = height - padBottom;
-          const yProblemas = yBase - barHeight;
-          const yAlDia = yProblemas + problemasHeight;
-
-          return (
-            <g key={i}>
-              {/* Barra problemas (rojo) */}
-              {problemasHeight > 0 && (
-                <rect
-                  x={x}
-                  y={yProblemas}
-                  width={barWidth}
-                  height={problemasHeight}
-                  fill="#dc3545"
-                  rx={2}
-                />
-              )}
-              
-              {/* Barra al día (verde) */}
-              {alDiaHeight > 0 && (
-                <rect
-                  x={x}
-                  y={yAlDia}
-                  width={barWidth}
-                  height={alDiaHeight}
-                  fill="#198754"
-                  rx={2}
-                />
-              )}
-              
-              {/* Etiqueta del período */}
-              <text 
-                x={x + barWidth / 2} 
-                y={height - 8} 
-                textAnchor="middle" 
-                fontSize="10" 
-                fill="#6c757d"
-              >
-                {d.label}
-              </text>
-              
-              {/* Valor total */}
-              {total > 0 && (
-                <text 
-                  x={x + barWidth / 2} 
-                  y={yProblemas - 5} 
-                  textAnchor="middle" 
-                  fontSize="10" 
-                  fill="#333"
-                  fontWeight="bold"
-                >
-                  {total}
-                </text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
-      
-      {/* Leyenda */}
-      <div className="d-flex justify-content-center gap-3 mt-2" style={{ fontSize: '11px' }}>
-        <div className="d-flex align-items-center gap-1">
-          <div style={{ width: 12, height: 12, backgroundColor: '#198754', borderRadius: 2 }}></div>
-          <span>Al día</span>
-        </div>
-        <div className="d-flex align-items-center gap-1">
-          <div style={{ width: 12, height: 12, backgroundColor: '#dc3545', borderRadius: 2 }}></div>
-          <span>Con problemas</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Gráfico de barras simple para miles
-function MiniBars({
-  data,
-  height = 140,
-}: {
-  data: { label: string; v: number }[];
-  height?: number;
-}) {
-  if (!data || data.length === 0) {
-    return (
-      <div className="d-flex align-items-center justify-content-center" style={{ height }}>
-        <span className="text-muted">Sin datos disponibles</span>
-      </div>
-    );
-  }
-
-  // Si todos los valores son 0, mostrar mensaje especial
-  const hasData = data.some(d => d.v > 0);
-  if (!hasData) {
-    return (
-      <div className="d-flex align-items-center justify-content-center flex-column" style={{ height }}>
-        <div style={{ fontSize: '24px', color: '#6c757d' }}>📊</div>
-        <span className="text-muted mt-2">No hay miles registrados</span>
-      </div>
-    );
-  }
-
-  const max = Math.max(1, ...data.map((d) => d.v));
-  const barWidth = Math.min(40, Math.max(20, 250 / data.length));
-  const gap = 12;
-  const totalWidth = data.length * barWidth + (data.length - 1) * gap;
-  const padBottom = 25;
-  const padTop = 15;
-  const padSides = 20;
-
-  return (
-    <div style={{ width: '100%', height: height, position: 'relative' }}>
-      <svg 
-        width="100%" 
-        height={height} 
-        viewBox={`0 0 ${totalWidth + padSides * 2} ${height}`}
-        style={{ overflow: 'visible' }}
-      >
-        {/* Grid lines */}
-        {[0.25, 0.5, 0.75, 1].map((ratio, i) => {
-          const y = padTop + (height - padTop - padBottom) * (1 - ratio);
-          return (
-            <line 
-              key={i}
-              x1={padSides} 
-              y1={y} 
-              x2={totalWidth + padSides} 
-              y2={y} 
-              stroke="#e9ecef" 
-              strokeWidth="1"
-            />
-          );
-        })}
-        
-        {data.map((d, i) => {
-          const x = padSides + i * (barWidth + gap);
-          const barHeight = ((height - padTop - padBottom) * d.v) / max;
-          const y = height - padBottom - barHeight;
-
-          return (
-            <g key={i}>
-              <rect
-                x={x}
-                y={y}
-                width={barWidth}
-                height={barHeight}
-                fill="#0d6efd"
-                rx={3}
-              />
-              
-              {/* Etiqueta del período */}
-              <text 
-                x={x + barWidth / 2} 
-                y={height - 8} 
-                textAnchor="middle" 
-                fontSize="10" 
-                fill="#6c757d"
-              >
-                {d.label}
-              </text>
-              
-              {/* Valor */}
-              {d.v > 0 && (
-                <text 
-                  x={x + barWidth / 2} 
-                  y={y - 5} 
-                  textAnchor="middle" 
-                  fontSize="10" 
-                  fill="#333"
-                  fontWeight="bold"
-                >
-                  {d.v}
-                </text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
     </div>
   );
 }
@@ -745,21 +745,30 @@ function formatDateTime(dateString: string) {
 }
 
 function formatDateLabel(dateString: string, periodType: string = "DIA") {
-  const d = new Date(dateString);
-  
   switch (periodType) {
     case "AÑO":
-      return d.getFullYear().toString();
+      // Si es solo un año (como "2025"), devolverlo directamente
+      if (dateString.length === 4 && !isNaN(Number(dateString))) {
+        return dateString;
+      }
+      // Si es una fecha completa, extraer el año
+      const yearDate = new Date(dateString);
+      return yearDate.getFullYear().toString();
+      
     case "MES":
-      return d.toLocaleDateString("es-CL", {
-        year: "numeric",
-        month: "short",
+      const monthDate = new Date(dateString + 'T00:00:00');
+      return monthDate.toLocaleDateString("es-CL", {
+      year: "numeric",
+      month: "short",
       });
+      
     case "DIA":
     default:
-      return d.toLocaleDateString("es-CL", {
-        month: "short",
-        day: "numeric",
+      const dayDate = new Date(dateString + 'T00:00:00');
+      console.log('Formateando fecha:', dateString, '->', dayDate);
+      return dayDate.toLocaleDateString("es-CL", {
+      month: "short",
+      day: "numeric",
       });
   }
 }

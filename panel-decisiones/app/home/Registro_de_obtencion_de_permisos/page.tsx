@@ -2,6 +2,27 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+import API_CONFIG from "@/config/api";
+
+// Registrar componentes de Chart.js
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 // Tipos para la respuesta de la API
 type ApiResponse = {
@@ -79,8 +100,8 @@ export default function RegistroObtencionPermisosPage() {
     setError(null);
     
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${baseUrl}/calcular-metricas/permisos/${groupBy}/${desde}/${hasta}`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || API_CONFIG.BACKEND; // Asegúrate de definir esta variable de entorno
+      const response = await fetch(`${baseUrl}calcular-metricas/permisos/${groupBy}/${desde}/${hasta}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -149,18 +170,94 @@ export default function RegistroObtencionPermisosPage() {
   const totalPages = Math.max(1, Math.ceil(permisosData.length / perPage));
   const currentRows = permisosData.slice((page - 1) * perPage, page * perPage);
 
-  // Datos para mini gráfico (últimos períodos)
+  // Datos para Chart.js
   const chartData = useMemo(() => {
     if (!apiData?.charts?.emisiones_por_periodo_miles) return [];
     
     // Determinar cuántos períodos mostrar según el tipo
     const periodsToShow = groupBy === "AÑO" ? 3 : groupBy === "MES" ? 6 : 7;
     
-    return apiData.charts.emisiones_por_periodo_miles.slice(-periodsToShow).map(item => ({
-      label: formatDateLabel(item.periodo, groupBy),
-      v: item.miles
-    }));
+    return apiData.charts.emisiones_por_periodo_miles.slice(-periodsToShow);
   }, [apiData, groupBy]);
+
+  // Configuración para Chart.js
+  const emisionesChartData = useMemo(() => {
+    return {
+      labels: chartData.map(item => formatDateLabel(item.periodo, groupBy)),
+      datasets: [
+        {
+          label: 'Permisos emitidos',
+          data: chartData.map(item => item.miles), // Ya son unidades individuales, no miles
+          backgroundColor: '#0d6efd',
+          borderColor: '#0d6efd',
+          borderWidth: 1,
+        },
+      ],
+    };
+  }, [chartData, groupBy]);
+
+  // Opciones para el gráfico
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: 'white',
+        bodyColor: 'white',
+        borderColor: '#ddd',
+        borderWidth: 1,
+        callbacks: {
+          label: function(context: any) {
+            return `Permisos emitidos: ${context.parsed.y.toLocaleString('es-CL')}`;
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          callback: function(value: any) {
+            return Number.isInteger(value) ? value.toLocaleString('es-CL') : '';
+          },
+          font: {
+            size: 11,
+          },
+        },
+        grid: {
+          color: '#e9ecef',
+        },
+        title: {
+          display: true,
+          text: 'Permisos emitidos (unidades)',
+          font: {
+            size: 12,
+          },
+        },
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: {
+            size: 11,
+          },
+          maxRotation: 45,
+        },
+      },
+    },
+    elements: {
+      bar: {
+        borderRadius: 4,
+      },
+    },
+  };
 
   // Función para manejar el submit del formulario
   const handleFilterSubmit = (e: React.FormEvent) => {
@@ -179,7 +276,7 @@ export default function RegistroObtencionPermisosPage() {
   }
 
   return (
-    <div className="container my-4">
+    <div className="my-4">
       <header className="mb-4">
         <h2 className="h3 d-flex align-items-center gap-2">
           <span role="img" aria-label="document">📋</span>
@@ -191,57 +288,64 @@ export default function RegistroObtencionPermisosPage() {
           Valor promedio: <strong>${kpis.valorPromedio.toLocaleString("es-CL")}</strong>
         </p>
       </header>
-
+      
       {/* Filtros */}
-      <form onSubmit={handleFilterSubmit} className="row g-3 align-items-end">
-        <div className="col-12 col-md-3">
-          <label className="form-label">Agrupar por</label>
-          <select
-            className="form-select"
-            value={groupBy}
-            onChange={(e) => setGroupBy(e.target.value as GroupBy)}
-          >
-            <option value="DIA">DÍA</option>
-            <option value="MES">MES</option>
-            <option value="AÑO">AÑO</option>
-          </select>
-        </div>
+      <div className="card">
+        <h5 className="card-header text-center" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>Filtros</h5>
+        <form onSubmit={handleFilterSubmit} className="row g-3 align-items-end p-4">
+          <div className="col-12 col-md-2">            <label className="form-label">Agrupar por</label>
+            <select
+              className="form-control"
+              value={groupBy}
+              onChange={(e) => setGroupBy(e.target.value as GroupBy)}
+              style={{ 
+                height: '38px',
+                fontSize: '14px',
+                borderColor: '#ced4da',
+                borderRadius: '0.375rem'
+              }}
+            >
+              <option value="DIA">DÍA</option>
+              <option value="MES">MES</option>
+              <option value="AÑO">AÑO</option>
+            </select>
+          </div>
 
-        <div className="col-6 col-md-3">
-          <label className="form-label">Desde</label>
-          <input
-            className="form-control"
-            type="date"
-            value={desde}
-            onChange={(e) => setDesde(e.target.value)}
-            required
-          />
-        </div>
+          <div className="col-6 col-md-3">
+            <label className="form-label">Desde</label>
+            <input
+              className="form-control"
+              type="date"
+              value={desde}
+              onChange={(e) => setDesde(e.target.value)}
+              required
+            />
+          </div>
 
-        <div className="col-6 col-md-3">
-          <label className="form-label">Hasta</label>
-          <input
-            className="form-control"
-            type="date"
-            value={hasta}
-            onChange={(e) => setHasta(e.target.value)}
-            required
-          />
-        </div>
+          <div className="col-6 col-md-3">
+            <label className="form-label">Hasta</label>
+            <input
+              className="form-control"
+              type="date"
+              value={hasta}
+              onChange={(e) => setHasta(e.target.value)}
+              required
+            />
+          </div>
 
-        <div className="col-12 col-md-3 d-grid">
-          <button type="submit" className="btn btn-success" disabled={loading}>
-            {loading ? 'Consultando...' : 'Consultar Datos'}
-          </button>
-        </div>
-      </form>
+          <div className="col-12 col-md-2 d-grid">
+            <button type="submit" className="btn btn-success w-100" disabled={loading}>
+              {loading ? 'Filtrando...' : 'Filtrar'}
+            </button>
+          </div>
 
-      <div className="row mt-2">
-        <div className="col-12 col-md-3 d-grid">
-          <button className="btn btn-primary" onClick={handleGeneratePDF}>
-            Generar Informe (PDF)
-          </button>
-        </div>
+          <div className="col-12 col-md-2 d-grid">
+            <button type="button" className="btn btn-primary w-100" onClick={handleGeneratePDF}>
+              Generar Informe
+            </button>
+          </div>
+
+        </form>
       </div>
 
       {/* Mensajes de estado */}
@@ -264,56 +368,77 @@ export default function RegistroObtencionPermisosPage() {
       )}
 
       {/* KPIs */}
-      <div className="row g-3 mt-3">
-        <div className="col-12 col-md-4">
-          <div className="card shadow-sm">
-            <div className="card-body text-center">
-              <div className="text-muted small">Total Permisos Emitidos</div>
-              <div className="display-6 fw-bold text-primary">{kpis.totalPermisos}</div>
-            </div>
-          </div>
-        </div>
-        <div className="col-12 col-md-4">
-          <div className="card shadow-sm">
-            <div className="card-body text-center">
-              <div className="text-muted small">Recaudación Total (CLP)</div>
-              <div className="display-6 fw-bold text-success">
-                ${kpis.recaudacion.toLocaleString("es-CL")}
+      <div className="card mt-4">
+        <h5 className="card-header text-center" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>Resumen obtención de permisos</h5>
+        <div className="row p-4">
+          <div className="col-12 col-md-4">
+            <div className="card text-center">
+              <div className="card-body" style={{ backgroundColor: '#e6f0ff', border: '1px solid #b3d1ff' }}>
+                <h3 className="card-title text-primary" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>Total Permisos</h3>
+                <h3 className="display-6" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>{kpis.totalPermisos}</h3>
+                <h4 className="text-muted" style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>emitidos</h4>
               </div>
             </div>
           </div>
-        </div>
-        <div className="col-12 col-md-4">
-          <div className="card shadow-sm">
-            <div className="card-body text-center">
-              <div className="text-muted small">Valor Promedio (CLP)</div>
-              <div className="display-6 fw-bold text-info">
-                ${kpis.valorPromedio.toLocaleString("es-CL", {
-                  maximumFractionDigits: 0,
-                })}
+          <div className="col-12 col-md-4">
+            <div className="card text-center">
+              <div className="card-body" style={{ backgroundColor: '#e6ffe6', border: '1px solid #b3ffb3' }}>
+                <h3 className="card-title text-success" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>Recaudación</h3>
+                <h3 className="display-6" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  ${kpis.recaudacion.toLocaleString("es-CL")}
+                </h3>
+                <h4 className="text-muted" style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>CLP total</h4>
+              </div>
+            </div>
+          </div>
+          <div className="col-12 col-md-4">
+            <div className="card text-center">
+              <div className="card-body" style={{ backgroundColor: '#fff2e6', border: '1px solid #ffcc99' }}>
+                <h3 className="card-title text-warning" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>Valor Promedio</h3>
+                <h3 className="display-6" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  ${kpis.valorPromedio.toLocaleString("es-CL", {
+                    maximumFractionDigits: 0,
+                  })}
+                </h3>
+                <h4 className="text-muted" style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>CLP promedio</h4>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Layout: mini gráfico + tabla */}
+      {/* Layout: gráfico Chart.js + tabla */}
       <div className="row g-3 mt-3">
-        <div className="col-12 col-lg-4">
+
+        {/* Gráficos */}
+        <div className="col-12 col-lg-6">
           <div className="card h-100 shadow-sm">
             <div className="card-header bg-light">
-              <h6 className="mb-0 d-flex align-items-center gap-2">
+              <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
                 <i className="bi bi-bar-chart-fill text-primary"></i>
-                Emisiones por período (miles)
+                Emisiones por período (unidades)
               </h6>
             </div>
             <div className="card-body">
-              <MiniBars data={chartData} height={200} />
+              <div style={{ height: '250px' }}>
+                {emisionesChartData.datasets[0].data.length > 0 ? (
+                  <Bar data={emisionesChartData} options={chartOptions} />
+                ) : (
+                  <div className="d-flex align-items-center justify-content-center h-100 flex-column">
+                    <div style={{ fontSize: '32px', color: '#6c757d' }}>📊</div>
+                    <span className="text-muted mt-2 text-center">
+                      No hay emisiones registradas<br/>
+                      <small>en el período seleccionado</small>
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="col-12 col-lg-8">
+        {/* Tabla */}
+        <div className="col-12 col-lg-6">
           <div className="card shadow-sm">
             <div className="card-body p-0">
               <div className="table-responsive">
@@ -326,7 +451,6 @@ export default function RegistroObtencionPermisosPage() {
                       <th>Valor (CLP)</th>
                       <th>Fecha Emisión</th>
                       <th>Fecha Expiración</th>
-                      <th className="text-center">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -337,7 +461,6 @@ export default function RegistroObtencionPermisosPage() {
                         </td>
                       </tr>
                     )}
-
                     {currentRows.map((r, i) => (
                       <tr key={`${r.ppu}-${i}`}>
                         <td><strong>{r.ppu}</strong></td>
@@ -356,11 +479,6 @@ export default function RegistroObtencionPermisosPage() {
                         </td>
                         <td>{formatDate(r.fecha_emision)}</td>
                         <td>{formatDate(r.fecha_expiracion)}</td>
-                        <td className="text-center">
-                          <button className="btn btn-sm btn-outline-primary">
-                            <i className="bi bi-eye"></i> Ver
-                          </button>
-                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -414,135 +532,8 @@ export default function RegistroObtencionPermisosPage() {
             </div>
           </div>
         </div>
+
       </div>      
-    </div>
-  );
-}
-
-/* ===== Mini gráfico de barras (SVG) ===== */
-function MiniBars({
-  data,
-  height = 200,
-}: {
-  data: { label: string; v: number }[];
-  height?: number;
-}) {
-  if (!data || data.length === 0) {
-    return (
-      <div className="d-flex align-items-center justify-content-center flex-column" style={{ height }}>
-        <div style={{ fontSize: '32px', color: '#6c757d' }}>📊</div>
-        <span className="text-muted mt-2">Sin datos disponibles</span>
-      </div>
-    );
-  }
-
-  // Si todos los valores son 0, mostrar mensaje especial
-  const hasData = data.some(d => d.v > 0);
-  if (!hasData) {
-    return (
-      <div className="d-flex align-items-center justify-content-center flex-column" style={{ height }}>
-        <div style={{ fontSize: '32px', color: '#6c757d' }}>📈</div>
-        <span className="text-muted mt-2 text-center">
-          No hay emisiones registradas<br/>
-          <small>en el período seleccionado</small>
-        </span>
-      </div>
-    );
-  }
-
-  const max = Math.max(1, ...data.map((d) => d.v));
-  const barWidth = Math.min(50, Math.max(30, 280 / data.length));
-  const gap = 10;
-  const totalWidth = data.length * barWidth + (data.length - 1) * gap;
-  const padBottom = 30;
-  const padTop = 20;
-  const padSides = 25;
-
-  return (
-    <div style={{ width: '100%', height: height, position: 'relative' }}>
-      {/* Título del eje Y */}
-      <div className="text-center mb-2">
-        <small className="text-muted">Miles emitidos</small>
-      </div>
-      
-      <svg 
-        width="100%" 
-        height={height - 20} 
-        viewBox={`0 0 ${totalWidth + padSides * 2} ${height - 20}`}
-        style={{ overflow: 'visible' }}
-      >
-        {/* Grid lines */}
-        {[0.25, 0.5, 0.75, 1].map((ratio, i) => {
-          const y = padTop + (height - 20 - padTop - padBottom) * (1 - ratio);
-          const value = Math.round(max * ratio);
-          return (
-            <g key={i}>
-              <line 
-                x1={padSides} 
-                y1={y} 
-                x2={totalWidth + padSides} 
-                y2={y} 
-                stroke="#e9ecef" 
-                strokeWidth="1"
-              />
-              <text 
-                x={padSides - 5} 
-                y={y + 3} 
-                textAnchor="end" 
-                fontSize="10" 
-                fill="#6c757d"
-              >
-                {value}
-              </text>
-            </g>
-          );
-        })}
-        
-        {data.map((d, i) => {
-          const x = padSides + i * (barWidth + gap);
-          const barHeight = ((height - 20 - padTop - padBottom) * d.v) / max;
-          const y = height - 20 - padBottom - barHeight;
-
-          return (
-            <g key={i}>
-              <rect
-                x={x}
-                y={y}
-                width={barWidth}
-                height={barHeight}
-                fill="#0d6efd"
-                rx={4}
-                opacity={0.85}
-              />
-              
-              {/* Etiqueta del período */}
-              <text 
-                x={x + barWidth / 2} 
-                y={height - 20 - padBottom + 15} 
-                textAnchor="middle" 
-                fontSize="10" 
-                fill="#6c757d"
-              >
-                {d.label}
-              </text>
-              
-              {/* Valor encima de la barra */}
-              {d.v > 0 && (
-                <text 
-                  x={x + barWidth / 2} 
-                  y={y - 5} 
-                  textAnchor="middle" 
-                  fontSize="11" 
-                  fill="#333"
-                  fontWeight="bold"
-                >
-                  {d.v}
-                </text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
     </div>
   );
 }
@@ -564,21 +555,30 @@ function formatDate(dateString: string) {
 }
 
 function formatDateLabel(dateString: string, periodType: string = "DIA") {
-  const d = new Date(dateString);
-  
   switch (periodType) {
     case "AÑO":
-      return d.getFullYear().toString();
+      // Si es solo un año (como "2025"), devolverlo directamente
+      if (dateString.length === 4 && !isNaN(Number(dateString))) {
+        return dateString;
+      }
+      // Si es una fecha completa, extraer el año
+      const yearDate = new Date(dateString);
+      return yearDate.getFullYear().toString();
+      
     case "MES":
-      return d.toLocaleDateString("es-CL", {
-        year: "numeric",
-        month: "short",
+      const monthDate = new Date(dateString + 'T00:00:00');
+      return monthDate.toLocaleDateString("es-CL", {
+      year: "numeric",
+      month: "short",
       });
+      
     case "DIA":
     default:
-      return d.toLocaleDateString("es-CL", {
-        month: "short",
-        day: "numeric",
+      const dayDate = new Date(dateString + 'T00:00:00');
+      console.log('Formateando fecha:', dateString, '->', dayDate);
+      return dayDate.toLocaleDateString("es-CL", {
+      month: "short",
+      day: "numeric",
       });
   }
 }
