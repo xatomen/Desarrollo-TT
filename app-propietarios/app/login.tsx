@@ -105,10 +105,11 @@ export default function LoginScreen() {
       
       
       // Código real para cuando tengas la API
-      const response = await fetch(`${API_CONFIG.SGD}validar_clave_unica/`, {
+      const response = await fetch(`${API_CONFIG.SGD}validar_clave_unica`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({
           rut: rutSinPuntos,

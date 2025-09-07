@@ -95,10 +95,11 @@ export default function VehicleDetailsScreen() {
 
       console.log('Enviando log de auditoría:', logData);
 
-      const response = await fetch(`${API_CONFIG.BACKEND}logs_consulta_propietario`, {
+      const response = await fetch(`${API_CONFIG.BACKEND}logs_consulta_propietario/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify(logData),
       });
