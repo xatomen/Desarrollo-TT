@@ -357,7 +357,7 @@ export default function HomePage() {
                     {/* <i className="bi bi-check-circle me-1"></i> */}
                     Marcar
                   </button>
-                  <Link href="/home/registro_de_consultas_propietarios" className="btn btn-sm btn-primary m-2 p-3">
+                  <Link href="/home/Registro_de_consultas_propietarios" className="btn btn-sm btn-primary m-2 p-3">
                     {/* <i className="bi bi-arrow-right me-1"></i> */}
                     Ver detalle
                   </Link>
@@ -419,7 +419,7 @@ export default function HomePage() {
                     {/* <i className="bi bi-check-circle me-1"></i> */}
                     Marcar
                   </button>
-                  <Link href="/home/registro_de_fiscalizacion" className="btn btn-sm btn-success m-2 p-3">
+                  <Link href="/home/Registro_de_fiscalizacion" className="btn btn-sm btn-success m-2 p-3">
                     {/* <i className="bi bi-arrow-right me-1"></i> */}
                     Ver detalle
                   </Link>
@@ -488,7 +488,7 @@ export default function HomePage() {
                     {/* <i className="bi bi-check-circle me-1"></i> */}
                     Marcar
                   </button>
-                  <Link href="/home/registro_de_obtencion_de_permisos" className="btn btn-sm btn-info m-2 p-3">
+                  <Link href="/home/Registro_de_obtencion_de_permisos" className="btn btn-sm btn-info m-2 p-3">
                     {/* <i className="bi bi-arrow-right me-1"></i> */}
                     Ver detalle
                   </Link>

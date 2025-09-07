@@ -13,15 +13,15 @@ export default function Navbar() {
   const links = [
     { href: "/home", label: "Inicio" },
     {
-      href: "/home/registro_de_consultas_propietarios",
+      href: "/home/Registro_de_consultas_propietarios",
       label: "Consultas Propietarios",
     },
     {
-      href: "/home/registro_de_fiscalizacion",
+      href: "/home/Registro_de_fiscalizacion",
       label: "Fiscalización",
     },
     {
-      href: "/home/registro_de_obtencion_de_permisos",
+      href: "/home/Registro_de_obtencion_de_permisos",
       label: "Obtención de Permisos",
     },
   ];
@@ -35,7 +35,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     logout(); // Esto eliminará las cookies
-    router.push("/login"); // Redirigir al login
+    router.push("/Login"); // Redirigir al login
   };
 
   return (
