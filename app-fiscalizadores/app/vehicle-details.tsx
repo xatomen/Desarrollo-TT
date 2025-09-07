@@ -84,7 +84,7 @@ export default function VehicleDetailsScreen() {
       const vigenciaPermisoNum = vigenciaPermiso === 'Vigente' ? 0 : 1;
       const vigenciaRevisionNum = revisionTecnica === 'Vigente' ? 0 : 1;
       const vigenciaSoapNum = soap === 'Vigente' ? 0 : 1;
-      const encargoRoboNum = encargoRobo === 'No' ? 0 : 1;
+      const encargoRoboNum = encargoRobo === 'No' ? 1 : 0;
 
       const logData = {
         ppu: ppu || params.ppu,
