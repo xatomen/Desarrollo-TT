@@ -131,17 +131,6 @@ async def emitir_permiso_circulacion(
                 detail="Formato de PPU inválido. Use formato ABCD12 o AB1234"
             )
 
-        # Verificar si ya existe un permiso para esta PPU
-        permiso_existente = db.query(PermisoCirculacion).filter(
-            PermisoCirculacion.ppu == permiso_data.ppu.upper()
-        ).first()
-        
-        if permiso_existente:
-            raise HTTPException(
-                status_code=400, 
-                detail=f"Ya existe un permiso de circulación para la PPU {permiso_data.ppu}"
-            )
-
         # Validar fechas
         try:
             fecha_emision = datetime.strptime(permiso_data.fecha_emision, "%Y-%m-%d").date()
