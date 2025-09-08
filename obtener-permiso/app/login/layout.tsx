@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Panel de Decisiones - Gobierno de Chile",
+  title: "Obtener Permiso de Circulación - Gobierno de Chile",
   description: "Sistema de análisis y métricas para la toma de decisiones",
 };
 
