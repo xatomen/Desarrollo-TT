@@ -103,6 +103,11 @@ def tiene_tasa_fija(tipo: str, carga: int) -> int:
     else:
         return 0
 
+# Función para calcular el proporcional del valor del permiso. Ejemplo: si el permiso es solicitado en marzo, se paga el 10/12 del valor total.
+def calcular_proporcional(valor_permiso: int, mes_actual: int) -> int:
+    meses_restantes = 12 - (mes_actual - 1)
+    proporcional = (valor_permiso * meses_restantes) / 12
+    return int(proporcional)
     
 @router.get("/consultar_valor_permiso/{ppu}", response_model=ValorPermiso)
 async def consultar_valor_permiso(ppu: str):
@@ -137,12 +142,12 @@ async def consultar_valor_permiso(ppu: str):
             valor_permiso = tiene_tasa_fija(permiso.get("tipo_vehiculo"), permiso.get("carga", 0))
             sii_data = response.json()
             puertas = sii_data.get("puertas")
-            asientos = sii_data.get("asientos")
+            asientos = permiso.get("ast")
             combustible = sii_data.get("combustible")
             peso = sii_data.get("peso")
             transmision = sii_data.get("transmision")
             cilindrada = sii_data.get("cilindrada")
-            carga = sii_data.get("carga")    
+            carga = permiso.get("carga")    
             equipamiento = sii_data.get("equipamiento")
             tasacion = sii_data.get("tasacion")
             if valor_permiso != 0:
@@ -191,6 +196,7 @@ async def consultar_valor_permiso(ppu: str):
             tasacion = factura.get("precio_neto")
             equipamiento = factura.get("equipamiento")
             if valor_permiso != 0:
+                valor_permiso = calcular_proporcional(valor_permiso, date.today().month)
                 return ValorPermiso(
                     valor=valor_permiso,
                     puertas=puertas,
@@ -211,11 +217,11 @@ async def consultar_valor_permiso(ppu: str):
             raise HTTPException(status_code=500, detail="Error al consultar la factura")
         # Calcular el valor del permiso
         valor_permiso = calcular_valor_permiso(valor_vehiculo)
-    
-    # Verificar si vehiculo es electrico o hibrido
-    if combustible in ["Eléctrico", "Híbrido"]:
-        valor_permiso *= 0.25
-        valor_permiso = int(valor_permiso)
+        valor_permiso = calcular_proporcional(valor_permiso, date.today().month)
+        # Verificar si vehiculo es electrico o hibrido
+        if combustible in ["Eléctrico", "Híbrido"]:
+            valor_permiso *= 0.25
+            valor_permiso = int(valor_permiso)
     
     return ValorPermiso(
         valor=valor_permiso,
