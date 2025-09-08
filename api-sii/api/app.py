@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException
+from requests import Session
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String
@@ -107,13 +108,18 @@ class FacturaCompraResponse(BaseModel):
 app = FastAPI(title="API SII - Tasación y Factura Vehículos")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[""],  # Permitir todas las orígenes
+    allow_origins=["*"],  # Permitir todas las orígenes
     allow_credentials=True,
-    allow_methods=[""],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
-db = SessionLocal()
+def get_db():
+    db: Session = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 #validar codigo sii
 
@@ -150,8 +156,8 @@ def validar_codigo_sii(codigo: str) -> bool:
     return True
 
 # Endpoint: Consultar Tasación Fiscal
-@app.get("/tasacion_fiscal", response_model=TasacionFiscalResponse)
-def consultar_tasacion_fiscal(codigo_sii: str):
+@app.get("/tasacion_fiscal", response_model=TasacionFiscalResponse, )
+def consultar_tasacion_fiscal(codigo_sii: str, db: Session = Depends(get_db)):
     if not validar_codigo_sii(codigo_sii):
         raise HTTPException(status_code=400, detail="Formato de código SII inválido")
     
@@ -169,7 +175,7 @@ def consultar_tasacion_fiscal(codigo_sii: str):
 
 # Endpoint: Consultar Factura de Venta
 @app.get("/factura_venta", response_model=FacturaCompraResponse)
-def consultar_factura_venta(num_factura: str):
+def consultar_factura_venta(num_factura: str, db: Session = Depends(get_db)):
     if not num_factura.isdigit():
         raise HTTPException(status_code=400, detail="N° de Factura incorrecto o formato incorrecto")
     num_factura_int = int(num_factura)
@@ -198,7 +204,7 @@ def consultar_factura_venta(num_factura: str):
     )
 
 @app.get("/factura_venta_num_chasis/", response_model=FacturaCompraResponse)
-def consultar_factura_venta_num_chasis(num_chasis: str):
+def consultar_factura_venta_num_chasis(num_chasis: str, db: Session = Depends(get_db)):
     row = db.query(FacturaCompra).filter(FacturaCompra.num_chasis == num_chasis).first()
     if not row:
         raise HTTPException(status_code=404, detail="El N° de Chasis no existe")
