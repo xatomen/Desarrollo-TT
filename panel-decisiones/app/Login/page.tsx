@@ -76,7 +76,7 @@ export default function LoginPage() {
         <div className="card shadow-sm p-4 mb-5" style={{ maxWidth: "480px", width: "100%" }}>
           <div className="text-center mb-4">
             <img src="/img/gob-header.svg" alt="Gobierno de Chile" height={70} />
-            <h1 className="h4 mt-3 font-weight-bold">Permiso de Circulación</h1>
+            <h1 className="h4 mt-3 font-weight-bold">Dashboard</h1>
           </div>
 
           <form onSubmit={handleSubmit}>
