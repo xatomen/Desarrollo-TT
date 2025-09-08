@@ -127,6 +127,8 @@ function ValidacionesPagoContent() {
   const [puertas, setPuertas] = useState<string>('-');
   const [transmision, setTransmision] = useState<string>('-');
   const [equipamiento, setEquipamiento] = useState<string>('-');
+  // Caso - Es para indicar si es renovación o primera obtención del permiso
+  const [caso, setCaso] = useState<string | null>(null);
 
   // Crear documentos dinámicamente basado en los estados
   const documentos: DocumentoValidacion[] = [
@@ -152,6 +154,13 @@ function ValidacionesPagoContent() {
           const inscripcionData = await inscripcionRes.json();
           console.log('Fecha de inscripción:', inscripcionData.fecha_inscripcion);
           setFechaInscripcion(inscripcionData.fecha_inscripcion || '-');
+          setTipoVehiculo(inscripcionData.tipo_vehiculo || '-');
+          setMarca(inscripcionData.marca || '-');
+          setModelo(inscripcionData.modelo || '-');
+          setAnio(inscripcionData.anio || '-');
+          setColor(inscripcionData.color || '-');
+          setNumChasis(inscripcionData.num_chasis || '-');
+          setNumMotor(inscripcionData.num_motor || '-');
         } catch (error) {
           console.error('Error fetching fecha inscripcion:', error);
           setFechaInscripcion('Desconocido');
@@ -186,7 +195,11 @@ function ValidacionesPagoContent() {
           const roboRes = await fetch(`${API_CONFIG.BACKEND}consultar_encargo/${ppu}`);
           const roboData = await roboRes.json();
           if (roboData.encargo) {
-            setEncargoRobo(roboData.encargo);
+            if (roboData.encargo == 1) {
+              setEncargoRobo('Si');
+            } else if (roboData.encargo == 0) {
+              setEncargoRobo('No');
+            }
           } else {
             setEncargoRobo('No');
           }
@@ -231,16 +244,27 @@ function ValidacionesPagoContent() {
           
           // Actualizar todos los estados de información del vehículo
           // setFechaInscripcion(vehiculoData.fecha_inscripcion || '-');
-          setNumMotor(vehiculoData.motor || '-');
-          setNumChasis(vehiculoData.chasis || '-');
-          setTipoVehiculo(vehiculoData.tipo_vehiculo || '-');
-          setColor(vehiculoData.color || '-');
-          setMarca(vehiculoData.marca || '-');
-          setModelo(vehiculoData.modelo || '-');
-          setAnio(vehiculoData.anio || '-');
-          setCapacidadCarga(vehiculoData.carga || '-');
-          setTipoSello(vehiculoData.tipo_sello || '-');
           setCodigoSii(vehiculoData.codigo_sii || '-');
+          if (vehiculoRes.ok) {
+            // setCapacidadCarga(vehiculoData.capacidad_carga || '-');
+            setTipoSello(vehiculoData.tipo_sello);
+            setCaso("Renovación");
+          } else {
+            console.log('Buscando tipo de sello desde la factura...');
+            const inscripcionRes = await fetch(`${API_CONFIG.BACKEND}consultar_patente/${ppu}`);
+            const inscripcionData = await inscripcionRes.json();
+            // Recuperamos tipo de sello desde la factura
+            const facturaRes = await fetch(`${API_CONFIG.SII}factura_venta_num_chasis/?num_chasis=${encodeURIComponent(inscripcionData.num_chasis)}`, {
+              headers: {
+                'Accept': 'application/json'
+              }
+            });
+            const facturaData = await facturaRes.json();
+            setTipoSello(facturaData.tipo_sello || '-');
+            setCaso("Primera Obtención");
+            // setCapacidadCarga(vehiculoData.capacidad_carga || '-');
+          }
+
           // console.log(  'Código SII:', vehiculoData.codigo_sii);
         } catch (error) {
           console.error('Error fetching vehiculo data:', error);
@@ -264,22 +288,6 @@ function ValidacionesPagoContent() {
     return doc.estado === 'Vigente' || (doc.estado === 'No' && esDocumentoNegativo);
   });
 
-  const informacionVehiculo = [
-    { label: 'Fecha de expiración SOAP', valor: fechaExpiracionSoap },
-    { label: 'Fecha de expiración revisión', valor: fechaExpiracionRevision },
-    { label: 'Fecha de inscripción', valor: fechaInscripcion },
-    { label: 'N° Motor', valor: numMotor },
-    { label: 'N° Chasis', valor: numChasis },
-    { label: 'Tipo de vehículo', valor: tipoVehiculo },
-    { label: 'Color de la carrocería', valor: color },
-    { label: 'Marca del vehículo', valor: marca },
-    { label: 'Modelo', valor: modelo },
-    { label: 'Año', valor: anio },
-    { label: 'Capacidad de carga', valor: capacidadCarga },
-    { label: 'Tipo de sello', valor: tipoSello },
-    { label: 'Tipo de combustible', valor: tipoCombustible },
-  ];
-
   // Obtener valor permiso de circulación
   const fetchValorPermiso = async (ppu: string) => {
     try {
@@ -298,6 +306,7 @@ function ValidacionesPagoContent() {
       setTransmision(data.transmision || '-');
       setEquipamiento(data.equipamiento || '-');
       setTipoCombustible(data.combustible || '-');
+      setCapacidadCarga(data.carga || '-');
     } catch (error) {
       console.error('Error fetching valor permiso:', error);
     }
@@ -307,6 +316,23 @@ function ValidacionesPagoContent() {
       fetchValorPermiso(ppu);
     }
   }, [ppu]);
+
+
+  const informacionVehiculo = [
+    { label: 'Fecha de expiración SOAP', valor: fechaExpiracionSoap },
+    { label: 'Fecha de expiración revisión', valor: fechaExpiracionRevision },
+    { label: 'Fecha de inscripción', valor: fechaInscripcion },
+    { label: 'N° Motor', valor: numMotor },
+    { label: 'N° Chasis', valor: numChasis },
+    { label: 'Tipo de vehículo', valor: tipoVehiculo },
+    { label: 'Color de la carrocería', valor: color },
+    { label: 'Marca del vehículo', valor: marca },
+    { label: 'Modelo', valor: modelo },
+    { label: 'Año', valor: anio },
+    { label: 'Capacidad de carga', valor: capacidadCarga },
+    { label: 'Tipo de sello', valor: tipoSello },
+    { label: 'Tipo de combustible', valor: tipoCombustible },
+  ];
 
   // Mostrar loading mientras se cargan los datos
   if (loading) {
@@ -335,6 +361,16 @@ function ValidacionesPagoContent() {
               <h1 className="display-4 fw-bold mb-3 text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700' }}>
                 {ppu || 'AA BB 11'}
               </h1>
+
+              <span 
+                className="badge rounded-pill px-3 py-2 mb-3 text-white fw-medium"
+                style={{ 
+                  backgroundColor: '#17a2b8',
+                  fontFamily: '"Dosis", sans-serif'
+                }}
+              >
+                {caso || '-'}
+              </span>
               <p className="text-muted mb-3" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
                 Estado
               </p>
@@ -349,7 +385,7 @@ function ValidacionesPagoContent() {
                 {todosDocumentosValidos ? 'Vehículo al Día' : 'No Apto'}
               </span>
               
-              <div className="mt-4">
+              <div className="">
                 <h6 className="text-muted mb-2" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
                   Valor Permiso de Circulación
                 </h6>
