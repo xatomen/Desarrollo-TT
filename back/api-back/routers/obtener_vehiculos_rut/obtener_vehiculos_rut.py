@@ -1,5 +1,5 @@
 # Importamos librerías necesarias
-from datetime import date
+from datetime import date, timedelta
 from fastapi import APIRouter, HTTPException, Depends, Request
 import os
 from pydantic import BaseModel
@@ -123,7 +123,13 @@ async def obtener_vehiculos_por_rut(rut: str):
                         fecha_expiracion = permiso_data.get("fecha_expiracion")
                         if fecha_expiracion:
                             fecha_exp = date.fromisoformat(fecha_expiracion)
-                            estado = "vigente" if fecha_exp >= date.today() else "vencido"
+                            # Si estamos 60 días antes de la expiración, marcar como "habilitado"
+                            if fecha_exp - date.today() <= timedelta(days=60):
+                                estado = "habilitado"
+                            elif fecha_exp >= date.today():
+                                estado = "vigente"
+                            elif fecha_exp < date.today():
+                                estado = "vencido"
                         else:
                             estado = "sin_permiso"
                     else:
