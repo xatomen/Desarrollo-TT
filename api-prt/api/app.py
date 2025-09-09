@@ -61,9 +61,9 @@ class RevisionTecnicaModel(BaseModel):
 app = FastAPI(title="API PRT - Revisión Técnica")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[""],  # Permitir todas las orígenes
+    allow_origins=["*"],  # Permitir todas las orígenes
     allow_credentials=True,
-    allow_methods=[""],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
