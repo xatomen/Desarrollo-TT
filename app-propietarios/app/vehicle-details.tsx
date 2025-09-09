@@ -90,7 +90,7 @@ export default function VehicleDetailsScreen() {
       const logData = {
         rut,
         ppu: ppu || params.ppu,
-        fecha: new Date().toISOString().split('T')[0], // Formato YYYY-MM-DD
+        fecha: new Date().toISOString(), // Formato YYYY-MM-DD
       };
 
       console.log('Enviando log de auditoría:', logData);

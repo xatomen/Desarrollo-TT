@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
-from datetime import date
+from datetime import date, datetime
 import os
 from pydantic import BaseModel
 from typing import List
@@ -54,12 +54,12 @@ class LogFiscalizacion(Base):
 class LogConsultaPropietarioModel(BaseModel):
     rut: str
     ppu: str
-    fecha: date
+    fecha: datetime
 
 class LogFiscalizacionModel(BaseModel):
     ppu: str
     rut_fiscalizador: str
-    fecha: date
+    fecha: datetime
     vigencia_permiso: int  # BOOLEAN as Integer (0/1)
     vigencia_revision: int
     vigencia_soap: int

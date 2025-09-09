@@ -4,12 +4,73 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
+// Función para validar RUT chileno
+function validarRUT(rut: string): boolean {
+  // Limpiar el RUT
+  const rutLimpio = rut.replace(/\./g, '').replace(/-/g, '').toUpperCase();
+  
+  // Verificar formato básico
+  if (!/^\d{7,8}[0-9K]$/.test(rutLimpio)) {
+    return false;
+  }
+  
+  // Obtener dígitos y dígito verificador
+  const digitos = rutLimpio.slice(0, -1);
+  const dv = rutLimpio.slice(-1);
+  
+  // Calcular dígito verificador
+  let suma = 0;
+  let multiplicador = 2;
+  
+  for (let i = digitos.length - 1; i >= 0; i--) {
+    suma += parseInt(digitos[i]) * multiplicador;
+    multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+  }
+  
+  const resto = suma % 11;
+  const dvCalculado = resto === 0 ? '0' : resto === 1 ? 'K' : (11 - resto).toString();
+  
+  return dv === dvCalculado;
+}
+
+// Función para formatear RUT automáticamente
+function formatearRUT(valor: string): string {
+  // Eliminar todo lo que no sea número o K
+  const limpio = valor.replace(/[^0-9kK]/g, '').toUpperCase();
+  
+  // Si está vacío, retornar vacío
+  if (limpio.length === 0) return '';
+  
+  // Si solo tiene un carácter, retornarlo
+  if (limpio.length === 1) return limpio;
+  
+  // Separar cuerpo y dígito verificador
+  const cuerpo = limpio.slice(0, -1);
+  const dv = limpio.slice(-1);
+  
+  // Formatear el cuerpo con puntos
+  let cuerpoFormateado = '';
+  for (let i = 0; i < cuerpo.length; i++) {
+    if (i > 0 && (cuerpo.length - i) % 3 === 0) {
+      cuerpoFormateado += '.';
+    }
+    cuerpoFormateado += cuerpo[i];
+  }
+  
+  // Retornar con guión antes del dígito verificador
+  return `${cuerpoFormateado}-${dv}`;
+}
+
 export default function LoginPage() {
   const [formData, setFormData] = useState({
     rut: '',
     password: ''
   });
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({
+    rut: '',
+    password: '',
+    general: ''
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { login, isAuthenticated, isLoading } = useAuth();
@@ -38,31 +99,117 @@ export default function LoginPage() {
     return null;
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+  // Manejar cambios en el input de RUT
+  const handleRutChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const valor = e.target.value;
+    
+    // Solo permitir números, puntos, guión y K
+    if (!/^[0-9kK.\-]*$/.test(valor)) {
+      return; // No actualizar si contiene caracteres inválidos
+    }
+    
+    // Limitar longitud máxima (12.345.678-9 = 12 caracteres)
+    if (valor.length > 12) {
+      return;
+    }
+    
+    // Formatear automáticamente
+    const rutFormateado = formatearRUT(valor);
+    
+    setFormData(prev => ({
+      ...prev,
+      rut: rutFormateado
+    }));
+    
+    // Limpiar errores si existen
+    if (errors.rut || errors.general) {
+      setErrors(prev => ({
+        ...prev,
+        rut: '',
+        general: ''
+      }));
+    }
+  };
+
+  // Manejar cambios en contraseña
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const valor = e.target.value;
+    
+    setFormData(prev => ({
+      ...prev,
+      password: valor
+    }));
+    
+    // Limpiar errores si existen
+    if (errors.password || errors.general) {
+      setErrors(prev => ({
+        ...prev,
+        password: '',
+        general: ''
+      }));
+    }
+  };
+
+  // Validar formulario
+  const validarFormulario = (): boolean => {
+    const nuevosErrores = {
+      rut: '',
+      password: '',
+      general: ''
+    };
+    
+    // Validar RUT
+    if (!formData.rut.trim()) {
+      nuevosErrores.rut = 'El RUT es obligatorio';
+    } else if (!validarRUT(formData.rut)) {
+      nuevosErrores.rut = 'El RUT ingresado no es válido';
+    }
+    
+    // Validar Contraseña
+    if (!formData.password.trim()) {
+      nuevosErrores.password = 'La contraseña es obligatoria';
+    } else if (formData.password.length < 6) {
+      nuevosErrores.password = 'La contraseña debe tener al menos 6 caracteres';
+    }
+    
+    setErrors(nuevosErrores);
+    
+    // Retornar true si no hay errores
+    return !nuevosErrores.rut && !nuevosErrores.password;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    
+    if (!validarFormulario()) {
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
+      // Enviar RUT sin formato (sin puntos ni guión)
+      const rutLimpio = formData.rut.replace(/\./g, '').toUpperCase();
+      
       const success = await login({
-        rut: formData.rut,
+        rut: rutLimpio,
         password: formData.password
       });
 
       if (success) {
         router.push('/home'); // Redirigir a la página principal
       } else {
-        setError('Credenciales inválidas. Por favor, verifique su RUT y clave.');
+        setErrors(prev => ({
+          ...prev,
+          general: 'Credenciales inválidas. Por favor, verifique su RUT y clave.'
+        }));
       }
     } catch (error) {
-      setError('Error de conexión. Por favor, intente nuevamente.');
+      console.error('Error en login:', error);
+      setErrors(prev => ({
+        ...prev,
+        general: 'Error de conexión. Por favor, intente nuevamente.'
+      }));
     } finally {
       setIsSubmitting(false);
     }
@@ -80,9 +227,10 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit}>
-            {error && (
+            {/* Error general */}
+            {errors.general && (
               <div className="alert alert-danger" role="alert">
-                {error}
+                {errors.general}
               </div>
             )}
 
@@ -93,18 +241,25 @@ export default function LoginPage() {
                 <input 
                   id="rut" 
                   name="rut" 
-                  className="form-control" 
+                  className={`form-control ${errors.rut ? 'is-invalid' : formData.rut && validarRUT(formData.rut) ? 'is-valid' : ''}`}
                   type="text" 
                   placeholder="12.345.678-9"
                   value={formData.rut}
-                  onChange={handleChange}
-                  required
+                  onChange={handleRutChange}
+                  maxLength={12}
+                  autoComplete="off"
+                  disabled={isSubmitting}
                 />
                 <div className="input-group-append">
                   <span className="input-group-text"><i className="cl cl-user"></i></span>
                 </div>
+                {errors.rut && (
+                  <div className="invalid-feedback">
+                    {errors.rut}
+                  </div>
+                )}
               </div>
-              <small className="form-text text-muted">Formato: 12.345.678-9</small>
+              <small className="form-text text-muted">Formato: 12.345.678-9 (se formatea automáticamente)</small>
             </div>
 
             {/* Clave Única */}
@@ -114,17 +269,24 @@ export default function LoginPage() {
                 <input 
                   id="password" 
                   name="password" 
-                  className="form-control" 
+                  className={`form-control ${errors.password ? 'is-invalid' : formData.password.length >= 6 ? 'is-valid' : ''}`}
                   type="password" 
                   placeholder="Clave Única"
                   value={formData.password}
-                  onChange={handleChange}
-                  required
+                  onChange={handlePasswordChange}
+                  minLength={6}
+                  disabled={isSubmitting}
                 />
                 <div className="input-group-append">
                   <span className="input-group-text"><i className="cl cl-key"></i></span>
                 </div>
+                {errors.password && (
+                  <div className="invalid-feedback">
+                    {errors.password}
+                  </div>
+                )}
               </div>
+              <small className="form-text text-muted">Mínimo 6 caracteres</small>
             </div>
 
             <button 

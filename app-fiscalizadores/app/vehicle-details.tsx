@@ -59,7 +59,10 @@ export default function VehicleDetailsScreen() {
 
   // useEffect para setear el estado del vehículo cuando cambien los valores
   useEffect(() => {
-    if (encargoRobo && vigenciaPermiso && revisionTecnica && soap) {
+    // Solo proceder si todos los valores necesarios están definidos y no están vacíos
+    if (encargoRobo && vigenciaPermiso && revisionTecnica && soap && 
+        encargoRobo !== '' && vigenciaPermiso !== '' && revisionTecnica !== '' && soap !== '') {
+      
       if (encargoRobo === 'Sí') {
         setEstadoVehiculo('Posee Encargo por Robo');
       } else if (vigenciaPermiso === 'Vencido' || revisionTecnica === 'Vencido' || soap === 'Vencido') {
@@ -67,9 +70,10 @@ export default function VehicleDetailsScreen() {
       } else {
         setEstadoVehiculo('Vehículo al Día');
       }
+      
+      // Solo marcar como completo cuando todos los datos estén realmente cargados
+      setDatosCompletos(true);
     }
-    // Marcar que los datos fueron completados
-    setDatosCompletos(true)
   }, [encargoRobo, vigenciaPermiso, revisionTecnica, soap]);
 
   // Enviar log
@@ -77,19 +81,30 @@ export default function VehicleDetailsScreen() {
     if (logEnviado || !datosCompletos) return; // Evitar envíos duplicados
 
     try {
+      // Verificación adicional antes de enviar
+      if (!vigenciaPermiso || !revisionTecnica || !soap || !encargoRobo) {
+        console.log('Datos incompletos, no se enviará el log');
+        return;
+      }
+
       // Recuperar rut desde user_info del local storage
       const rutFiscalizador = userInfo.rut;
       
-      // Convertir valores de texto a números (0 = vigente, 1 = vencido/sí)
-      const vigenciaPermisoNum = vigenciaPermiso === 'Vigente' ? 0 : 1;
-      const vigenciaRevisionNum = revisionTecnica === 'Vigente' ? 0 : 1;
-      const vigenciaSoapNum = soap === 'Vigente' ? 0 : 1;
-      const encargoRoboNum = encargoRobo === 'No' ? 1 : 0;
+      // Convertir valores de texto a números (1 = vigente, 0 = vencido/sí)
+      const vigenciaPermisoNum = vigenciaPermiso === 'Vigente' ? 1 : 0;
+      const vigenciaRevisionNum = revisionTecnica === 'Vigente' ? 1 : 0;
+      const vigenciaSoapNum = soap === 'Vigente' ? 1 : 0;
+      const encargoRoboNum = encargoRobo === 'No' ? 0 : 1; // Corregido: No = 0, Sí = 1
+
+      console.log('Vigencia Permiso:', vigenciaPermiso, '->', vigenciaPermisoNum);
+      console.log('Vigencia Revisión:', revisionTecnica, '->', vigenciaRevisionNum);
+      console.log('Vigencia SOAP:', soap, '->', vigenciaSoapNum);
+      console.log('Encargo por Robo:', encargoRobo, '->', encargoRoboNum);
 
       const logData = {
         ppu: ppu || params.ppu,
         rut_fiscalizador: rutFiscalizador,
-        fecha: new Date().toISOString().split('T')[0], // Formato YYYY-MM-DD
+        fecha: new Date().toISOString(),
         vigencia_permiso: vigenciaPermisoNum,
         vigencia_revision: vigenciaRevisionNum,
         vigencia_soap: vigenciaSoapNum,
@@ -138,32 +153,60 @@ export default function VehicleDetailsScreen() {
       const fecha = new Date(padron_data.fecha_inscripcion);
       const opciones = { day: '2-digit' as const, month: 'long' as const, year: 'numeric' as const };
       setFechaInscripcion(fecha.toLocaleDateString('es-ES', opciones));
+      setNumMotor(padron_data.num_motor);
+      setNumChasis(padron_data.num_chasis);
+      setTipoVehiculo(padron_data.tipo_vehiculo);
+      setColor(padron_data.color);
+      setMarca(padron_data.marca);
+      setModelo(padron_data.modelo);
+      setAnio(padron_data.anio);
 
       // Obtener Permiso de Circulación
-			const permiso_response = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${params.ppu}`);
-			const permiso_data = await permiso_response.json();
-			console.log(permiso_data)
-			setTipoSello(permiso_data.tipo_sello);
-			if (permiso_data.vigencia === true) {
-				setVigenciaPermiso("Vigente");
-			}
-			else {
-				setVigenciaPermiso('Vencido');
-			}
-      setFechaEmisionPermiso(permiso_data.fecha_emision);
-      setFechaExpiracionPermiso(permiso_data.fecha_expiracion);
-      setNumMotor(permiso_data.motor);
-      setNumChasis(permiso_data.chasis);
-      setTipoVehiculo(permiso_data.tipo_vehiculo);
-      setColor(permiso_data.color);
-      setMarca(permiso_data.marca);
-      setModelo(permiso_data.modelo);
-      setAnio(permiso_data.anio);
-      setCarga(permiso_data.carga);
-      setCombustible(permiso_data.combustible);
-      setCilindrada(permiso_data.cilindrada);
-      setTransmision(permiso_data.transmision);
-      setPts(permiso_data.pts);
+			try {
+        const permiso_response = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${params.ppu}`);
+        if (permiso_response.status !== 200) {
+          setVigenciaPermiso('Vencido');
+          console.log('Permiso de Circulación no encontrado o error en la consulta');
+          // Obtener tipo de sello desde API_CONFIG.SII
+          const sello_response = await fetch(`${API_CONFIG.SII}factura_venta_num_chasis/?num_chasis=${padron_data.num_chasis}`);
+          const sello_data = await sello_response.json();
+          setTipoSello(sello_data.tipo_sello);
+          setPts(sello_data.puertas);
+          setTransmision(sello_data.transmision);
+          setCilindrada(sello_data.cilindrada);
+          setCombustible(sello_data.combustible);
+          setCarga(sello_data.carga);
+        }
+        else {
+          const permiso_data = await permiso_response.json();
+          console.log(permiso_data)
+          setTipoSello(permiso_data.tipo_sello);
+          if (permiso_data.vigencia === true) {
+            setVigenciaPermiso("Vigente");
+          }
+          else {
+            setVigenciaPermiso('Vencido');
+          }
+          setFechaEmisionPermiso(permiso_data.fecha_emision);
+          setFechaExpiracionPermiso(permiso_data.fecha_expiracion);
+          // setNumMotor(permiso_data.motor);
+          // setNumChasis(permiso_data.chasis);
+          // setTipoVehiculo(permiso_data.tipo_vehiculo);
+          // setColor(permiso_data.color);
+          // setMarca(permiso_data.marca);
+          // setModelo(permiso_data.modelo);
+          // setAnio(permiso_data.anio);
+          setCarga(permiso_data.carga);
+          setCombustible(permiso_data.combustible);
+          setCilindrada(permiso_data.cilindrada);
+          setTransmision(permiso_data.transmision);
+          setPts(permiso_data.pts);
+        }
+      } catch (error) {
+        console.error('Error al obtener Permiso de Circulación:', error);
+        setVigenciaPermiso('Vencido');
+      }
+			
 
       // Obtener Revisión Técnica
 			const revision_response = await fetch(`${API_CONFIG.BACKEND}consultar_revision_tecnica/${params.ppu}`);
