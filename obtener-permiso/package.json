@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@gobdigital-cl/gob.cl": "^3.0.10",
+    "bootstrap-icons": "^1.13.1",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
     "next": "15.5.0",

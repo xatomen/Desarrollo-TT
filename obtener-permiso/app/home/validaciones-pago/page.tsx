@@ -358,12 +358,12 @@ function ValidacionesPagoContent() {
               <h6 className="text-muted mb-2" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
                 Patente a pagar
               </h6>
-              <h1 className="display-4 fw-bold mb-3 text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700' }}>
+              <h1 className="display-4 fw-bold text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700' }}>
                 {ppu || 'AA BB 11'}
               </h1>
 
               <span 
-                className="badge rounded-pill px-3 py-2 mb-3 text-white fw-medium"
+                className="badge rounded-pill px-3 py-2 mb-4 text-white fw-medium"
                 style={{ 
                   backgroundColor: '#17a2b8',
                   fontFamily: '"Dosis", sans-serif'
@@ -372,6 +372,13 @@ function ValidacionesPagoContent() {
                 {caso || '-'}
               </span>
               <p className="text-muted mb-3" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
+                RUT propietario
+              </p>
+              <h2 className="fw-bold mb-4 text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700', fontSize: '1.5rem' }}>
+                {rut || '-'}
+              </h2>
+
+              <p className="text-muted" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
                 Estado
               </p>
               <span 
@@ -386,7 +393,7 @@ function ValidacionesPagoContent() {
               </span>
               
               <div className="">
-                <h6 className="text-muted mb-2" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
+                <h6 className="text-muted" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
                   Valor Permiso de Circulación
                 </h6>
                 <h2 className="fw-bold mb-0 text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700', fontSize: '2rem' }}>

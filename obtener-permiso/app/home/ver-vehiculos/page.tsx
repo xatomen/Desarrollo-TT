@@ -1,14 +1,32 @@
 // app/ver-vehiculos/page.tsx
 'use client';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 import { useAuth, getRutFromCookies } from '@/contexts/AuthContext';
 import API_CONFIG from '@/config/api';
+import React from 'react';
 
 type Estado = 'PAGADO' | 'HABILITADO' | 'VENCIDO';
-type Vehiculo = { id: number; plate: string; brand: string; model: string; estado: Estado };
+type Vehiculo = { 
+  id: number; 
+  plate: string; 
+  brand: string; 
+  model: string; 
+  estado: Estado;
+  estadoVehiculo?: EstadoVehiculoDetalle;
+};
+
+type EstadoVehiculoDetalle = {
+  estadoGeneral: string;
+  revision: string;
+  soap: string;
+  multas: string;
+  permiso: string;
+  encargo: string;
+  rpi: string;
+};
 
 function EstadoTag({ estado }: { estado: Estado }) {
   const cfg =
@@ -26,21 +44,56 @@ function EstadoTag({ estado }: { estado: Estado }) {
   );
 }
 
+function EstadoVehiculoTag({ estado }: { estado: string }) {
+  const cfg =
+    estado === 'Al día'
+      ? { cls: 'status--pagado', label: 'Al día' }
+      : { cls: 'status--vencido', label: 'No vigente' };
+
+  return (
+    <span className={`status-chip ${cfg.cls}`}>
+      <span className="status-dot" />
+      {cfg.label}
+    </span>
+  );
+}
+
+// Tooltip personalizado para mostrar detalles del estado del vehículo
+function EstadoVehiculoTooltip({ detalle }: { detalle: EstadoVehiculoDetalle }) {
+  return (
+    <div
+      className="custom-tooltip"
+      style={{
+        minWidth: 260,
+        background: '#fff',
+        border: '1px solid #ccc',
+        borderRadius: 8,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        padding: 12,
+        fontSize: '0.95em',
+        zIndex: 9999,
+      }}
+    >
+      <b className="text-center">Detalle del Estado del Vehículo</b>
+      <hr className="my-2" />
+      <ul className="list-unstyled mb-0 mt-2">
+        <li><b>Revisión Técnica:</b> {detalle.revision}</li>
+        <li><b>SOAP:</b> {detalle.soap}</li>
+        <li><b>Multas:</b> {detalle.multas}</li>
+        <li><b>Permiso de Circulación:</b> {detalle.permiso}</li>
+        <li><b>Encargo por Robo:</b> {detalle.encargo}</li>
+        <li><b>Estado en RPI:</b> {detalle.rpi}</li>
+      </ul>
+    </div>
+  );
+}
+
 export default function VerVehiculos() {
-
   const { user, isAuthenticated, isLoading } = useAuth();
-  
-  // ✅ También puedes acceder directamente desde cookies
   const rutFromCookies = getRutFromCookies();
-  
-  console.log('Datos del usuario:', user);
-  console.log('RUT:', user?.rut);
-  console.log('Nombre:', user?.nombre);
-  console.log('Email:', user?.email);
-
-  // Usar cualquiera de los dos
   const rut = user?.rut || rutFromCookies || '';
 
+  // TODOS LOS HOOKS VAN AQUÍ, ANTES DE CUALQUIER RETURN
   const [vehicles, setVehicles] = useState<Vehiculo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +101,141 @@ export default function VerVehiculos() {
   // Estados para paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+
+  const [patenteInput, setPatenteInput] = useState('');
+  const [patenteError, setPatenteError] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Estado para el modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [detalleSeleccionado, setDetalleSeleccionado] = useState<EstadoVehiculoDetalle | null>(null);
+
+  // Estado para el modal "Pagar otro vehículo"
+  const [modalPagarOtro, setModalPagarOtro] = useState(false);
+
+  // Estado para tooltip flotante (¡Mueve esto aquí!)
+  const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [tooltipDetalle, setTooltipDetalle] = useState<EstadoVehiculoDetalle | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // Nueva función para obtener el estado del vehículo de forma aislada
+  const getVehicleStatus = async (plate: string, rut: string): Promise<EstadoVehiculoDetalle> => {
+    try {
+      // Revisión técnica
+      let estadoRevision = null;
+      const response = await fetch(`${API_CONFIG.BACKEND}consultar_revision_tecnica/${plate}`);
+      if (!response.ok) {
+        estadoRevision = "No vigente";
+      } else {
+        const data = await response.json();
+        estadoRevision = data.vigencia || "No vigente";
+      }
+
+      // SOAP
+      let estadoSoap = null;
+      const soapResponse = await fetch(`${API_CONFIG.BACKEND}consultar_soap/${plate}`);
+      if (!soapResponse.ok) {
+        estadoSoap = "No vigente";
+      } else { 
+        const soapData = await soapResponse.json();
+        estadoSoap = soapData.vigencia_permiso || "No vigente";
+      }
+
+      // Multas
+      let estadoMultas = null;
+      const multasResponse = await fetch(`${API_CONFIG.BACKEND}consultar_multas/${plate}`);
+      if (!multasResponse.ok) {
+        estadoMultas = "No vigente";
+      } else {
+        const multasData = await multasResponse.json();
+        estadoMultas = multasData.total_multas === 0 ? 'No posee multas' : 'Posee multas';
+      }
+
+      // Permiso de circulación
+      let estadoPermiso = null;
+      const permisoResponse = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${plate}`);
+      if (permisoResponse.status === 404) {
+        estadoPermiso = 'Primera obtención';
+      } else {
+        const permisoData = await permisoResponse.json();
+        estadoPermiso = permisoData.vigencia === true ? 'Vigente' : 'No vigente';
+      }
+
+      // Encargo por robo
+      let estadoEncargo = null;
+      const encargoResponse = await fetch(`${API_CONFIG.BACKEND}consultar_encargo_robo/${plate}`);
+      if (!encargoResponse.ok) {
+        estadoEncargo = "No tiene encargo por robo";
+      } else {
+        const encargoData = await encargoResponse.json();
+        estadoEncargo = encargoData.encargo === true ? 'Posee encargo por robo' : 'No tiene encargo por robo';
+      }
+
+      // Estado usuario en RPI
+      let estadoRPI = null;
+      const rpiResponse = await fetch(`${API_CONFIG.BACKEND}consultar-multas-rpi/${rut}`);
+      if (!rpiResponse.ok) {
+        estadoRPI = "Con multas";
+      } else {
+        const rpiData = await rpiResponse.json();
+        estadoRPI = rpiData.cantidad_multas === 0 ? 'Sin multas' : 'Con multas';
+      }
+
+      // Lógica final
+      const estadoGeneral = (
+        estadoRevision === 'Vigente' &&
+        estadoSoap === 'Vigente' &&
+        estadoMultas === 'No posee multas' &&
+        (estadoPermiso === 'Vigente' || estadoPermiso === 'Primera obtención') &&
+        estadoEncargo === 'No tiene encargo por robo' &&
+        estadoRPI === 'Sin multas'
+      ) ? 'Al día' : 'No vigente';
+
+      return {
+        estadoGeneral,
+        revision: estadoRevision,
+        soap: estadoSoap,
+        multas: estadoMultas,
+        permiso: estadoPermiso,
+        encargo: estadoEncargo,
+        rpi: estadoRPI,
+      };
+    } catch (error) {
+      return {
+        estadoGeneral: 'No vigente',
+        revision: 'No vigente',
+        soap: 'No vigente',
+        multas: 'No vigente',
+        permiso: 'No vigente',
+        encargo: 'No vigente',
+        rpi: 'No vigente',
+      };
+    }
+  };
+
+  const [rpiStatus, setRPIStatus] = useState<string>('Cargando...');
+
+  // Obtener estado de RPI de un rut
+  const getRPIStatus = async (rut: string): Promise<string> => {
+    try {
+      const response = await fetch(`${API_CONFIG.BACKEND}consultar-multas-rpi/${rut}`);
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      return data.cantidad_multas === 0 ? 'Sin multas' : 'Con multas';
+    } catch (error) {
+      console.error('Error al obtener estado de RPI:', error);
+      return 'No vigente';
+    }
+  };
+
+  // useEffect para obtener estado de RPI al montar el componente
+  useEffect(() => {
+    if (rut) {
+      getRPIStatus(rut).then(status => setRPIStatus(status));
+    }
+  }, [rut]);
 
   // Obtener vehículos por rut
   const fetchVehiclesByRut = async (rut: string) => {
@@ -99,7 +287,14 @@ export default function VerVehiculos() {
         const data = await fetchVehiclesByRut(rut);
         if (data && data.length > 0) {
           const mappedVehicles = data.map(mapApiToVehiculo);
-          setVehicles(mappedVehicles);
+          // Consultar estado de cada vehículo
+          const vehiclesWithEstado = await Promise.all(
+            mappedVehicles.map(async (veh) => {
+              const estadoVehiculo = await getVehicleStatus(veh.plate, rut);
+              return { ...veh, estadoVehiculo };
+            })
+          );
+          setVehicles(vehiclesWithEstado);
         }
       };
 
@@ -136,6 +331,46 @@ export default function VerVehiculos() {
     return pages;
   };
 
+  // Nueva función para validar y redirigir
+  const handlePagarOtroVehiculo = async () => {
+    setPatenteError('');
+    const plate = patenteInput.trim().toUpperCase();
+
+    if (!plate || plate.length !== 6) {
+      setPatenteError('La placa patente debe tener exactamente 6 caracteres.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_CONFIG.BACKEND}consultar_patente/${plate}`);
+      if (!response.ok) {
+        setPatenteError('La placa patente no existe en los registros del Servicio de Registro Civil e Identificación.');
+        return;
+      }
+      const data = await response.json();
+      if (!data || data.error || data.not_found) {
+        setPatenteError('La placa patente no existe en el sistema.');
+        return;
+      }
+      // Si existe, redirigir
+      sessionStorage.setItem('ppu', plate);
+      sessionStorage.setItem('rut', rut);
+      window.location.href = `/home/validaciones-pago`;
+    } catch (err) {
+      setPatenteError('Error al consultar la placa. Intente nuevamente.');
+    }
+  };
+
+  function abrirModal(detalle: EstadoVehiculoDetalle) {
+    setDetalleSeleccionado(detalle);
+    setModalOpen(true);
+  }
+
+  function cerrarModal() {
+    setModalOpen(false);
+    setDetalleSeleccionado(null);
+  }
+
   // Mostrar loading
   if (loading) {
     return (
@@ -158,7 +393,7 @@ export default function VerVehiculos() {
     return (
       <section className="section card-like" style={{ fontFamily: '"Roboto", Arial, sans-serif' }}>
         <div className="section-header px-4 pt-4 pb-3 border-bottom border-primary">
-          <h1 className="h4 m-0 text-center">Vehículos Disponibles</h1>
+          <h1 className="h4 m-0 text-center">Mis vehículos</h1>
         </div>
         <div className="section-body p-4">
           <div className="alert alert-danger" role="alert">
@@ -178,135 +413,265 @@ export default function VerVehiculos() {
 
   return (
     <ProtectedRoute>
-    <section className="section card-like shadow" style={{ fontFamily: '"Roboto", Arial, sans-serif', minHeight: 'max-content' }}>
-      <div className="section-header px-4 pt-4 pb-3">
-        <h1 className="h4 m-0 text-center">Vehículos Disponibles</h1>
-      </div>
-
-      <div className="section-body p-4">
-        <div className="d-flex justify-content-center">
-          <div className="table-responsive" style={{ maxWidth: '75%' }}>
-            <table className="table align-middle table-striped">
-              <thead>
-                <tr className="bg-primary text-white">
-                  <th className="fw-bold">Placa Patente Única</th>
-                  <th className="fw-bold">Marca</th>
-                  <th className="fw-bold">Modelo</th>
-                  <th className="fw-bold">Estado Pago</th>
-                  <th className="fw-bold text-center">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {vehicles.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="text-center py-4 text-muted">
-                  No se encontraron vehículos para este RUT.
-                </td>
-              </tr>
-                ) : (
-              currentVehicles.map(v => (
-                <tr key={v.id}>
-                  <td className="fw-bold text-dark" style={{ fontSize: '2.0rem', fontWeight: 'bold' }}>
-                {v.plate}
-                  </td>
-                  <td>{v.brand}</td>
-                  <td>{v.model}</td>
-                  <td><EstadoTag estado={v.estado} /></td>
-                  <td className="text-center">
-                <button
-                  type="button"
-                  className={`btn btn-sm px-3 text-decoration-none ${
-                  v.estado === 'PAGADO' 
-                    ? 'btn-outline-secondary' 
-                    : 'btn-primary'
-                  }`}
-                  disabled={v.estado === 'PAGADO'}
-                  style={{ 
-                  textDecoration: 'none',
-                  ...(v.estado === 'PAGADO' && {
-                    backgroundColor: '#7E8FA0',
-                    borderColor: '#7E8FA0',
-                    color: 'white'
-                  })
-                  }}
-                  onClick={() => {
-                  if (v.estado !== 'PAGADO') {
-                    // Cargar PPU en storage y redirigir
-                    sessionStorage.setItem('ppu', v.plate);
-                    sessionStorage.setItem('rut', rut);
-                    window.location.href = `/home/validaciones-pago`;
-                  }
-                  }}
-                >
-                  Pagar
-                </button>
-                  </td>
-                </tr>
-              ))
-                )}
-              </tbody>
-            </table>
-          </div>        
+      <section className="" style={{ fontFamily: '"Roboto", Arial, sans-serif', minHeight: 'max-content', width: '100%' }}>
+        <div className="row">
+          <div className="card-like col shadow p-3 m-3">
+            <p className="mb-4">Nombre: {rut}</p>
+            {/* Descripción del sitio */}
+            <h2 className="mb-3" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>Tu Permiso - Gestión de Permisos de Circulación</h2>
+          </div>
+          <div className="card-like col shadow p-3 m-3 d-flex align-items-center justify-content-center">
+            {/* Botón "Pagar otro vehículo" */}
+            <button className="btn btn-primary" onClick={() => setModalPagarOtro(true)}>
+              Pagar otro vehículo
+            </button>
+          </div>
         </div>
-        <div style={{ maxWidth: '75%', margin: '0 auto' }}>
-          {/* Mostrar paginación solo si hay vehículos */}
-          {vehicles.length > 0 && (
-            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-3">
-              <div className="d-flex align-items-center gap-2">
-                <label className="form-label mb-0">Mostrar</label>
-                <select 
-                  className="form-select form-select-sm" 
-                  value={itemsPerPage}
-                  onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-                  style={{ width: 80 }}
-                >
-                  <option value={1}>1</option>
-                  <option value={3}>3</option>
-                  <option value={5}>5</option>
-                </select>
-                <span className="text-muted small ms-2">
-                  Mostrando {startIndex + 1} - {endIndex} de {totalItems}
-                </span>
+        <div className="row">
+          <div className="card-like shadow col p-3 m-3">
+            <h1 className="p-3 h4 m-0 text-center">Mis Vehículos</h1>
+            {/* Mostrar el resultado de la función getRPIStatus */}
+            <div className="d-flex justify-content-center">
+              <div className="alert alert-info text-center" role="alert">
+                <strong>Estado RPI:</strong> {rpiStatus}
               </div>
-
-              <nav aria-label="Paginación">
-                <ul className="pagination pagination-sm mb-0">
-                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                    <button 
-                      className="page-link"
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      &laquo;
-                    </button>
-                  </li>
-                  {getPageNumbers().map(n => (
-                    <li key={n} className={`page-item ${n === currentPage ? 'active' : ''}`}>
-                      <button 
-                        className="page-link"
-                        onClick={() => handlePageChange(n)}
-                      >
-                        {n}
-                      </button>
-                    </li>
-                  ))}
-                  <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                    <button 
-                      className="page-link"
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                    >
-                      &raquo;
-                    </button>
-                  </li>
-                </ul>
-              </nav>
             </div>
-          )}
+            <div className="d-flex justify-content-center">
+              <div className="table-responsive">
+                <table className="table align-middle table-striped">
+                  <thead>
+                    <tr className="bg-primary text-white">
+                      <th className="fw-bold">Placa</th>
+                      <th className="fw-bold">Marca</th>
+                      <th className="fw-bold">Estado Vehículo</th>
+                      <th className="fw-bold">Estado Permiso</th>
+                      <th className="fw-bold">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {vehicles.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-4 text-muted">
+                          No se encontraron vehículos para este RUT.
+                        </td>
+                      </tr>
+                    ) : (
+                      currentVehicles.map(v => (
+                        <tr key={v.id}>
+                          <td className="fw-bold text-dark align-middle" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
+                            {v.plate}
+                          </td>
+                          <td className="align-middle">
+                            <p className="mb-0">{v.brand}</p>
+                            <p className="mb-0 text-muted" style={{ fontSize: '0.9rem' }}>{v.model}</p>
+                          </td>
+                          
+                          <td className="align-middle">
+                            {v.estadoVehiculo ? (
+                              <div
+                                className="d-flex align-items-center"
+                                style={{ cursor: 'pointer' }}
+                                onMouseEnter={e => {
+                                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                  setTooltipDetalle(v.estadoVehiculo!);
+                                  setTooltipPos({
+                                    x: rect.left + rect.width / 2,
+                                    y: rect.top + window.scrollY,
+                                  });
+                                  setTooltipVisible(true);
+                                }}
+                                // Elimina onMouseMove para que la posición no cambie con el mouse
+                                onMouseLeave={() => {
+                                  setTooltipVisible(false);
+                                  setTooltipDetalle(null);
+                                }}
+                                onClick={() => abrirModal(v.estadoVehiculo!)}
+                              >
+                                <span
+                                  className={`status-chip p-2 d-flex align-items-center justify-content-center ${v.estadoVehiculo.estadoGeneral === 'Al día' ? 'status--pagado' : 'status--vencido'}`}
+                                >
+                                  <span className="status-dot" />
+                                  <span className="ms-1">
+                                    {v.estadoVehiculo.estadoGeneral === 'Al día' ? 'Al día' : 'Presenta problemas'}
+                                  </span>
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="spinner-border spinner-border-sm text-primary" role="status" />
+                            )}
+                          </td>
+                          <td className="align-middle"><EstadoTag estado={v.estado} /></td>
+                          <td className="align-middle">
+                            <button
+                              type="button"
+                              className={`btn btn-sm px-3 text-decoration-none ${
+                                v.estado === 'PAGADO' 
+                                  ? 'btn-outline-secondary' 
+                                  : 'btn-primary'
+                              }`}
+                              disabled={v.estado === 'PAGADO'}
+                              style={{ 
+                                textDecoration: 'none',
+                                ...(v.estado === 'PAGADO' && {
+                                  backgroundColor: '#7E8FA0',
+                                  borderColor: '#7E8FA0',
+                                  color: 'white'
+                                })
+                              }}
+                              onClick={() => {
+                                if (v.estado !== 'PAGADO') {
+                                  sessionStorage.setItem('ppu', v.plate);
+                                  sessionStorage.setItem('rut', rut);
+                                  window.location.href = `/home/validaciones-pago`;
+                                }
+                              }}
+                            >
+                              Ver
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>        
+            </div>
+            <div style={{ maxWidth: '75%', margin: '0 auto' }}>
+              {/* Mostrar paginación solo si hay vehículos */}
+              {vehicles.length > 0 && (
+                <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-3">
+                  <div className="d-flex align-items-center gap-2">
+                    <label className="form-label mb-0">Mostrar</label>
+                    <select 
+                      className="form-select form-select-sm" 
+                      value={itemsPerPage}
+                      onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                      style={{ width: 80 }}
+                    >
+                      <option value={1}>1</option>
+                      <option value={3}>3</option>
+                      <option value={5}>5</option>
+                    </select>
+                    <span className="text-muted small ms-2">
+                      Mostrando {startIndex + 1} - {endIndex} de {totalItems}
+                    </span>
+                  </div>
+
+                  <nav aria-label="Paginación">
+                    <ul className="pagination pagination-sm mb-0">
+                      <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                        <button 
+                          className="page-link"
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                        >
+                          &laquo;
+                        </button>
+                      </li>
+                      {getPageNumbers().map(n => (
+                        <li key={n} className={`page-item ${n === currentPage ? 'active' : ''}`}>
+                          <button 
+                            className="page-link"
+                            onClick={() => handlePageChange(n)}
+                          >
+                            {n}
+                          </button>
+                        </li>
+                      ))}
+                      <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                        <button 
+                          className="page-link"
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                        >
+                          &raquo;
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-        
-      </div>
-    </section>
+      </section>
+
+      {/* Modal "Pagar otro vehículo" */}
+      {modalPagarOtro && (
+        <div
+          className="modal fade show"
+          style={{
+            display: 'block',
+            background: 'rgba(0,0,0,0.35)',
+            zIndex: 1050,
+          }}
+          tabIndex={-1}
+          role="dialog"
+          onClick={() => setModalPagarOtro(false)}
+        >
+          <div
+            className="modal-dialog modal-dialog-centered"
+            role="document"
+            style={{ pointerEvents: 'auto' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Pagar otro vehículo</h5>
+                <button type="button" className="btn-close" aria-label="Cerrar" onClick={() => setModalPagarOtro(false)} />
+              </div>
+              <div className="modal-body">
+                <p className="text-justify">
+                  Si deseas pagar otro vehículo que no está registrado con tu RUT, puedes hacerlo ingresando su placa patente en el siguiente campo.
+                </p>
+                <p className="text-center">Ingrese la placa patente</p>
+                <div className="d-flex justify-content-center align-items-center gap-4">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    className="form-control"
+                    placeholder="ABCD12"
+                    maxLength={6}
+                    value={patenteInput}
+                    onChange={e => {
+                      // Solo mayúsculas y máximo 6 caracteres
+                      const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+                      setPatenteInput(val);
+                      setPatenteError('');
+                    }}
+                    style={{ textTransform: 'uppercase', width: 180, textAlign: 'center' }}
+                  />
+                  <button
+                    className="btn btn-primary"
+                    onClick={handlePagarOtroVehiculo}
+                  >
+                    Buscar Vehículo
+                  </button>
+                </div>
+                {patenteError && (
+                  <div className="text-danger text-center mt-2">{patenteError}</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tooltip flotante fuera de la tabla */}
+      {tooltipVisible && tooltipDetalle && (
+        <div
+          style={{
+            position: 'absolute',
+            top: tooltipPos.y + 24,
+            left: tooltipPos.x,
+            transform: 'translate(-50%, 0)',
+            zIndex: 9999,
+            pointerEvents: 'none',
+          }}
+        >
+          <EstadoVehiculoTooltip detalle={tooltipDetalle} />
+        </div>
+      )}
     </ProtectedRoute>
   );
 }
