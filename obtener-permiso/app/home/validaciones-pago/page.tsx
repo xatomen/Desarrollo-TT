@@ -397,7 +397,7 @@ function ValidacionesPagoContent() {
                   Valor Permiso de Circulación
                 </h6>
                 <h2 className="fw-bold mb-0 text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700', fontSize: '2rem' }}>
-                  ${valorPermiso}
+                  ${valorPermiso?.toLocaleString('es-CL') || '0'}
                 </h2>
               </div>
             </div>
