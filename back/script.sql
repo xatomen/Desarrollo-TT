@@ -58,3 +58,12 @@ CREATE TABLE IF NOT EXISTS usuarios_admin (
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL
 );
+
+-- Mis Vehículos Guardados
+CREATE TABLE IF NOT EXISTS mis_vehiculos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    rut VARCHAR(12) NOT NULL,
+    ppu VARCHAR(10) NOT NULL,
+    nombre_vehiculo VARCHAR(100) NOT NULL,
+    fecha_agregado DATETIME NOT NULL
+);

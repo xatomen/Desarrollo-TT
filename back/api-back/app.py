@@ -84,6 +84,7 @@ from routers.obtener_vehiculos_rut import obtener_vehiculos_rut
 from routers.recepcionar_solicitud import recepcionar_solicitud
 from routers.login_admin import login_admin
 from routers.create_logs import create_logs
+from routers.guardar_vehiculo import guardar_vehiculo
 
 app.include_router(calcular_metricas.router)
 app.include_router(consultar_encargo.router)
@@ -104,3 +105,4 @@ app.include_router(obtener_vehiculos_rut.router)
 app.include_router(recepcionar_solicitud.router)
 app.include_router(login_admin.router)
 app.include_router(create_logs.router)
+app.include_router(guardar_vehiculo.router)
