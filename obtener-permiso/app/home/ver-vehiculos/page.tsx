@@ -10,11 +10,12 @@ import React from 'react';
 
 type Estado = 'PAGADO' | 'HABILITADO' | 'VENCIDO';
 type Vehiculo = { 
-  id: number; 
-  plate: string; 
-  brand: string; 
-  model: string; 
-  estado: Estado;
+  id?: number; 
+  name?: string;
+  plate?: string; 
+  brand?: string; 
+  model?: string; 
+  estado?: Estado;
   estadoVehiculo?: EstadoVehiculoDetalle;
 };
 
@@ -207,6 +208,43 @@ export default function VerVehiculos() {
 
   // Estado para la vista actual (mis-vehiculos o guardados)
   const [currentView, setCurrentView] = useState<'mis-vehiculos' | 'guardados'>('mis-vehiculos');
+
+  // Vehículos guardados
+  const [savedVehicles, setSavedVehicles] = useState<Vehiculo[]>([]);
+
+  // Obtener mis vehículos guardados por rut
+  const fetchSavedVehicles = async (rut: string) => {
+    try {
+      const response = await fetch(`${API_CONFIG.BACKEND}mis_vehiculos_guardados/${rut}`);
+      if (!response.ok) {
+        throw new Error('Error al obtener vehículos guardados');
+      }
+      const data = await response.json();
+      // setVehicles(data);
+      setSavedVehicles(data);
+      console.log('Vehículos guardados:', data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Error desconocido');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Llamar a la función para obtener los vehículos guardados al cargar el componente
+  useEffect(() => {
+    if (isAuthenticated && rut) {
+      fetchSavedVehicles(rut);
+    }
+  }, [isAuthenticated, rut]);
+
+  const mapApiToVehiculoSaved = (apiData: any, index: number): Vehiculo => ({
+    id: apiData.id,
+    plate: apiData.ppu,
+    name: apiData.nombre,
+    // brand: apiData.brand,
+    // model: apiData.model,
+    // estado: apiData.estado
+  });
 
   // Nueva función para obtener el estado del vehículo de forma aislada
   const getVehicleStatus = async (plate: string, rut: string): Promise<EstadoVehiculoDetalle> => {
@@ -547,168 +585,231 @@ export default function VerVehiculos() {
                 </button>
               </div>
             </div>
-            <h1 className="p-3 h4 m-0 text-center">Mis Vehículos</h1>
             
-            {/* Mostrar el resultado de la función getRPIStatus */}
-            <div className="d-flex justify-content-center">
-              {rpiStatus !== 'Sin multas' && rpiStatus !== 'Cargando...' && (
-                <div className="alert alert-danger text-center" role="alert">
-                  <strong>¡Atención!</strong> Posees multas asociadas al Registro de Pasajeros Infractores, por lo que no podrás realizar el pago del permiso de circulación de tus vehículos. Por favor, regulariza tu situación en el Registro de Pasajeros Infractores para poder continuar con el proceso de pago.
+            {/* RENDERIZADO CONDICIONAL BASADO EN currentView */}
+            {currentView === 'mis-vehiculos' ? (
+              // Mis Vehículos
+              <div>
+                <h1 className="p-3 h4 m-0 text-center">Mis Vehículos</h1>
+                <div className="d-flex justify-content-center">
+                  {rpiStatus !== 'Sin multas' && rpiStatus !== 'Cargando...' && (
+                    <div className="alert alert-danger text-center" role="alert">
+                      <strong>¡Atención!</strong> Posees multas asociadas al Registro de Pasajeros Infractores, por lo que no podrás realizar el pago del permiso de circulación de tus vehículos. Por favor, regulariza tu situación en el Registro de Pasajeros Infractores para poder continuar con el proceso de pago.
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <div className="d-flex justify-content-center">
-              <div className="table-responsive">
-                <table className="table align-middle table-striped">
-                  <thead>
-                    <tr className="bg-primary text-white">
-                      <th className="fw-bold">Placa</th>
-                      <th className="fw-bold">Marca</th>
-                      <th className="fw-bold">Estado Vehículo</th>
-                      <th className="fw-bold">Fecha Vencimiento Permiso</th>
-                      <th className="fw-bold">Acción</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {vehicles.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="text-center py-4 text-muted">
-                          No se encontraron vehículos para este RUT.
-                        </td>
-                      </tr>
-                    ) : (
-                      currentVehicles.map(v => (
-                        <tr key={v.id}>
-                          <td className="fw-bold text-dark align-middle" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
-                            {v.plate}
-                          </td>
-                          <td className="align-middle">
-                            <p className="mb-0">{v.brand}</p>
-                            <p className="mb-0 text-muted" style={{ fontSize: '0.9rem' }}>{v.model}</p>
-                          </td>
-                          
-                          <td className="align-middle">
-                            {v.estadoVehiculo ? (
-                              <div
-                                className="d-flex align-items-center"
-                                style={{ cursor: 'pointer' }}
-                                onMouseEnter={e => {
-                                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                  setTooltipDetalle(v.estadoVehiculo!);
-                                  setTooltipPos({
-                                    x: rect.left + rect.width / 2,
-                                    y: rect.top + window.scrollY,
-                                  });
-                                  setTooltipVisible(true);
-                                }}
-                                // Elimina onMouseMove para que la posición no cambie con el mouse
-                                onMouseLeave={() => {
-                                  setTooltipVisible(false);
-                                  setTooltipDetalle(null);
-                                }}
-                                onClick={() => abrirModal(v.estadoVehiculo!)}
-                              >
-                                <span
-                                  className={`status-chip p-2 d-flex align-items-center justify-content-center ${v.estadoVehiculo.estadoGeneral === 'Al día' ? 'status--pagado' : 'status--vencido'}`}
-                                >
-                                  <span className="status-dot" />
-                                  <span className="ms-1">
-                                    {v.estadoVehiculo.estadoGeneral === 'Al día' ? 'Al día' : 'Presenta problemas'}
-                                  </span>
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="spinner-border spinner-border-sm text-primary" role="status" />
-                            )}
-                          </td>
-                          <td className="align-middle">
-                            {v.estadoVehiculo?.fechaVencimientoPermiso
-                              ? (
-                                <span>
-                                  {formatearFechaLarga(v.estadoVehiculo.fechaVencimientoPermiso)}
-                                </span>
-                              )
-                              : (
-                                <span className="text-muted">No disponible</span>
-                              )
-                            }
-                          </td>
-                          <td className="align-middle">
-                            <button
-                              type="button"
-                              className="btn btn-sm px-3 text-decoration-none btn-primary"
-                              onClick={() => {
-                                sessionStorage.setItem('ppu', v.plate);
-                                sessionStorage.setItem('rut', rut);
-                                window.location.href = `/home/validaciones-pago`;
-                              }}
-                            >
-                              Ver
-                            </button>
-                          </td>
+                <div className="d-flex justify-content-center">
+                  <div className="table-responsive">
+                    <table className="table align-middle table-striped">
+                      <thead>
+                        <tr className="bg-primary text-white">
+                          <th className="fw-bold">Placa</th>
+                          <th className="fw-bold">Marca</th>
+                          <th className="fw-bold">Estado Vehículo</th>
+                          <th className="fw-bold">Fecha Vencimiento Permiso</th>
+                          <th className="fw-bold">Acción</th>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>        
-            </div>
-            <div style={{ maxWidth: '75%', margin: '0 auto' }}>
-              {/* Mostrar paginación solo si hay vehículos */}
-              {vehicles.length > 0 && (
-                <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-3">
-                  <div className="d-flex align-items-center gap-2">
-                    <label className="form-label mb-0">Mostrar</label>
-                    <select 
-                      className="form-select form-select-sm" 
-                      value={itemsPerPage}
-                      onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-                      style={{ width: 80 }}
-                    >
-                      <option value={1}>1</option>
-                      <option value={3}>3</option>
-                      <option value={5}>5</option>
-                    </select>
-                    <span className="text-muted small ms-2">
-                      Mostrando {startIndex + 1} - {endIndex} de {totalItems}
-                    </span>
-                  </div>
-
-                  <nav aria-label="Paginación">
-                    <ul className="pagination pagination-sm mb-0">
-                      <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                        <button 
-                          className="page-link"
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                        >
-                          &laquo;
-                        </button>
-                      </li>
-                      {getPageNumbers().map(n => (
-                        <li key={n} className={`page-item ${n === currentPage ? 'active' : ''}`}>
-                          <button 
-                            className="page-link"
-                            onClick={() => handlePageChange(n)}
-                          >
-                            {n}
-                          </button>
-                        </li>
-                      ))}
-                      <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                        <button 
-                          className="page-link"
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                        >
-                          &raquo;
-                        </button>
-                      </li>
-                    </ul>
-                  </nav>
+                      </thead>
+                      <tbody>
+                        {vehicles.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="text-center py-4 text-muted">
+                              No se encontraron vehículos para este RUT.
+                            </td>
+                          </tr>
+                        ) : (
+                          currentVehicles.map(v => (
+                            <tr key={v.id}>
+                              <td className="fw-bold text-dark align-middle" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
+                                {v.plate}
+                              </td>
+                              <td className="align-middle">
+                                <p className="mb-0">{v.brand}</p>
+                                <p className="mb-0 text-muted" style={{ fontSize: '0.9rem' }}>{v.model}</p>
+                              </td>
+                              
+                              <td className="align-middle">
+                                {v.estadoVehiculo ? (
+                                  <div
+                                    className="d-flex align-items-center"
+                                    style={{ cursor: 'pointer' }}
+                                    onMouseEnter={e => {
+                                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                      setTooltipDetalle(v.estadoVehiculo!);
+                                      setTooltipPos({
+                                        x: rect.left + rect.width / 2,
+                                        y: rect.top + window.scrollY,
+                                      });
+                                      setTooltipVisible(true);
+                                    }}
+                                    onMouseLeave={() => {
+                                      setTooltipVisible(false);
+                                      setTooltipDetalle(null);
+                                    }}
+                                    onClick={() => abrirModal(v.estadoVehiculo!)}
+                                  >
+                                    <span
+                                      className={`status-chip p-2 d-flex align-items-center justify-content-center ${v.estadoVehiculo.estadoGeneral === 'Al día' ? 'status--pagado' : 'status--vencido'}`}
+                                    >
+                                      <span className="status-dot" />
+                                      <span className="ms-1">
+                                        {v.estadoVehiculo.estadoGeneral === 'Al día' ? 'Al día' : 'Presenta problemas'}
+                                      </span>
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span className="spinner-border spinner-border-sm text-primary" role="status" />
+                                )}
+                              </td>
+                              <td className="align-middle">
+                                {v.estadoVehiculo?.fechaVencimientoPermiso
+                                  ? (
+                                    <span>
+                                      {formatearFechaLarga(v.estadoVehiculo.fechaVencimientoPermiso)}
+                                    </span>
+                                  )
+                                  : (
+                                    <span className="text-muted">No disponible</span>
+                                  )
+                                }
+                              </td>
+                              <td className="align-middle">
+                                <button
+                                  type="button"
+                                  className="btn btn-sm px-3 text-decoration-none btn-primary"
+                                  onClick={() => {
+                                    sessionStorage.setItem('ppu', v.plate);
+                                    sessionStorage.setItem('rut', rut);
+                                    window.location.href = `/home/validaciones-pago`;
+                                  }}
+                                >
+                                  Ver
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>        
                 </div>
-              )}
-            </div>
+                <div style={{ maxWidth: '75%', margin: '0 auto' }}>
+                  {/* Paginación para Mis Vehículos */}
+                  {vehicles.length > 0 && (
+                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-3">
+                      <div className="d-flex align-items-center gap-2">
+                        <label className="form-label mb-0">Mostrar</label>
+                        <select 
+                          className="form-select form-select-sm" 
+                          value={itemsPerPage}
+                          onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                          style={{ width: 80 }}
+                        >
+                          <option value={1}>1</option>
+                          <option value={3}>3</option>
+                          <option value={5}>5</option>
+                        </select>
+                        <span className="text-muted small ms-2">
+                          Mostrando {startIndex + 1} - {endIndex} de {totalItems}
+                        </span>
+                      </div>
+
+                      <nav aria-label="Paginación">
+                        <ul className="pagination pagination-sm mb-0">
+                          <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                            <button 
+                              className="page-link"
+                              onClick={() => handlePageChange(currentPage - 1)}
+                              disabled={currentPage === 1}
+                            >
+                              &laquo;
+                            </button>
+                          </li>
+                          {getPageNumbers().map(n => (
+                            <li key={n} className={`page-item ${n === currentPage ? 'active' : ''}`}>
+                              <button 
+                                className="page-link"
+                                onClick={() => handlePageChange(n)}
+                              >
+                                {n}
+                              </button>
+                            </li>
+                          ))}
+                          <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                            <button 
+                              className="page-link"
+                              onClick={() => handlePageChange(currentPage + 1)}
+                              disabled={currentPage === totalPages}
+                            >
+                              &raquo;
+                            </button>
+                          </li>
+                        </ul>
+                      </nav>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              // Vehículos Guardados
+              <div>
+                <h1 className="p-3 h4 m-0 text-center">Vehículos Guardados</h1>
+                <div className="d-flex justify-content-center">
+                  <div className="table-responsive">
+                    <table className="table align-middle table-striped">
+                      <thead>
+                        <tr className="bg-primary text-white">
+                          <th className="fw-bold">Placa</th>
+                          <th className="fw-bold">Nombre del Vehículo</th>
+                          <th className="fw-bold">Fecha Agregado</th>
+                          <th className="fw-bold">Acción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {savedVehicles.length === 0 ? (
+                          <tr>
+                            <td colSpan={4} className="text-center py-4 text-muted">
+                              No tienes vehículos guardados.
+                            </td>
+                          </tr>
+                        ) : (
+                          savedVehicles.map((vehicle, index) => (
+                            <tr key={vehicle.id || index}>
+                              <td className="fw-bold text-dark align-middle" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
+                                {vehicle.ppu}
+                              </td>
+                              <td className="align-middle">
+                                {vehicle.nombre_vehiculo}
+                              </td>
+                              <td className="align-middle">
+                                {vehicle.fecha_agregado 
+                                  ? new Date(vehicle.fecha_agregado).toLocaleDateString('es-CL')
+                                  : <span className="text-muted">No disponible</span>
+                                }
+                              </td>
+                              <td className="align-middle">
+                                <button
+                                  type="button"
+                                  className="btn btn-sm px-3 text-decoration-none btn-primary"
+                                  onClick={() => {
+                                    sessionStorage.setItem('ppu', vehicle.ppu || '');
+                                    sessionStorage.setItem('rut', rut);
+                                    window.location.href = `/home/validaciones-pago`;
+                                  }}
+                                >
+                                  Ver
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+            
           </div>
         </div>
       </section>
