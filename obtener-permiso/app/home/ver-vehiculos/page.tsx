@@ -206,11 +206,41 @@ export default function VerVehiculos() {
   const [tooltipDetalle, setTooltipDetalle] = useState<EstadoVehiculoDetalle | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
+  // Agrega este useEffect después de los hooks de estado
+  useEffect(() => {
+    if (patenteError) {
+      const timer = setTimeout(() => setPatenteError(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [patenteError]);
+
   // Estado para la vista actual (mis-vehiculos o guardados)
   const [currentView, setCurrentView] = useState<'mis-vehiculos' | 'guardados'>('mis-vehiculos');
 
   // Vehículos guardados
   const [savedVehicles, setSavedVehicles] = useState<Vehiculo[]>([]);
+
+  // Estado para mostrar el resultado de la búsqueda en el modal
+  const [vehiculoBuscado, setVehiculoBuscado] = useState<{
+    plate: string;
+    brand: string;
+    model: string;
+    estadoVehiculo: EstadoVehiculoDetalle;
+  } | null>(null);
+  const [buscandoVehiculo, setBuscandoVehiculo] = useState(false);
+
+  // Estado para feedback de guardado
+  const [guardandoVehiculo, setGuardandoVehiculo] = useState(false);
+  const [mensajeGuardado, setMensajeGuardado] = useState<string | null>(null);
+
+  // Estado para el modal de edición
+  const [modalEditar, setModalEditar] = useState<{ open: boolean, ppu?: string, nombreActual?: string }>(
+    { open: false }
+  );
+  const [modalEliminar, setModalEliminar] = useState<{ open: boolean, ppu?: string }>(
+    { open: false }
+  );
+  const [nuevoNombreVehiculo, setNuevoNombreVehiculo] = useState('');
 
   // Obtener mis vehículos guardados por rut
   const fetchSavedVehicles = async (rut: string) => {
@@ -220,9 +250,33 @@ export default function VerVehiculos() {
         throw new Error('Error al obtener vehículos guardados');
       }
       const data = await response.json();
-      // setVehicles(data);
-      setSavedVehicles(data);
-      console.log('Vehículos guardados:', data);
+      
+      // Enriquecer cada vehículo con marca y modelo desde consultar_patente
+      const vehiclesWithDetails = await Promise.all(
+        data.map(async (vehicle: any) => {
+          try {
+            const patenteResponse = await fetch(`${API_CONFIG.BACKEND}consultar_patente/${vehicle.ppu}`);
+            if (patenteResponse.ok) {
+              const patenteData = await patenteResponse.json();
+              return {
+                ...vehicle,
+                brand: patenteData.marca || 'N/A',
+                model: patenteData.modelo || 'N/A'
+              };
+            }
+          } catch (error) {
+            console.error(`Error al obtener detalles de patente ${vehicle.ppu}:`, error);
+          }
+          return {
+            ...vehicle,
+            brand: 'N/A',
+            model: 'N/A'
+          };
+        })
+      );
+      
+      setSavedVehicles(vehiclesWithDetails);
+      console.log('Vehículos guardados con detalles:', vehiclesWithDetails);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Error desconocido');
     } finally {
@@ -236,6 +290,16 @@ export default function VerVehiculos() {
       fetchSavedVehicles(rut);
     }
   }, [isAuthenticated, rut]);
+
+  useEffect(() => {
+    if (mensajeGuardado && mensajeGuardado.includes('exitosamente')) {
+      // Refresca la tabla de vehículos guardados
+      fetchSavedVehicles(rut);
+      // Limpia el mensaje después de 5 segundos
+      const timer = setTimeout(() => setMensajeGuardado(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [mensajeGuardado, rut]);
 
   const mapApiToVehiculoSaved = (apiData: any, index: number): Vehiculo => ({
     id: apiData.id,
@@ -467,30 +531,44 @@ export default function VerVehiculos() {
   // Nueva función para validar y redirigir
   const handlePagarOtroVehiculo = async () => {
     setPatenteError('');
+    setVehiculoBuscado(null);
     const plate = patenteInput.trim().toUpperCase();
 
-    if (!plate || plate.length !== 6) {
-      setPatenteError('La placa patente debe tener exactamente 6 caracteres.');
+    if (!plate || plate.length !== 5 && plate.length !== 6) {
+      setPatenteError('La placa patente debe tener exactamente 5 o 6 caracteres.');
       return;
     }
 
+    setBuscandoVehiculo(true);
     try {
       const response = await fetch(`${API_CONFIG.BACKEND}consultar_patente/${plate}`);
       if (!response.ok) {
         setPatenteError('La placa patente no existe en los registros del Servicio de Registro Civil e Identificación.');
+        setBuscandoVehiculo(false);
         return;
       }
       const data = await response.json();
       if (!data || data.error || data.not_found) {
         setPatenteError('La placa patente no existe en el sistema.');
+        setBuscandoVehiculo(false);
         return;
       }
-      // Si existe, redirigir
-      sessionStorage.setItem('ppu', plate);
-      sessionStorage.setItem('rut', rut);
-      window.location.href = `/home/validaciones-pago`;
+      // Marca y modelo desde la consulta
+      const brand = data.marca || 'N/A';
+      const model = data.modelo || 'N/A';
+
+      // Si existe, consulta el estado del vehículo
+      const estadoVehiculo = await getVehicleStatus(plate, rut);
+      setVehiculoBuscado({
+        plate,
+        brand,
+        model,
+        estadoVehiculo
+      });
     } catch (err) {
       setPatenteError('Error al consultar la placa. Intente nuevamente.');
+    } finally {
+      setBuscandoVehiculo(false);
     }
   };
 
@@ -503,6 +581,68 @@ export default function VerVehiculos() {
     setModalOpen(false);
     setDetalleSeleccionado(null);
   }
+
+  // Función para agregar el vehículo a mis vehículos
+  const handleAgregarVehiculo = async () => {
+    if (!vehiculoBuscado) return;
+    setGuardandoVehiculo(true);
+    setMensajeGuardado(null);
+    try {
+      const response = await fetch(`${API_CONFIG.BACKEND}guardar_vehiculo/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rut,
+          ppu: vehiculoBuscado.plate,
+          nombre_vehiculo: `${vehiculoBuscado.brand} ${vehiculoBuscado.model}`,
+          fecha_agregado: new Date().toISOString()
+        })
+      });
+      if (response.ok) {
+        setMensajeGuardado('Vehículo agregado exitosamente.');
+      } else {
+        const data = await response.json();
+        setMensajeGuardado(data?.detail || 'No se pudo agregar el vehículo.');
+      }
+    } catch (err) {
+      setMensajeGuardado('Error al agregar el vehículo.');
+    } finally {
+      setGuardandoVehiculo(false);
+    }
+  };
+
+  // Eliminar vehículo guardado
+  const eliminarVehiculo = async (rut: string, ppu: string) => {
+    try {
+      const response = await fetch(`${API_CONFIG.BACKEND}eliminar_vehiculo/${rut}/${ppu}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        fetchSavedVehicles(rut);
+      } else {
+        alert('No se pudo eliminar el vehículo.');
+      }
+    } catch (err) {
+      alert('Error al eliminar el vehículo.');
+    }
+  };
+
+  // Editar nombre de vehículo guardado
+  const editarVehiculo = async (rut: string, ppu: string, nuevoNombre: string) => {
+    try {
+      const response = await fetch(`${API_CONFIG.BACKEND}cambiar_nombre_vehiculo/${rut}/${ppu}?nuevo_nombre=${encodeURIComponent(nuevoNombre)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (response.ok) {
+        fetchSavedVehicles(rut);
+      } else {
+        alert('No se pudo cambiar el nombre del vehículo.');
+      }
+    } catch (err) {
+      alert('Error al cambiar el nombre del vehículo.');
+    }
+  };
 
   // Mostrar loading
   if (loading) {
@@ -799,6 +939,25 @@ export default function VerVehiculos() {
                                 >
                                   Ver
                                 </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm px-3 text-decoration-none btn-success mx-2"
+                                  onClick={() => {
+                                    setModalEditar({ open: true, ppu: vehicle.ppu, nombreActual: vehicle.nombre_vehiculo });
+                                    setNuevoNombreVehiculo(vehicle.nombre_vehiculo || '');
+                                  }}
+                                >
+                                  Editar
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm px-3 text-decoration-none btn-danger"
+                                  onClick={() => {
+                                    setModalEliminar({ open: true, ppu: vehicle.ppu });
+                                  }}
+                                >
+                                  Eliminar
+                                </button>
                               </td>
                             </tr>
                           ))
@@ -826,7 +985,12 @@ export default function VerVehiculos() {
           }}
           tabIndex={-1}
           role="dialog"
-          onClick={() => setModalPagarOtro(false)}
+          onClick={() => {
+            setModalPagarOtro(false);
+            setVehiculoBuscado(null);
+            setPatenteInput('');
+            setPatenteError('');
+          }}
         >
           <div
             className="modal-dialog"
@@ -836,12 +1000,17 @@ export default function VerVehiculos() {
           >
             <div className="p-2 card-like">
               <div className="modal-header">
-                <h5 className="modal-title">Pagar otro vehículo</h5>
-                <button type="button" className="btn-close" aria-label="Cerrar" onClick={() => setModalPagarOtro(false)} />
+                <h5 className="modal-title">Buscar estado de vehículo</h5>
+                <button type="button" className="btn-close" aria-label="Cerrar" onClick={() => {
+                  setModalPagarOtro(false);
+                  setVehiculoBuscado(null);
+                  setPatenteInput('');
+                  setPatenteError('');
+                }} />
               </div>
               <div className="modal-body">
                 <p className="text-justify">
-                  Si deseas pagar otro vehículo que no está registrado con tu RUT, puedes hacerlo ingresando su placa patente en el siguiente campo.
+                  Si deseas consultar el estado de un vehículo que no está registrado con tu RUT, puedes hacerlo ingresando su placa patente en el siguiente campo.
                 </p>
                 <p className="text-center">Ingrese la placa patente</p>
                 <div className="d-flex justify-content-center align-items-center gap-4">
@@ -857,19 +1026,196 @@ export default function VerVehiculos() {
                       const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
                       setPatenteInput(val);
                       setPatenteError('');
+                      setVehiculoBuscado(null);
                     }}
                     style={{ textTransform: 'uppercase', width: 180, textAlign: 'center' }}
                   />
                   <button
                     className="btn btn-primary"
                     onClick={handlePagarOtroVehiculo}
+                    disabled={buscandoVehiculo}
                   >
-                    Buscar Vehículo
+                    {buscandoVehiculo ? (
+                      <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    ) : (
+                      'Buscar Vehículo'
+                    )}
                   </button>
                 </div>
                 {patenteError && (
-                  <div className="text-danger text-center mt-2">{patenteError}</div>
+                  <div className="alert alert-danger text-center mt-2 py-2 px-3" role="alert" style={{ fontSize: '1em' }}>
+                    {patenteError}
+                  </div>
                 )}
+                {/* Mostrar resultado de la búsqueda */}
+                {vehiculoBuscado && (
+                  <div className="mt-4">
+                    <div className="border rounded p-3 mb-2 bg-light">
+                      <div className="mb-2">
+                        <b>Placa patente:</b> <span className="text-primary">{vehiculoBuscado.plate}</span>
+                      </div>
+                      <div className="mb-2">
+                        <b>Marca:</b> {vehiculoBuscado.brand}
+                      </div>
+                      <div className="mb-2">
+                        <b>Modelo:</b> {vehiculoBuscado.model}
+                      </div>
+                      <div className="mb-2 d-flex align-items-center gap-2">
+                        <b>Estado general:</b>
+                        <div
+                          className="d-inline-flex align-items-center"
+                          style={{ cursor: 'pointer' }}
+                          onMouseEnter={e => {
+                            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                            setTooltipDetalle(vehiculoBuscado.estadoVehiculo);
+                            setTooltipPos({
+                              x: rect.left + rect.width / 2,
+                              y: rect.top + window.scrollY,
+                            });
+                            setTooltipVisible(true);
+                          }}
+                          onMouseLeave={() => {
+                            setTooltipVisible(false);
+                            setTooltipDetalle(null);
+                          }}
+                        >
+                          <EstadoVehiculoTag estado={vehiculoBuscado.estadoVehiculo.estadoGeneral} />
+                        </div>
+                      </div>
+                      <div className="mb-2">
+                        <b>Fecha vencimiento permiso:</b>{' '}
+                        {vehiculoBuscado.estadoVehiculo.fechaVencimientoPermiso
+                          ? formatearFechaLarga(vehiculoBuscado.estadoVehiculo.fechaVencimientoPermiso)
+                          : <span className="text-muted">No disponible</span>
+                        }
+                      </div>
+                      <div className="mt-3 d-flex gap-2">
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => {
+                            sessionStorage.setItem('ppu', vehiculoBuscado.plate);
+                            sessionStorage.setItem('rut', rut);
+                            window.location.href = `/home/validaciones-pago`;
+                          }}
+                        >
+                          Pagar
+                        </button>
+                        <button
+                          className="btn btn-outline-success"
+                          onClick={handleAgregarVehiculo}
+                          disabled={guardandoVehiculo}
+                        >
+                          {guardandoVehiculo ? (
+                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                          ) : (
+                            'Agregar a mis vehículos'
+                          )}
+                        </button>
+                      </div>
+                      {mensajeGuardado && (
+                        <div className={`mt-2 ${mensajeGuardado.includes('exitosamente') ? 'text-success alert alert-success text-center' : 'text-danger alert alert-danger text-center'}`}>
+                          {mensajeGuardado}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar */}
+      {modalEditar.open && (
+        <div
+          className="modal fade show"
+          style={{
+            display: 'block',
+            background: 'rgba(0,0,0,0.35)',
+            zIndex: 1060,
+          }}
+          tabIndex={-1}
+          role="dialog"
+          onClick={() => setModalEditar({ open: false })}
+        >
+          <div
+            className="modal-dialog"
+            role="document"
+            style={{ pointerEvents: 'auto' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="card-like">
+              <div className="modal-header">
+                <h5 className="modal-title">Editar nombre del vehículo</h5>
+                <button type="button" className="btn-close" aria-label="Cerrar" onClick={() => setModalEditar({ open: false })} />
+              </div>
+              <div className="modal-body">
+                <label className="form-label">Nuevo nombre para {modalEditar.ppu}:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={nuevoNombreVehiculo}
+                  onChange={e => setNuevoNombreVehiculo(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setModalEditar({ open: false })}>Cancelar</button>
+                <button
+                  className="btn btn-success"
+                  onClick={async () => {
+                    await editarVehiculo(rut, modalEditar.ppu!, nuevoNombreVehiculo);
+                    setModalEditar({ open: false });
+                  }}
+                  disabled={!nuevoNombreVehiculo.trim()}
+                >
+                  Guardar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Eliminar */}
+      {modalEliminar.open && (
+        <div
+          className="modal fade show"
+          style={{
+            display: 'block',
+            background: 'rgba(0,0,0,0.35)',
+            zIndex: 1060,
+          }}
+          tabIndex={-1}
+          role="dialog"
+          onClick={() => setModalEliminar({ open: false })}
+        >
+          <div
+            className="modal-dialog"
+            role="document"
+            style={{ pointerEvents: 'auto' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="card-like">
+              <div className="modal-header">
+                <h5 className="modal-title">Eliminar vehículo</h5>
+                <button type="button" className="btn-close" aria-label="Cerrar" onClick={() => setModalEliminar({ open: false })} />
+              </div>
+              <div className="modal-body">
+                ¿Estás seguro de que deseas eliminar el vehículo <b>{modalEliminar.ppu}</b>?
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setModalEliminar({ open: false })}>Cancelar</button>
+                <button
+                  className="btn btn-danger"
+                  onClick={async () => {
+                    await eliminarVehiculo(rut, modalEliminar.ppu!);
+                    setModalEliminar({ open: false });
+                  }}
+                >
+                  Eliminar
+                </button>
               </div>
             </div>
           </div>
@@ -906,3 +1252,5 @@ function formatearFechaLarga(fechaIso?: string) {
   }).replace(' de ', ' de ').replace(',', '') // Asegura formato correcto
     .replace(/(\d+) de ([a-z]+) de (\d{4})/, '$1 de $2 del $3');
 }
+
+
