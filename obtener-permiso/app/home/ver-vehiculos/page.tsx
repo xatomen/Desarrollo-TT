@@ -250,31 +250,39 @@ export default function VerVehiculos() {
         throw new Error('Error al obtener vehículos guardados');
       }
       const data = await response.json();
-      
-      // Enriquecer cada vehículo con marca y modelo desde consultar_patente
+
+      // Enriquecer cada vehículo con marca, modelo y estadoVehiculo
       const vehiclesWithDetails = await Promise.all(
         data.map(async (vehicle: any) => {
+          let brand = 'N/A';
+          let model = 'N/A';
+          let estadoVehiculo = undefined;
           try {
+            // Marca y modelo
             const patenteResponse = await fetch(`${API_CONFIG.BACKEND}consultar_patente/${vehicle.ppu}`);
             if (patenteResponse.ok) {
               const patenteData = await patenteResponse.json();
-              return {
-                ...vehicle,
-                brand: patenteData.marca || 'N/A',
-                model: patenteData.modelo || 'N/A'
-              };
+              brand = patenteData.marca || 'N/A';
+              model = patenteData.modelo || 'N/A';
             }
           } catch (error) {
-            console.error(`Error al obtener detalles de patente ${vehicle.ppu}:`, error);
+            // Si falla, deja N/A
+          }
+          try {
+            // Estado del vehículo
+            estadoVehiculo = await getVehicleStatus(vehicle.ppu, rut);
+          } catch (error) {
+            // Si falla, deja indefinido
           }
           return {
             ...vehicle,
-            brand: 'N/A',
-            model: 'N/A'
+            brand,
+            model,
+            estadoVehiculo,
           };
         })
       );
-      
+
       setSavedVehicles(vehiclesWithDetails);
       console.log('Vehículos guardados con detalles:', vehiclesWithDetails);
     } catch (error) {
@@ -901,6 +909,9 @@ export default function VerVehiculos() {
                         <tr className="bg-primary text-white">
                           <th className="fw-bold">Placa</th>
                           <th className="fw-bold">Nombre del Vehículo</th>
+                          <th className="fw-bold">Marca</th>
+                          <th className="fw-bold">Estado Vehículo</th>
+                          <th className="fw-bold">Fecha Vencimiento Permiso</th>
                           <th className="fw-bold">Fecha Agregado</th>
                           <th className="fw-bold">Acción</th>
                         </tr>
@@ -908,7 +919,7 @@ export default function VerVehiculos() {
                       <tbody>
                         {savedVehicles.length === 0 ? (
                           <tr>
-                            <td colSpan={4} className="text-center py-4 text-muted">
+                            <td colSpan={8} className="text-center py-4 text-muted">
                               No tienes vehículos guardados.
                             </td>
                           </tr>
@@ -920,6 +931,55 @@ export default function VerVehiculos() {
                               </td>
                               <td className="align-middle">
                                 {vehicle.nombre_vehiculo}
+                              </td>
+                              <td className="align-middle mb-0">
+                                {vehicle.brand || 'N/A'}
+                                <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>{vehicle.model || 'N/A'}</p>
+                              </td>
+                              <td className="align-middle">
+                                {vehicle.estadoVehiculo ? (
+                                  <div
+                                    className="d-flex align-items-center"
+                                    style={{ cursor: 'pointer' }}
+                                    onMouseEnter={e => {
+                                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                      setTooltipDetalle(vehicle.estadoVehiculo!);
+                                      setTooltipPos({
+                                        x: rect.left + rect.width / 2,
+                                        y: rect.top + window.scrollY,
+                                      });
+                                      setTooltipVisible(true);
+                                    }}
+                                    onMouseLeave={() => {
+                                      setTooltipVisible(false);
+                                      setTooltipDetalle(null);
+                                    }}
+                                    onClick={() => abrirModal(vehicle.estadoVehiculo!)}
+                                  >
+                                    <span
+                                      className={`status-chip p-2 d-flex align-items-center justify-content-center ${vehicle.estadoVehiculo.estadoGeneral === 'Al día' ? 'status--pagado' : 'status--vencido'}`}
+                                    >
+                                      <span className="status-dot" />
+                                      <span className="ms-1">
+                                        {vehicle.estadoVehiculo.estadoGeneral === 'Al día' ? 'Al día' : 'Presenta problemas'}
+                                      </span>
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span className="spinner-border spinner-border-sm text-primary" role="status" />
+                                )}
+                              </td>
+                              <td className="align-middle">
+                                {vehicle.estadoVehiculo?.fechaVencimientoPermiso
+                                  ? (
+                                    <span>
+                                      {formatearFechaLarga(vehicle.estadoVehiculo.fechaVencimientoPermiso)}
+                                    </span>
+                                  )
+                                  : (
+                                    <span className="text-muted">No disponible</span>
+                                  )
+                                }
                               </td>
                               <td className="align-middle">
                                 {vehicle.fecha_agregado 
