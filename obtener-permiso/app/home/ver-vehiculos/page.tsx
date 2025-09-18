@@ -242,6 +242,16 @@ export default function VerVehiculos() {
   );
   const [nuevoNombreVehiculo, setNuevoNombreVehiculo] = useState('');
 
+  // Mueve aquí los hooks de paginación de guardados:
+  const [currentPageGuardados, setCurrentPageGuardados] = useState(1);
+  const [itemsPerPageGuardados, setItemsPerPageGuardados] = useState(5);
+
+  // Estado para el buscador
+  const [busqueda, setBusqueda] = useState('');
+
+  // Estado para el filtro de estado del vehículo
+  const [filtroEstado, setFiltroEstado] = useState<'todos' | 'al-dia' | 'no-vigente'>('todos');
+
   // Obtener mis vehículos guardados por rut
   const fetchSavedVehicles = async (rut: string) => {
     try {
@@ -507,12 +517,58 @@ export default function VerVehiculos() {
     }
   }, [rut, isAuthenticated, isLoading]); // ✅ Agregar dependencias correctas
 
-  // Cálculos para paginación
-  const totalItems = vehicles.length;
+  // Filtrado para Mis Vehículos
+  const filteredVehicles = vehicles.filter(v => {
+    const coincideBusqueda =
+      (v.plate || '').toLowerCase().includes(busqueda.toLowerCase()) ||
+      (v.brand || '').toLowerCase().includes(busqueda.toLowerCase()) ||
+      (v.model || '').toLowerCase().includes(busqueda.toLowerCase());
+    const coincideEstado =
+      filtroEstado === 'todos'
+        ? true
+        : filtroEstado === 'al-dia'
+        ? v.estadoVehiculo?.estadoGeneral === 'Al día'
+        : v.estadoVehiculo?.estadoGeneral !== 'Al día';
+    return coincideBusqueda && coincideEstado;
+  });
+
+  // Filtrado para Vehículos Guardados
+  const filteredSavedVehicles = savedVehicles.filter(v => {
+    const coincideBusqueda =
+      (v.ppu || '').toLowerCase().includes(busqueda.toLowerCase()) ||
+      (v.brand || '').toLowerCase().includes(busqueda.toLowerCase()) ||
+      (v.model || '').toLowerCase().includes(busqueda.toLowerCase()) ||
+      (v.nombre_vehiculo || '').toLowerCase().includes(busqueda.toLowerCase());
+    const coincideEstado =
+      filtroEstado === 'todos'
+        ? true
+        : filtroEstado === 'al-dia'
+        ? v.estadoVehiculo?.estadoGeneral === 'Al día'
+        : v.estadoVehiculo?.estadoGeneral !== 'Al día';
+    return coincideBusqueda && coincideEstado;
+  });
+
+  // Cálculos para paginación usando los filtrados
+  const totalItems = filteredVehicles.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-  const currentVehicles = vehicles.slice(startIndex, endIndex);
+  const currentVehicles = filteredVehicles.slice(startIndex, endIndex);
+
+  // Ya tienes esto arriba, ¡úsalo!
+  const totalItemsGuardados = filteredSavedVehicles.length;
+  const totalPagesGuardados = Math.ceil(totalItemsGuardados / itemsPerPageGuardados);
+  const startIndexGuardados = (currentPageGuardados - 1) * itemsPerPageGuardados;
+  const endIndexGuardados = Math.min(startIndexGuardados + itemsPerPageGuardados, totalItemsGuardados);
+  const currentSavedVehicles = filteredSavedVehicles.slice(startIndexGuardados, endIndexGuardados);
+
+  const getPageNumbersGuardados = () => {
+    const pages = [];
+    for (let i = 1; i <= totalPagesGuardados; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
 
   // Función para cambiar página
   const handlePageChange = (page: number) => {
@@ -692,6 +748,21 @@ export default function VerVehiculos() {
     );
   }
 
+  // // Estados para paginación de vehículos guardados
+  // const totalItemsGuardados = savedVehicles.length;
+  // const totalPagesGuardados = Math.ceil(totalItemsGuardados / itemsPerPageGuardados);
+  // const startIndexGuardados = (currentPageGuardados - 1) * itemsPerPageGuardados;
+  // const endIndexGuardados = Math.min(startIndexGuardados + itemsPerPageGuardados, totalItemsGuardados);
+  // const currentSavedVehicles = savedVehicles.slice(startIndexGuardados, endIndexGuardados);
+
+  // const getPageNumbersGuardados = () => {
+  //   const pages = [];
+  //   for (let i = 1; i <= totalPagesGuardados; i++) {
+  //     pages.push(i);
+  //   }
+  //   return pages;
+  // };
+
   return (
     <ProtectedRoute>
       <section className="" style={{ fontFamily: '"Roboto", Arial, sans-serif', minHeight: 'max-content', width: '100%' }}>
@@ -739,6 +810,27 @@ export default function VerVehiculos() {
               // Mis Vehículos
               <div>
                 <h1 className="p-3 h4 m-0 text-center">Mis Vehículos</h1>
+                <div className="row mb-3">
+                  <div className="col-12 col-md-8 mx-auto d-flex gap-2">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Buscar por placa, marca, modelo o nombre..."
+                      value={busqueda}
+                      onChange={e => setBusqueda(e.target.value)}
+                    />
+                    <select
+                      className="form-select"
+                      style={{ maxWidth: 180 }}
+                      value={filtroEstado}
+                      onChange={e => setFiltroEstado(e.target.value as any)}
+                    >
+                      <option value="todos">Todos los estados</option>
+                      <option value="al-dia">Al día</option>
+                      <option value="no-vigente">Presenta problemas</option>
+                    </select>
+                  </div>
+                </div>
                 <div className="d-flex justify-content-center">
                   {rpiStatus !== 'Sin multas' && rpiStatus !== 'Cargando...' && (
                     <div className="alert alert-danger text-center" role="alert">
@@ -902,6 +994,27 @@ export default function VerVehiculos() {
               // Vehículos Guardados
               <div>
                 <h1 className="p-3 h4 m-0 text-center">Vehículos Guardados</h1>
+                <div className="row mb-3">
+                  <div className="col-12 col-md-8 mx-auto d-flex gap-2">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Buscar por placa, marca, modelo o nombre..."
+                      value={busqueda}
+                      onChange={e => setBusqueda(e.target.value)}
+                    />
+                    <select
+                      className="form-select"
+                      style={{ maxWidth: 180 }}
+                      value={filtroEstado}
+                      onChange={e => setFiltroEstado(e.target.value as any)}
+                    >
+                      <option value="todos">Todos los estados</option>
+                      <option value="al-dia">Al día</option>
+                      <option value="no-vigente">Presenta problemas</option>
+                    </select>
+                  </div>
+                </div>
                 <div className="d-flex justify-content-center">
                   <div className="table-responsive">
                     <table className="table align-middle table-striped">
@@ -912,24 +1025,23 @@ export default function VerVehiculos() {
                           <th className="fw-bold">Marca</th>
                           <th className="fw-bold">Estado Vehículo</th>
                           <th className="fw-bold">Fecha Vencimiento Permiso</th>
-                          <th className="fw-bold">Fecha Agregado</th>
                           <th className="fw-bold">Acción</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {savedVehicles.length === 0 ? (
+                        {currentSavedVehicles.length === 0 ? (
                           <tr>
                             <td colSpan={8} className="text-center py-4 text-muted">
                               No tienes vehículos guardados.
                             </td>
                           </tr>
                         ) : (
-                          savedVehicles.map((vehicle, index) => (
+                          currentSavedVehicles.map((vehicle, index) => (
                             <tr key={vehicle.id || index}>
                               <td className="fw-bold text-dark align-middle" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
                                 {vehicle.ppu}
                               </td>
-                              <td className="align-middle">
+                              <td className="align-middle fw-bold" style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
                                 {vehicle.nombre_vehiculo}
                               </td>
                               <td className="align-middle mb-0">
@@ -981,12 +1093,12 @@ export default function VerVehiculos() {
                                   )
                                 }
                               </td>
-                              <td className="align-middle">
+                              {/* <td className="align-middle">
                                 {vehicle.fecha_agregado 
                                   ? new Date(vehicle.fecha_agregado).toLocaleDateString('es-CL')
                                   : <span className="text-muted">No disponible</span>
                                 }
-                              </td>
+                              </td> */}
                               <td className="align-middle">
                                 <button
                                   type="button"
@@ -1026,6 +1138,64 @@ export default function VerVehiculos() {
                     </table>
                   </div>
                 </div>
+                {/* PAGINACIÓN PARA VEHÍCULOS GUARDADOS */}
+                {savedVehicles.length > 0 && (
+                  <div style={{ maxWidth: '75%', margin: '0 auto' }}>
+                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-3">
+                      <div className="d-flex align-items-center gap-2">
+                        <label className="form-label mb-0">Mostrar</label>
+                        <select 
+                          className="form-select form-select-sm" 
+                          value={itemsPerPageGuardados}
+                          onChange={(e) => {
+                            setItemsPerPageGuardados(Number(e.target.value));
+                            setCurrentPageGuardados(1);
+                          }}
+                          style={{ width: 80 }}
+                        >
+                          <option value={1}>1</option>
+                          <option value={3}>3</option>
+                          <option value={5}>5</option>
+                        </select>
+                        <span className="text-muted small ms-2">
+                          Mostrando {startIndexGuardados + 1} - {endIndexGuardados} de {totalItemsGuardados}
+                        </span>
+                      </div>
+                      <nav aria-label="Paginación">
+                        <ul className="pagination pagination-sm mb-0">
+                          <li className={`page-item ${currentPageGuardados === 1 ? 'disabled' : ''}`}>
+                            <button 
+                              className="page-link"
+                              onClick={() => setCurrentPageGuardados(currentPageGuardados - 1)}
+                              disabled={currentPageGuardados === 1}
+                            >
+                              &laquo;
+                            </button>
+                          </li>
+                          {getPageNumbersGuardados().map(n => (
+                            <li key={n} className={`page-item ${n === currentPageGuardados ? 'active' : ''}`}>
+                              <button 
+                                className="page-link"
+                                onClick={() => setCurrentPageGuardados(n)}
+                              >
+                                {n}
+                              </button>
+                            </li>
+                          ))}
+                          <li className={`page-item ${currentPageGuardados === totalPagesGuardados ? 'disabled' : ''}`}>
+                            <button 
+                              className="page-link"
+                              onClick={() => setCurrentPageGuardados(currentPageGuardados + 1)}
+                              disabled={currentPageGuardados === totalPagesGuardados}
+                            >
+                              &raquo;
+                            </button>
+                          </li>
+                        </ul>
+                      </nav>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             
