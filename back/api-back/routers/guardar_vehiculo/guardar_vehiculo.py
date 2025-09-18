@@ -77,3 +77,34 @@ def guardar_vehiculo(vehiculo: MisVehiculosModel, db: Session = Depends(get_db))
 def obtener_mis_vehiculos_guardados(rut: str, db: Session = Depends(get_db)):
     vehiculos = db.query(MisVehiculos).filter(MisVehiculos.rut == rut).all()
     return vehiculos
+
+# Endpoint para eliminar un vehículo guardado
+@router.delete("/eliminar_vehiculo/{rut}/{ppu}")
+def eliminar_vehiculo(rut: str, ppu: str, db: Session = Depends(get_db)):
+    vehiculo = db.query(MisVehiculos).filter(
+        MisVehiculos.rut == rut,
+        MisVehiculos.ppu == ppu
+    ).first()
+
+    if not vehiculo:
+        raise HTTPException(status_code=404, detail="Vehículo no encontrado")
+
+    db.delete(vehiculo)
+    db.commit()
+    return {"detail": "Vehículo eliminado exitosamente"}
+
+# Endpoint para cambiar el nombre de un vehículo guardado
+@router.put("/cambiar_nombre_vehiculo/{rut}/{ppu}")
+def cambiar_nombre_vehiculo(rut: str, ppu: str, nuevo_nombre: str, db: Session = Depends(get_db)):
+    vehiculo = db.query(MisVehiculos).filter(
+        MisVehiculos.rut == rut,
+        MisVehiculos.ppu == ppu
+    ).first()
+
+    if not vehiculo:
+        raise HTTPException(status_code=404, detail="Vehículo no encontrado")
+
+    vehiculo.nombre_vehiculo = nuevo_nombre
+    db.commit()
+    db.refresh(vehiculo)
+    return {"detail": "Nombre del vehículo actualizado exitosamente", "vehiculo": vehiculo}
