@@ -1,50 +1,35 @@
--- ...existing code...
-
 -- Insertar datos en la tabla ENCARGO_PATENTE
--- Se asigna de forma aleatoria el estado de encargo para simular datos reales
+-- Se asignan valores variados para simular diferentes situaciones
 
-INSERT INTO ENCARGO_PATENTE (PPU, ENCARGO) VALUES
+INSERT INTO ENCARGO_PATENTE (PPU, ENCARGO, PATENTE_DELANTERA, PATENTE_TRASERA, VIN, MOTOR) VALUES
+-- Vehículos con todos los campos en TRUE
+('BYDD18', TRUE, TRUE, TRUE, TRUE, TRUE),
+('ZDBX97', TRUE, TRUE, TRUE, TRUE, TRUE),
+
 -- Vehículos nuevos (formato nuevo)
-('BYDD18', FALSE),
-('DVGF33', TRUE),
-('ZDBX97', FALSE),
-('CVDT73', FALSE),
-('JXPJ52', TRUE),
-('RWTW63', FALSE),
-('WXLP42', FALSE),
-('BBZB15', TRUE),
-('HXPY38', FALSE),
-('FPHC43', FALSE),
+('DVGF33', TRUE, TRUE, FALSE, FALSE, TRUE),
+('JXPJ52', TRUE, TRUE, TRUE, FALSE, TRUE),
+('RWTW63', FALSE, FALSE, FALSE, TRUE, TRUE),
+('WXLP42', FALSE, TRUE, FALSE, TRUE, FALSE),
+('BBZB15', TRUE, FALSE, TRUE, TRUE, FALSE),
+('HXPY38', FALSE, TRUE, TRUE, FALSE, TRUE),
+('FPHC43', FALSE, FALSE, TRUE, TRUE, TRUE),
 
 -- Vehículos antiguos (formato antiguo)
-('DI8521', TRUE),
-('EA9529', FALSE),
-('WA9253', TRUE),
-('HS6882', FALSE),
-('LV3154', FALSE),
-('TR3542', TRUE),
-('ZJ9488', FALSE),
-('ZH2985', FALSE),
-('TJ4152', FALSE),
-('GK6762', TRUE),
+('DI8521', TRUE, TRUE, FALSE, TRUE, FALSE),
+('WA9253', TRUE, TRUE, TRUE, FALSE, FALSE),
+('TR3542', TRUE, TRUE, TRUE, TRUE, FALSE),
+('GK6762', TRUE, FALSE, TRUE, TRUE, TRUE),
 
 -- Motocicletas nuevas
-('TD124', FALSE),
-('SJ598', TRUE),
-('VR394', FALSE),
-('SP618', FALSE),
-('KV215', TRUE),
+('SJ598', TRUE, FALSE, TRUE, FALSE, TRUE),
+('KV215', TRUE, TRUE, FALSE, TRUE, FALSE),
 
 -- Motocicletas antiguas
-('JY580', FALSE),
-('DP676', TRUE),
-('PT759', FALSE),
-('ZD933', FALSE),
-('WZ664', TRUE),
+('DP676', TRUE, FALSE, TRUE, TRUE, FALSE),
+('WZ664', TRUE, TRUE, TRUE, FALSE, FALSE),
 
 -- Camiones y vehículos comerciales
-('CYSP27', TRUE),
-('HVKC58', FALSE),
-('HLZC93', TRUE),
-('DYZS86', FALSE),
-('XKTP17', TRUE);
+('CYSP27', TRUE, TRUE, FALSE, TRUE, TRUE),
+('HLZC93', TRUE, TRUE, TRUE, FALSE, TRUE),
+('XKTP17', TRUE, FALSE, TRUE, TRUE, TRUE);

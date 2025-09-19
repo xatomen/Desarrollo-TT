@@ -61,6 +61,10 @@ class EncargoPatenteModel(Base):
     ID = Column(Integer, primary_key=True, index=True)
     PPU = Column(String(10), nullable=False)
     ENCARGO = Column(Boolean, nullable=False)
+    PATENTE_DELANTERA = Column(Boolean, nullable=False)
+    PATENTE_TRASERA = Column(Boolean, nullable=False)
+    VIN = Column(Boolean, nullable=False)
+    MOTOR = Column(Boolean, nullable=False)
 
 #######################################
 # Función para crear las tablas
@@ -94,6 +98,10 @@ class EncargoResponse(BaseModel):
     
     ppu: str
     encargo: bool
+    patente_delantera: Optional[bool] = None
+    patente_trasera: Optional[bool] = None
+    vin: Optional[bool] = None
+    motor: Optional[bool] = None
     mensaje: str
 
 #########################
@@ -136,6 +144,10 @@ def get_encargo_patente(ppu: str, db: Session = Depends(get_db)):
             return EncargoResponse(
                 ppu=ppu.upper(),
                 encargo=False,
+                patente_delantera=False,
+                patente_trasera=False,
+                vin=False,
+                motor=False,
                 mensaje=f"La patente {ppu.upper()} no presenta encargo por robo"
             )
 
@@ -145,6 +157,10 @@ def get_encargo_patente(ppu: str, db: Session = Depends(get_db)):
         return EncargoResponse(
             ppu=encargo.PPU,
             encargo=encargo.ENCARGO,
+            patente_delantera=encargo.PATENTE_DELANTERA,
+            patente_trasera=encargo.PATENTE_TRASERA,
+            vin=encargo.VIN,
+            motor=encargo.MOTOR,
             mensaje=mensaje
         )
         
