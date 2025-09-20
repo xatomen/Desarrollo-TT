@@ -19,6 +19,7 @@ MTT_BASE_URL = os.getenv("MTT_API_URL", "http://host.docker.internal:5008/multas
 class MultaRPIResponse(BaseModel):
     rut_propietario: str
     cantidad_multas: int
+    multas: List[dict] = []
     mensaje: str
 
 #####################################################
@@ -55,6 +56,7 @@ async def consultar_multas_rpi(rut: str):
                 return MultaRPIResponse(
                     rut_propietario=rut,
                     cantidad_multas=cantidad_multas,
+                    multas=data,
                     mensaje="Cuenta con multas de RPI"
                 )
             
@@ -62,6 +64,7 @@ async def consultar_multas_rpi(rut: str):
                 return MultaRPIResponse(
                     rut_propietario=rut,
                     cantidad_multas=0,
+                    multas=[],
                     mensaje="No se encontraron multas para el RUT proporcionado"
                 )
             

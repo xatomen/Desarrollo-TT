@@ -81,7 +81,7 @@ class MultasTransitoModel(Base):
     id = Column(Integer, primary_key=True, index=True)
     ppu = Column(String(10), nullable=False)
     rol_causa = Column(Integer, nullable=False)
-    jpl = Column(Integer, nullable=False)
+    jpl = Column(String(100), nullable=False)
 
 # Crear las tablas en la base de datos
 Base.metadata.create_all(bind=engine)
@@ -119,7 +119,7 @@ class MultasTransito(BaseModel):
     id: int
     ppu: str
     rol_causa: int
-    jpl: int
+    jpl: str
 # Instancia de FastAPI
 app = FastAPI()
 

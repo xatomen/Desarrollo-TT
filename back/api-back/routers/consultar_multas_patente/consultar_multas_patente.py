@@ -25,6 +25,7 @@ SRCEI_BASE_URL = os.getenv("SRCEI_API_URL", "http://host.docker.internal:5001/mu
 class MultasResponse(BaseModel):
     estado: str
     ppu: str
+    multas: List[dict] = []
     total_multas: int = 0
 
 @router.get("/consultar_multas/{ppu}", response_model=MultasResponse)
@@ -49,6 +50,7 @@ async def consultar_multas(ppu: str):
                     return MultasResponse(
                         estado="no vigente",
                         ppu=ppu_upper,
+                        multas=multas,
                         total_multas=len(multas)
                     )
                 else:
@@ -62,6 +64,7 @@ async def consultar_multas(ppu: str):
                 return MultasResponse(
                     estado="vigente",
                     ppu=ppu_upper,
+                    multas=[],
                     total_multas=0
                 )
             elif response.status_code == 400:

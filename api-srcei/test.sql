@@ -49,66 +49,63 @@ INSERT INTO PADRON (PPU, RUT, TIPO_VEHICULO, MARCA, MODELO, ANIO, COLOR, CILINDR
 -- Algunas patentes tendrán múltiples multas para demostrar el conteo
 INSERT INTO MULTAS_TRANSITO (PPU, ROL_CAUSA, JPL) VALUES
 -- Multas para vehículos nuevos
-('BYDD18', 2024001, 1), -- Toyota Corolla - 1 multa
-('BYDD18', 2024052, 2), -- Toyota Corolla - 2da multa
-('DVGF33', 2024003, 1), -- Honda Civic - 1 multa
-('ZDBX97', 2024004, 3), -- Hyundai Tucson - 1 multa
-('ZDBX97', 2024035, 1), -- Hyundai Tucson - 2da multa
-('ZDBX97', 2024067, 2), -- Hyundai Tucson - 3ra multa
-('CVDT73', 2024005, 2), -- Volkswagen Golf - 1 multa
-('JXPJ52', 2024006, 1), -- Ford Ranger - 1 multa
-('JXPJ52', 2024028, 3), -- Ford Ranger - 2da multa
-('WXLP42', 2024007, 2), -- BMW Serie 3 - 1 multa
-('BBZB15', 2024008, 1), -- Kia Rio - 1 multa
-('BBZB15', 2024041, 2), -- Kia Rio - 2da multa
-('BBZB15', 2024073, 3), -- Kia Rio - 3ra multa
-('BBZB15', 2024089, 1), -- Kia Rio - 4ta multa
-('HXPY38', 2024009, 3), -- Subaru Forester - 1 multa
+('BYDD18', 2024001, 'JPL Santiago'), -- Toyota Corolla - 1 multa
+('BYDD18', 2024052, 'JPL Providencia'), -- Toyota Corolla - 2da multa
+('DVGF33', 2024003, 'JPL Santiago'), -- Honda Civic - 1 multa
+('ZDBX97', 2024004, 'JPL Maipú'), -- Hyundai Tucson - 1 multa
+('ZDBX97', 2024035, 'JPL Santiago'), -- Hyundai Tucson - 2da multa
+('ZDBX97', 2024067, 'JPL Providencia'), -- Hyundai Tucson - 3ra multa
+('CVDT73', 2024005, 'JPL Providencia'), -- Volkswagen Golf - 1 multa
+('JXPJ52', 2024006, 'JPL Santiago'), -- Ford Ranger - 1 multa
+('JXPJ52', 2024028, 'JPL Maipú'), -- Ford Ranger - 2da multa
+('WXLP42', 2024007, 'JPL Providencia'), -- BMW Serie 3 - 1 multa
+('BBZB15', 2024008, 'JPL Santiago'), -- Kia Rio - 1 multa
+('BBZB15', 2024041, 'JPL Providencia'), -- Kia Rio - 2da multa
+('BBZB15', 2024073, 'JPL Maipú'), -- Kia Rio - 3ra multa
+('BBZB15', 2024089, 'JPL Santiago'), -- Kia Rio - 4ta multa
+('HXPY38', 2024009, 'JPL Maipú'), -- Subaru Forester - 1 multa
 
 -- Multas para vehículos antiguos
-('DI8521', 2024010, 1), -- Nissan Sentra - 1 multa
-('EA9529', 2024011, 2), -- Chevrolet Aveo - 1 multa
-('EA9529', 2024046, 3), -- Chevrolet Aveo - 2da multa
-('WA9253', 2024012, 1), -- Jeep Cherokee - 1 multa
-('WA9253', 2024033, 2), -- Jeep Cherokee - 2da multa
-('HS6882', 2024013, 3), -- Hyundai Accent - 1 multa
-('HS6882', 2024059, 1), -- Hyundai Accent - 2da multa
-('HS6882', 2024084, 2), -- Hyundai Accent - 3ra multa
-('LV3154', 2024014, 2), -- Peugeot 308 - 1 multa
-('TR3542', 2024015, 1), -- Mazda Mazda3 - 1 multa
-('ZJ9488', 2024016, 3), -- Mitsubishi Outlander - 1 multa
-('ZJ9488', 2024055, 1), -- Mitsubishi Outlander - 2da multa
-('ZH2985', 2024017, 2), -- Toyota Yaris - 1 multa
-('TJ4152', 2024018, 1), -- Volkswagen Polo - 1 multa
-('TJ4152', 2024062, 3), -- Volkswagen Polo - 2da multa
-('GK6762', 2024019, 2), -- Honda City - 1 multa
+('DI8521', 2024010, 'JPL Santiago'), -- Nissan Sentra - 1 multa
+('EA9529', 2024011, 'JPL Providencia'), -- Chevrolet Aveo - 1 multa
+('EA9529', 2024046, 'JPL Maipú'), -- Chevrolet Aveo - 2da multa
+('WA9253', 2024012, 'JPL Santiago'), -- Jeep Cherokee - 1 multa
+('WA9253', 2024033, 'JPL Providencia'), -- Jeep Cherokee - 2da multa
+('HS6882', 2024013, 'JPL Maipú'), -- Hyundai Accent - 1 multa
+('HS6882', 2024059, 'JPL Santiago'), -- Hyundai Accent - 2da multa
+('HS6882', 2024084, 'JPL Providencia'), -- Hyundai Accent - 3ra multa
+('LV3154', 2024014, 'JPL Providencia'), -- Peugeot 308 - 1 multa
+('TR3542', 2024015, 'JPL Santiago'), -- Mazda Mazda3 - 1 multa
+('ZJ9488', 2024016, 'JPL Maipú'), -- Mitsubishi Outlander - 1 multa
+('ZJ9488', 2024055, 'JPL Santiago'), -- Mitsubishi Outlander - 2da multa
+('ZH2985', 2024017, 'JPL Providencia'), -- Toyota Yaris - 1 multa
+('TJ4152', 2024018, 'JPL Santiago'), -- Volkswagen Polo - 1 multa
+('TJ4152', 2024062, 'JPL Maipú'), -- Volkswagen Polo - 2da multa
+('GK6762', 2024019, 'JPL Providencia'), -- Honda City - 1 multa
 
 -- Multas para motocicletas
-('TD124', 2024020, 1), -- Honda CB600F - 1 multa
-('SJ598', 2024021, 2), -- Yamaha YZF-R3 - 1 multa
-('SJ598', 2024049, 3), -- Yamaha YZF-R3 - 2da multa
-('VR394', 2024022, 1), -- Kawasaki Ninja 300 - 1 multa
-('KV215', 2024023, 2), -- Ducati Monster 797 - 1 multa
-('KV215', 2024071, 1), -- Ducati Monster 797 - 2da multa
-('JY580', 2024024, 3), -- Honda CB125 - 1 multa
-('DP676', 2024025, 1), -- Yamaha XTZ125 - 1 multa
-('DP676', 2024058, 2), -- Yamaha XTZ125 - 2da multa
-('DP676', 2024077, 3), -- Yamaha XTZ125 - 3ra multa
-('PT759', 2024026, 2), -- Kawasaki KLX110 - 1 multa
-('ZD933', 2024027, 1), -- Suzuki EN125 - 1 multa
+('TD124', 2024020, 'JPL Santiago'), -- Honda CB600F - 1 multa
+('SJ598', 2024021, 'JPL Providencia'), -- Yamaha YZF-R3 - 1 multa
+('SJ598', 2024049, 'JPL Maipú'), -- Yamaha YZF-R3 - 2da multa
+('VR394', 2024022, 'JPL Santiago'), -- Kawasaki Ninja 300 - 1 multa
+('KV215', 2024023, 'JPL Providencia'), -- Ducati Monster 797 - 1 multa
+('KV215', 2024071, 'JPL Santiago'), -- Ducati Monster 797 - 2da multa
+('JY580', 2024024, 'JPL Maipú'), -- Honda CB125 - 1 multa
+('DP676', 2024025, 'JPL Santiago'), -- Yamaha XTZ125 - 1 multa
+('DP676', 2024058, 'JPL Providencia'), -- Yamaha XTZ125 - 2da multa
+('DP676', 2024077, 'JPL Maipú'), -- Yamaha XTZ125 - 3ra multa
+('PT759', 2024026, 'JPL Providencia'), -- Kawasaki KLX110 - 1 multa
+('ZD933', 2024027, 'JPL Santiago'), -- Suzuki EN125 - 1 multa
 
 -- Multas para vehículos comerciales
-('CYSP27', 2024029, 3), -- Mercedes-Benz Actros - 1 multa
-('CYSP27', 2024064, 1), -- Mercedes-Benz Actros - 2da multa
-('CYSP27', 2024081, 2), -- Mercedes-Benz Actros - 3ra multa
-('HVKC58', 2024030, 2), -- Iveco Daily - 1 multa
-('HLZC93', 2024031, 1), -- Nissan NP300 - 1 multa
-('HLZC93', 2024053, 3), -- Nissan NP300 - 2da multa
-('DYZS86', 2024032, 2), -- Iveco Daily Minibus - 1 multa
-('DYZS86', 2024069, 1), -- Iveco Daily Minibus - 2da multa
-('DYZS86', 2024086, 3), -- Iveco Daily Minibus - 3ra multa
-('DYZS86', 2024092, 2), -- Iveco Daily Minibus - 4ta multa
-('XKTP17', 2024034, 1); -- Ford Transit - 1 multa
-
--- Query para contar multas por patente
--- SELECT PPU, COUNT(*) as TOTAL_MULTAS FROM MULTAS_TRANSITO GROUP BY PPU ORDER BY TOTAL_MULTAS DESC;
+('CYSP27', 2024029, 'JPL Maipú'), -- Mercedes-Benz Actros - 1 multa
+('CYSP27', 2024064, 'JPL Santiago'), -- Mercedes-Benz Actros - 2da multa
+('CYSP27', 2024081, 'JPL Providencia'), -- Mercedes-Benz Actros - 3ra multa
+('HVKC58', 2024030, 'JPL Providencia'), -- Iveco Daily - 1 multa
+('HLZC93', 2024031, 'JPL Santiago'), -- Nissan NP300 - 1 multa
+('HLZC93', 2024053, 'JPL Maipú'), -- Nissan NP300 - 2da multa
+('DYZS86', 2024032, 'JPL Providencia'), -- Iveco Daily Minibus - 1 multa
+('DYZS86', 2024069, 'JPL Santiago'), -- Iveco Daily Minibus - 2da multa
+('DYZS86', 2024086, 'JPL Maipú'), -- Iveco Daily Minibus - 3ra multa
+('DYZS86', 2024092, 'JPL Providencia'), -- Iveco Daily Minibus - 4ta multa
+('XKTP17', 2024034, 'JPL Santiago'); -- Ford Transit - 1 multa
