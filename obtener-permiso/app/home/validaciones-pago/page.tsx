@@ -82,6 +82,10 @@ function EstadoChip({ estado, documento }: { estado: EstadoValidacion; documento
 function ValidacionesPagoContent() {
   const searchParams = useSearchParams();
 
+  const [modalDocumento, setModalDocumento] = useState<{ open: boolean, doc?: DocumentoValidacion }>(
+    { open: false }
+  );
+
   const [ppu, setPpu] = useState<string | null>(null);
   const [rut, setRut] = useState<string | null>(null);
 
@@ -99,14 +103,19 @@ function ValidacionesPagoContent() {
   // Estados para cada API
   const [revisionTecnica, setRevisionTecnica] = useState<EstadoValidacion>('Desconocido');
   const [soap, setSoap] = useState<EstadoValidacion>('Desconocido');
-  const [encargoRobo, setEncargoRobo] = useState<EstadoValidacion>('Desconocido');
-  const [multasTransito, setMultasTransito] = useState<EstadoValidacion>('Desconocido');
-  const [multasRPI, setMultasRPI] = useState<EstadoValidacion>('Desconocido');
+
   const [loading, setLoading] = useState(true);
 
+  // Datos de multas de tránsito SRCeI
+  const [multasTransito, setMultasTransito] = useState<EstadoValidacion>('Desconocido');
+  const [detallesMultasTransito, setDetallesMultasTransito] = useState<any[]>([]);
+
+  // Datos de multas RPI
+  const [multasRPI, setMultasRPI] = useState<EstadoValidacion>('Desconocido');
+  const [detallesMultasRPI, setDetallesMultasRPI] = useState<any[]>([]);
+
   // Estados para información del vehículo
-  const [fechaExpiracionSoap, setFechaExpiracionSoap] = useState<string>('-');
-  const [fechaExpiracionRevision, setFechaExpiracionRevision] = useState<string>('-');
+  const [rutPropietario, setRutPropietario] = useState<string>('-');
   const [fechaInscripcion, setFechaInscripcion] = useState<string>('-');
   const [numMotor, setNumMotor] = useState<string>('-');
   const [numChasis, setNumChasis] = useState<string>('-');
@@ -119,6 +128,7 @@ function ValidacionesPagoContent() {
   const [tipoSello, setTipoSello] = useState<string>('-');
   const [tipoCombustible, setTipoCombustible] = useState<string>('-');
   const [codigoSii, setCodigoSii] = useState<string>('-');
+
   // Obtener desde consultar valor permiso
   const [cilindrada, setCilindrada] = useState<string>('-');
   const [tasacion, setTasacion] = useState<string>('-');
@@ -127,6 +137,28 @@ function ValidacionesPagoContent() {
   const [puertas, setPuertas] = useState<string>('-');
   const [transmision, setTransmision] = useState<string>('-');
   const [equipamiento, setEquipamiento] = useState<string>('-');
+  
+  // Datos encargo por robo
+  const [encargoRobo, setEncargoRobo] = useState<EstadoValidacion>('Desconocido');
+  const [encargoPatenteDelantera, setEncargoPatenteDelantera] = useState<boolean | null>(null);
+  const [encargoPatenteTrasera, setEncargoPatenteTrasera] = useState<boolean | null>(null);
+  const [encargoVin, setEncargoVin] = useState<boolean | null>(null);
+  const [encargoMotor, setEncargoMotor] = useState<boolean | null>(null);
+
+  // Datos SOAP
+  const [numPoliza, setNumPoliza] = useState<string>('-');
+  const [aseguradora, setAseguradora] = useState<string>('-'); // Esta por ahora no se utilizará
+  const [fechaEmisionSoap, setFechaEmisionSoap] = useState<string>('-');
+  const [fechaExpiracionSoap, setFechaExpiracionSoap] = useState<string>('-');
+  const [primaSoap, setPrimaSoap] = useState<string>('-');
+
+  // Datos revisión técnica
+  const [fechaRevision, setFechaRevision] = useState<string>('-');
+  const [codigoPlanta, setCodigoPlanta] = useState<string>('-');
+  const [planta, setPlanta] = useState<string>('-');
+  const [estadoRevision, setEstadoRevision] = useState<string>('-');
+  const [numCertificado, setNumCertificado] = useState<string>('-');
+  const [fechaExpiracionRevision, setFechaExpiracionRevision] = useState<string>('-');
   // Caso - Es para indicar si es renovación o primera obtención del permiso
   const [caso, setCaso] = useState<string | null>(null);
 
@@ -161,6 +193,8 @@ function ValidacionesPagoContent() {
           setColor(inscripcionData.color || '-');
           setNumChasis(inscripcionData.num_chasis || '-');
           setNumMotor(inscripcionData.num_motor || '-');
+          setRutPropietario(inscripcionData.rut || '-');
+          console.log("Rut propietario:", inscripcionData.rut);
         } catch (error) {
           console.error('Error fetching fecha inscripcion:', error);
           setFechaInscripcion('Desconocido');
@@ -171,6 +205,11 @@ function ValidacionesPagoContent() {
           const revisionRes = await fetch(`${API_CONFIG.BACKEND}consultar_revision_tecnica/${ppu}`);
           const revisionData = await revisionRes.json();
           setRevisionTecnica(revisionData.vigencia || 'Desconocido');
+          setFechaRevision(revisionData.fecha_revision || '-');
+          setCodigoPlanta(revisionData.codigo_planta || '-');
+          setPlanta(revisionData.planta || '-');
+          setEstadoRevision(revisionData.estado || '-');
+          setNumCertificado(revisionData.nom_certificado || '-');
           // Obtener fecha de expiración de revisión técnica
           setFechaExpiracionRevision(revisionData.fecha_vencimiento || '-');
         } catch (error) {
@@ -183,6 +222,11 @@ function ValidacionesPagoContent() {
           const soapRes = await fetch(`${API_CONFIG.BACKEND}consultar_soap/${ppu}`);
           const soapData = await soapRes.json();
           setSoap(soapData.vigencia_permiso || 'Desconocido');
+          setNumPoliza(soapData.num_poliza || '-');
+          setAseguradora(soapData.compania || '-');
+          setFechaEmisionSoap(soapData.rige_desde || '-');
+          setPrimaSoap(soapData.prima ? `$${Number(soapData.prima).toLocaleString('es-CL')}` : '-');
+          console.log('SOAP data:', soapData);
           // Obtener fecha de expiración SOAP
           setFechaExpiracionSoap(soapData.rige_hasta || '-');
         } catch (error) {
@@ -194,6 +238,11 @@ function ValidacionesPagoContent() {
         try {
           const roboRes = await fetch(`${API_CONFIG.BACKEND}consultar_encargo/${ppu}`);
           const roboData = await roboRes.json();
+          console.log('Encargo por robo data:', roboData);
+          setEncargoPatenteDelantera(roboData.patente_delantera);
+          setEncargoPatenteTrasera(roboData.patente_trasera);
+          setEncargoVin(roboData.vin);
+          setEncargoMotor(roboData.motor);
           if (roboData.encargo) {
             if (roboData.encargo == 1) {
               setEncargoRobo('Si');
@@ -212,10 +261,13 @@ function ValidacionesPagoContent() {
         try {
           const transitoRes = await fetch(`${API_CONFIG.BACKEND}consultar_multas/${ppu}`);
           const transitoData = await transitoRes.json();
+          console.log('Multas de tránsito data:', transitoData);
           if (transitoData.total_multas != 0) {
             setMultasTransito('Si');
+            setDetallesMultasTransito(transitoData.multas || []);
           } else {
             setMultasTransito('No');
+            setDetallesMultasTransito([]);
           }
         } catch (error) {
           console.error('Error fetching multas transito:', error);
@@ -224,12 +276,15 @@ function ValidacionesPagoContent() {
 
         // Obtener Multas RPI
         try {
-          const rpiRes = await fetch(`${API_CONFIG.BACKEND}consultar-multas-rpi/${rut}`);
+          const rpiRes = await fetch(`${API_CONFIG.BACKEND}consultar-multas-rpi/${rutPropietario}`);
           const rpiData = await rpiRes.json();
+          console.log('Multas RPI data:', rpiData);
           if (rpiData.cantidad_multas != 0) {
             setMultasRPI('Si');
+            setDetallesMultasRPI(rpiData.multas || []);
           } else {
             setMultasRPI('No');
+            setDetallesMultasRPI([]);
           }
         } catch (error) {
           console.error('Error fetching multas RPI:', error);
@@ -278,7 +333,7 @@ function ValidacionesPagoContent() {
     };
 
     fetchAllData();
-  }, [ppu, rut]); // ✅ Agregar rut como dependencia
+  }, [ppu, rutPropietario]); // ✅ Agregar rut como dependencia
 
   // Verificar si todos los documentos están en estado ideal
   const documentosNegativosPositivos = ['Encargo por Robo', 'Multas de Tránsito', 'Multas RPI'];
@@ -375,7 +430,7 @@ function ValidacionesPagoContent() {
                 RUT propietario
               </p>
               <h2 className="fw-bold mb-4 text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700', fontSize: '1.5rem' }}>
-                {rut || '-'}
+                {rutPropietario || '-'}
               </h2>
 
               <p className="text-muted" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
@@ -422,19 +477,163 @@ function ValidacionesPagoContent() {
             <div className="card-body">
               {documentos.map((doc, index) => (
                 <div key={index} className={`row align-items-center py-3 px-0 ${index % 2 === 1 ? 'bg-light' : 'bg-white'} ${index !== documentos.length - 1 ? 'border-bottom border-light' : ''}`}>
-                  <div className="col-6">
+                  <div className="col-5">
                     <span className="fw-medium text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '500' }}>
                       {doc.nombre}
                     </span>
                   </div>
-                  <div className="col-6">
+                  <div className="col-4">
                     <EstadoChip estado={doc.estado} documento={doc.nombre} />
+                  </div>
+                  <div className="col-3 text-end">
+                    <button
+                      className="btn btn-outline-primary btn-sm"
+                      type="button"
+                      // Aquí puedes agregar la lógica para mostrar el documento real si lo tienes
+                      onClick={() => setModalDocumento({ open: true, doc })}
+                    >
+                      Ver documento
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
+        {modalDocumento.open && modalDocumento.doc && (
+        <div
+          className="modal fade show"
+          style={{
+            display: 'block',
+            background: 'rgba(0,0,0,0.35)',
+            zIndex: 1060,
+          }}
+          tabIndex={-1}
+          role="dialog"
+          onClick={() => setModalDocumento({ open: false })}
+        >
+          <div
+            className="modal-dialog"
+            role="document"
+            style={{ pointerEvents: 'auto' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{modalDocumento.doc.nombre}</h5>
+                <button type="button" className="btn-close" aria-label="Cerrar" onClick={() => setModalDocumento({ open: false })} />
+              </div>
+              <div className="modal-body">
+                <p>
+                  <b>Estado:</b>{' '}
+                  <EstadoChip estado={modalDocumento.doc.estado} documento={modalDocumento.doc.nombre} />
+                </p>
+                {/* Detalles SOAP */}
+                {modalDocumento.doc.nombre === 'SOAP (Año vigente)' && (
+                  <div>
+                    <p><b>N° Póliza:</b> {numPoliza}</p>
+                    <p><b>Aseguradora:</b> {aseguradora}</p>
+                    <p><b>Fecha de emisión:</b> {fechaEmisionSoap}</p>
+                    <p><b>Fecha de expiración:</b> {fechaExpiracionSoap}</p>
+                    <p><b>Prima:</b> {primaSoap}</p>
+                  </div>
+                )}
+                {/* Detalles Revisión Técnica */}
+                {modalDocumento.doc.nombre === 'Revisión Técnica' && (
+                  <div>
+                    <p><b>Fecha de revisión:</b> {fechaRevision}</p>
+                    <p><b>Fecha de expiración:</b> {fechaExpiracionRevision}</p>
+                    <p><b>Planta:</b> {planta}</p>
+                    <p><b>Código planta:</b> {codigoPlanta}</p>
+                    <p><b>Estado revisión:</b> {estadoRevision}</p>
+                    <p><b>N° Certificado:</b> {numCertificado}</p>
+                  </div>
+                )}
+                {/* Detalles Encargo por Robo */}
+                {modalDocumento.doc.nombre === 'Encargo por Robo' && (
+                  <div>
+                    <table className="table table-bordered mt-3">
+                      <thead>
+                        <tr>
+                          <th>Tipo de Encargo</th>
+                          <th>¿Posee encargo?</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Patente Delantera</td>
+                          <td>{encargoPatenteDelantera === null ? 'Desconocido' : (encargoPatenteDelantera ? 'Sí' : 'No')}</td>
+                        </tr>
+                        <tr>
+                          <td>Patente Trasera</td>
+                          <td>{encargoPatenteTrasera === null ? 'Desconocido' : (encargoPatenteTrasera ? 'Sí' : 'No')}</td>
+                        </tr>
+                        <tr>
+                          <td>VIN</td>
+                          <td>{encargoVin === null ? 'Desconocido' : (encargoVin ? 'Sí' : 'No')}</td>
+                        </tr>
+                        <tr>
+                          <td>Motor</td>
+                          <td>{encargoMotor === null ? 'Desconocido' : (encargoMotor ? 'Sí' : 'No')}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                {/* Detalles Multas RPI */}
+                {modalDocumento.doc.nombre === 'Multas RPI' && (
+                  <div>
+                    <table className="table table-bordered mt-3">
+                      <thead>
+                        <tr>
+                          <th>Rol Causa</th>
+                          <th>Año</th>
+                          <th>Juzgado</th>
+                          <th>Monto Multa</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {detallesMultasRPI.map((multa, index) => (
+                          <tr key={index}>
+                            <td>{multa.rol_causa}</td>
+                            <td>{multa.anio_causa}</td>
+                            <td>{multa.nombre_jpl}</td>
+                            <td>{multa.monto_multa}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                {/* Detalles Multas de Tránsito */}
+                {modalDocumento.doc.nombre === 'Multas de Tránsito' && (
+                  <div>
+                    <table className="table table-bordered mt-3">
+                      <thead>
+                        <tr>
+                          <th>Rol Causa</th>
+                          <th>Nombre Juzgado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {detallesMultasTransito.map((multa, index) => (
+                          <tr key={index}>
+                            <td>{multa.rol_causa}</td>
+                            <td>{multa.jpl}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setModalDocumento({ open: false })}>Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
         {/* Columna derecha */}
         <div className="col-lg-6">
