@@ -43,6 +43,7 @@ async def consultar_soap(ppu: str):
   return {
       "num_poliza": response.json().get("num_poliza"),
       "ppu": response.json().get("ppu"),
+      "compania": response.json().get("compania"),
       "rige_desde": response.json().get("rige_desde"),
       "rige_hasta": response.json().get("rige_hasta"),
       "prima": response.json().get("prima"),

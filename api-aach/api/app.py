@@ -56,6 +56,7 @@ class Soap(Base):
     
     num_poliza = Column(Integer, primary_key=True, autoincrement=True)
     ppu = Column(String(10), nullable=False)
+    compania = Column(String(50), nullable=False)
     rige_desde = Column(Date, nullable=False)
     rige_hasta = Column(Date, nullable=False)
     prima = Column(Integer, nullable=False)
@@ -83,6 +84,7 @@ def get_db():
 class SoapModel(BaseModel):
     num_poliza: int
     ppu: str
+    compania: str
     rige_desde: date  # Fecha en formato ISO 8601
     rige_hasta: date  # Fecha en formato ISO 8601
     prima: int
@@ -122,6 +124,7 @@ def get_soap(ppu: str, db: Session = Depends(get_db)):
     return SoapModel(
         num_poliza=soap.num_poliza,
         ppu=soap.ppu,
+        compania=soap.compania,
         rige_desde=soap.rige_desde,
         rige_hasta=soap.rige_hasta,
         prima=soap.prima,
