@@ -152,6 +152,8 @@ class Tarjetas(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     numero_tarjeta = Column(String(16), nullable=False)
     titular = Column(String(100), nullable=False)
+    rut = Column(String(12), nullable=False)
+    clave = Column(String(255), nullable=False)
     fecha_vencimiento = Column(DateTime, nullable=False)
     tipo_tarjeta = Column(String(20), nullable=False)  # Puede ser 'credito' o 'debito'
     banco = Column(String(50), nullable=False)
@@ -250,6 +252,7 @@ class TokenModel(BaseModel):
 class TarjetasModel(BaseModel):
     numero_tarjeta: str
     titular: str
+    rut: str
     mes_vencimiento: int  # Fecha en formato MM-YY
     anio_vencimiento: int  # Fecha en formato MM-YY
     tipo_tarjeta: str  # Puede ser 'crédito' o 'débito'
@@ -467,3 +470,70 @@ def procesar_pago(pago_request: PagoRequest, db: Session = Depends(get_db)):
             status_code=500, 
             detail=f"Error interno del servidor: {str(e)}"
         )
+    
+# GET - Endpoint para obtener el tipo de tarjeta ingresando el número de tarjeta y RUT
+@app.get("/tipo_tarjeta/{numero_tarjeta}/{rut}")
+def obtener_tipo_tarjeta(numero_tarjeta: str, rut: str, db: Session = Depends(get_db)):
+    # Validar el formato del número de tarjeta
+    if len(numero_tarjeta) != 16 or not numero_tarjeta.isdigit():
+        raise HTTPException(status_code=400, detail="Número de tarjeta inválido")
+    # Validar el formato del RUT
+    if not re.match(r"^\d{1,8}-[\dkK]$", rut) or not rut_chile.is_valid_rut(rut):
+        raise HTTPException(status_code=400, detail="RUT inválido")
+    # Buscar la tarjeta en la base de datos
+    tarjeta = db.query(Tarjetas).filter(
+        and_(
+            Tarjetas.numero_tarjeta == numero_tarjeta,
+            Tarjetas.rut == rut
+        )
+    ).first()
+    if not tarjeta:
+        raise HTTPException(status_code=404, detail="Tarjeta no encontrada")
+    return {"tipo_tarjeta": tarjeta.tipo_tarjeta}
+
+# POST - Endpoint para iniciar sesión con rut y clave de tarjeta
+@app.post("/login_tarjeta/", response_model=TokenModel)
+def login_tarjeta(credenciales: LoginModel, db: Session = Depends(get_db)):
+    # Verificar que el RUT y la contraseña no estén vacíos
+    if not credenciales.rut or not credenciales.contrasena:
+        raise HTTPException(status_code=400, detail="RUT y contraseña son obligatorios")
+    # Verificar que el RUT no contenga espacios
+    if credenciales.rut != credenciales.rut.strip():
+        raise HTTPException(status_code=400, detail="RUT no puede contener espacios")
+    # Verificar que no tenga caracteres especiales (Solo puede tener números, un guión y una k)
+    if not re.match(r"^\d{1,8}-[\dkK]$", credenciales.rut):
+        raise HTTPException(status_code=400, detail="RUT inválido")
+    # Verificar que el RUT tenga un formato válido
+    if not rut_chile.is_valid_rut(credenciales.rut) or "-" not in credenciales.rut:
+        raise HTTPException(status_code=400, detail="RUT inválido")
+    # Verificar las credenciales en la base de datos
+    usuario = db.query(Tarjetas).filter(
+        and_(
+            text("BINARY rut = :rut"),
+            text("BINARY clave = :clave"),
+        ).params(
+            {"rut": credenciales.rut, "clave": credenciales.contrasena}
+        )
+    ).first()
+    # Si las credenciales son incorrectas, lanzar una excepción HTTP 401
+    if not usuario:
+        raise HTTPException(status_code=401, detail="Credenciales inválidas", headers={"WWW-Authenticate": "Bearer"})
+    # Si las credenciales son correctas, creamos el token de acceso
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": usuario.rut},
+        expires_delta=access_token_expires
+    )
+    return TokenModel(
+        access_token=access_token,
+        token_type="bearer",
+        user_info={
+            "rut": usuario.rut,
+            "nombre": usuario.titular,
+            "saldo": usuario.saldo,
+            "tipo_tarjeta": usuario.tipo_tarjeta,
+            "banco": usuario.banco,
+            "fecha_vencimiento": usuario.fecha_vencimiento
+        },
+        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )

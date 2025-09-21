@@ -44,6 +44,8 @@ CREATE TABLE IF NOT EXISTS tarjetas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     numero_tarjeta VARCHAR(20) NOT NULL,
     titular VARCHAR(100) NOT NULL,
+    rut VARCHAR(12) NOT NULL,
+    clave VARCHAR(255) NOT NULL,
     fecha_vencimiento DATE NOT NULL,
     tipo_tarjeta VARCHAR(50) NOT NULL,
     banco VARCHAR(100) NOT NULL,

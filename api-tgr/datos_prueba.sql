@@ -48,12 +48,12 @@ INSERT INTO permiso_circulacion (ppu, rut, nombre, fecha_emision, fecha_expiraci
 ('DYZS86', '21494931-8', 'Soledad Guerrero Núñez', '2024-04-08 00:00:00', '2025-04-08 00:00:00', 225000, 778890, 'WJMM62FT20C123489', 'Minibús', 'Amarillo', 'Iveco', 'Daily Minibus', 2023, 0, 'Verde', 'Diesel', 3000, 'Manual', 19, 0, 'Aire Acondicionado, 19 Asientos', 'MU426973', 28000000),
 ('XKTP17', '21092587-2', 'Hernán Vásquez Silva', '2024-03-22 00:00:00', '2025-03-22 00:00:00', 145000, 889901, 'WJME62EU20C123490', 'Furgón', 'Rojo', 'Ford', 'Transit', 2022, 2000, 'Verde', 'Diesel', 2200, 'Manual', 0, 0, 'Sensor Estacionamiento', 'FG584726', 16200000);
 
-INSERT INTO  tarjetas (numero_tarjeta, titular, fecha_vencimiento, tipo_tarjeta, banco, cvv, saldo) VALUES
-('1234567890123456', 'Juan Pérez', '2025-12-31', 'Débito', 'Banco Estado', 123, 1000000.00),
-('2345678901234567', 'María González', '2026-06-30', 'Crédito', 'Banco Santander', 456, 5000000.00),
-('3456789012345678', 'Carlos Rodríguez', '2024-11-30', 'Débito', 'Banco de Chile', 789, 750000.00),
-('4567890123456789', 'Ana Morales', '2025-08-31', 'Crédito', 'Banco BCI', 321, 3000000.00),
-('5678901234567890', 'Pedro Sánchez', '2026-01-31', 'Débito', 'Banco Falabella', 654, 2000000.00);
+INSERT INTO  tarjetas (numero_tarjeta, titular, rut, clave, fecha_vencimiento, tipo_tarjeta, banco, cvv, saldo) VALUES
+('1234567890123456', 'Juan Pérez', '11111111-1', 'password123', '2025-12-31', 'Débito', 'Banco Estado', 123, 1000000.00),
+('2345678901234567', 'María González', '15882609-7', 'password123', '2026-06-30', 'Crédito', 'Banco Santander', 456, 5000000.00),
+('3456789012345678', 'Carlos Rodríguez', '14296139-3', 'password123', '2024-11-30', 'Débito', 'Banco de Chile', 789, 750000.00),
+('4567890123456789', 'Ana Morales', '21942260-1', 'password123', '2025-08-31', 'Crédito', 'Banco BCI', 321, 3000000.00),
+('5678901234567890', 'Pedro Sánchez', '17126452-9', 'password123', '2026-01-31', 'Débito', 'Banco Falabella', 654, 2000000.00);
 
 INSERT INTO credenciales (rut, nombre, contrasena, rol) VALUES
 ('15882609-7', 'María González Pérez', 'password123', 'usuario'),
