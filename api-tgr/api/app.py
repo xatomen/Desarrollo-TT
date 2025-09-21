@@ -531,6 +531,7 @@ def login_tarjeta(credenciales: LoginModel, db: Session = Depends(get_db)):
             "rut": usuario.rut,
             "nombre": usuario.titular,
             "saldo": usuario.saldo,
+            "numero_tarjeta": usuario.numero_tarjeta,
             "tipo_tarjeta": usuario.tipo_tarjeta,
             "banco": usuario.banco,
             "fecha_vencimiento": usuario.fecha_vencimiento
