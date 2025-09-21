@@ -1,9 +1,10 @@
 'use client';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, redirect } from 'next/navigation';
 import { useAuth, getRutFromCookies } from '@/contexts/AuthContext';
 import API_CONFIG from '@/config/api';
+import { FaCcVisa, FaCcMastercard, FaCcAmex, FaCreditCard, FaMoneyCheckAlt } from 'react-icons/fa';
 
 interface DatosVehiculo {
   // Datos básicos
@@ -544,6 +545,28 @@ export default function FormularioPago() {
 
         {/* Columna derecha - Formularios */}
         <div className="col-lg-8">
+          {/* Información sobre medios de pago */}
+          <div className="alert alert-info d-flex align-items-center mb-4" role="alert" style={{ fontFamily: '"Dosis", sans-serif' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0d6efd" className="me-2" viewBox="0 0 16 16">
+              <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 3H1v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+            </svg>
+            <div>
+              <strong>¿Cómo puedes pagar?</strong><br />
+              Puedes pagar con tarjetas <b>crédito</b>, <b>débito</b> y <b>prepago</b> de todos los bancos en Chile.<br />
+              Si pagas con tarjeta de crédito, puedes elegir pagar en <b>cuotas</b> según las condiciones de tu banco emisor.<br />
+              <span className="text-muted" style={{ fontSize: '0.95em' }}>
+                Aceptamos Visa, Mastercard, American Express y otras tarjetas bancarias.
+              </span>
+              <div className="mt-2 d-flex" style={{ fontSize: 28 }}>
+                <FaCcVisa style={{ color: '#1a1f71', marginRight: 8 }} title="Visa" />
+                <FaCcMastercard style={{ color: '#eb001b', marginRight: 8 }} title="Mastercard" />
+                <FaCcAmex style={{ color: '#2e77bb', marginRight: 8 }} title="American Express" />
+                <FaCreditCard style={{ color: '#198754', marginRight: 8 }} title="Débito" />
+                <FaMoneyCheckAlt style={{ color: '#ffc107' }} title="Prepago" />
+              </div>
+            </div>
+          </div>
+
           {/* ✅ Alerta de error de pago */}
           {paymentError && (
             <div className="alert alert-danger alert-dismissible fade show mb-4" role="alert" style={{ fontFamily: '"Dosis", sans-serif' }}>
@@ -638,7 +661,29 @@ export default function FormularioPago() {
                   </div>
                 </div>
               </div>
-
+              {/* Botón de OnePay */}
+              <div className="col-12 text-center">
+                <div className="d-grid p-3">
+                  <button 
+                  className="btn p-0 border-0" 
+                  type="submit" 
+                  disabled={isProcessingPayment}
+                  style={{ backgroundColor: 'transparent' }}
+                  onClick={() => redirect('/webpay')}
+                  >
+                  <img 
+                    src="/img/boton-pago.png" 
+                    alt="Pagar con OnePay" 
+                    className="img-fluid"
+                    style={{ 
+                    maxWidth: '200px', 
+                    height: 'auto',
+                    opacity: isProcessingPayment ? 0.7 : 1
+                    }}
+                  />
+                  </button>
+                </div>
+              </div>
               {/* Datos de Tarjeta */}
               <div className="col-12 p-3">
                 <div className="card-like shadow">
@@ -659,7 +704,7 @@ export default function FormularioPago() {
                             <svg width="16" height="16" fill="currentColor" className="text-muted" viewBox="0 0 16 16">
                               <path d="M11 5.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1z"/>
                               <path d="M2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H2zM1 4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4z"/>
-                            </svg>
+                          </svg>
                           </span>
                           <input
                             type="text"
