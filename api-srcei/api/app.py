@@ -62,6 +62,7 @@ class PadronModel(Base):
     
     ppu = Column(String(10), primary_key=True, index=True)
     rut = Column(String(20), nullable=False)
+    nombre = Column(String(100), nullable=False)
     tipo_vehiculo = Column(String(50), nullable=False)
     marca = Column(String(50), nullable=False)
     modelo = Column(String(50), nullable=False)
@@ -105,6 +106,7 @@ def get_db():
 class Padron(BaseModel): 
     ppu : str
     rut: str
+    nombre: str
     tipo_vehiculo: str
     marca: str
     modelo: str
