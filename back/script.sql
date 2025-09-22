@@ -67,3 +67,13 @@ CREATE TABLE IF NOT EXISTS mis_vehiculos (
     nombre_vehiculo VARCHAR(100) NOT NULL,
     fecha_agregado DATETIME NOT NULL
 );
+
+-- Mis Permisos Emitidos
+CREATE TABLE IF NOT EXISTS mis_permisos_emitidos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    rut VARCHAR(12) NOT NULL,
+    ppu VARCHAR(10) NOT NULL,
+    fecha_emision DATETIME NOT NULL,
+    valor_permiso INT NOT NULL,
+    tarjeta VARCHAR (16) NOT NULL
+);

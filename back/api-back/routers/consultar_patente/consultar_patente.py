@@ -17,6 +17,7 @@ router = APIRouter()
 class PadronModel(BaseModel): 
     ppu : str
     rut: str
+    nombre: str
     tipo_vehiculo: str
     marca: str
     modelo: str
