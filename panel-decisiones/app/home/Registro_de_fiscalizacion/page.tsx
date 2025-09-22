@@ -7,11 +7,14 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
   Legend,
+  ArcElement,
 } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Bar, Line, Pie } from 'react-chartjs-2';
 import API_CONFIG from "@/config/api";
 
 // Registrar componentes de Chart.js
@@ -19,9 +22,12 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ArcElement
 );
 
 // Tipos para la respuesta de la API
@@ -230,6 +236,107 @@ export default function RegistroFiscalizacionPage() {
       ],
     };
   }, [chartData, groupBy]);
+
+  // Datos para gráficos de estado de documentos (Permiso, Revisión, SOAP)
+  const documentStatusCharts = useMemo(() => {
+    const permisoCount = { vigente: 0, noVigente: 0 };
+    const revisionCount = { vigente: 0, noVigente: 0 };
+    const soapCount = { vigente: 0, noVigente: 0 };
+
+    tableData.forEach(row => {
+      // Permiso
+      if (row.permiso === "Vigente") permisoCount.vigente++;
+      else permisoCount.noVigente++;
+      
+      // Revisión
+      if (row.revision === "Vigente") revisionCount.vigente++;
+      else revisionCount.noVigente++;
+      
+      // SOAP
+      if (row.soap === "Vigente") soapCount.vigente++;
+      else soapCount.noVigente++;
+    });
+
+    return {
+      permiso: {
+        labels: ['Vigente', 'No Vigente'],
+        datasets: [{
+          data: [permisoCount.vigente, permisoCount.noVigente],
+          backgroundColor: ['#198754', '#dc3545'],
+          borderColor: ['#198754', '#dc3545'],
+          borderWidth: 1,
+        }],
+      },
+      revision: {
+        labels: ['Vigente', 'No Vigente'],
+        datasets: [{
+          data: [revisionCount.vigente, revisionCount.noVigente],
+          backgroundColor: ['#198754', '#dc3545'],
+          borderColor: ['#198754', '#dc3545'],
+          borderWidth: 1,
+        }],
+      },
+      soap: {
+        labels: ['Vigente', 'No Vigente'],
+        datasets: [{
+          data: [soapCount.vigente, soapCount.noVigente],
+          backgroundColor: ['#198754', '#dc3545'],
+          borderColor: ['#198754', '#dc3545'],
+          borderWidth: 1,
+        }],
+      },
+    };
+  }, [tableData]);
+
+  // Datos para gráfico de pastel de Encargo
+  const encargoChartData = useMemo(() => {
+    const encargoCount = { si: 0, no: 0 };
+    
+    tableData.forEach(row => {
+      if (row.encargo === "SI") encargoCount.si++;
+      else encargoCount.no++;
+    });
+
+    return {
+      labels: ['Sin Encargo', 'Con Encargo'],
+      datasets: [{
+        data: [encargoCount.no, encargoCount.si],
+        backgroundColor: ['#198754', '#dc3545'],
+        borderColor: ['#ffffff'],
+        borderWidth: 2,
+      }],
+    };
+  }, [tableData]);
+
+  // Datos para gráfico de línea por fecha
+  const fechaChartData = useMemo(() => {
+    // Agrupar por día
+    const fechaCounts: { [key: string]: number } = {};
+    
+    tableData.forEach(row => {
+      const fecha = new Date(row.fecha);
+      const fechaKey = fecha.toISOString().split('T')[0]; // YYYY-MM-DD
+      fechaCounts[fechaKey] = (fechaCounts[fechaKey] || 0) + 1;
+    });
+
+    // Ordenar fechas y tomar las últimas 10
+    const sortedFechas = Object.keys(fechaCounts)
+      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+      .slice(-10);
+
+    return {
+      labels: sortedFechas.map(fecha => formatDateLabel(fecha, "DIA")),
+      datasets: [{
+        label: 'Fiscalizaciones por día',
+        data: sortedFechas.map(fecha => fechaCounts[fecha]),
+        borderColor: '#0d6efd',
+        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.1,
+      }],
+    };
+  }, [tableData]);
 
   // Opciones para gráfico apilado
   const stackedChartOptions = {
@@ -722,6 +829,126 @@ export default function RegistroFiscalizacionPage() {
         </div>
 
       </div>
+
+      {/* Gráficos adicionales de análisis */}
+      <div className="col-12 mt-4">
+        <div className="row">
+          {/* Gráficos de estado de documentos */}
+          <div className="col-12 col-md-4">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-file-earmark-text text-success"></i>
+                  Estado Permiso
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: '200px' }}>
+                  {documentStatusCharts.permiso.datasets[0].data.some((val: number) => val > 0) ? (
+                    <Bar data={documentStatusCharts.permiso} options={statusBarOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-12 col-md-4">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-gear text-warning"></i>
+                  Estado Revisión
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: '200px' }}>
+                  {documentStatusCharts.revision.datasets[0].data.some((val: number) => val > 0) ? (
+                    <Bar data={documentStatusCharts.revision} options={statusBarOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-12 col-md-4">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-shield-check text-info"></i>
+                  Estado SOAP
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: '200px' }}>
+                  {documentStatusCharts.soap.datasets[0].data.some((val: number) => val > 0) ? (
+                    <Bar data={documentStatusCharts.soap} options={statusBarOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row">
+          {/* Gráfico de pastel para Encargo */}
+          <div className="col-12 col-md-6">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-pie-chart text-danger"></i>
+                  Distribución Encargo/Robo
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: '250px' }}>
+                  {encargoChartData.datasets[0].data.some((val: number) => val > 0) ? (
+                    <Pie data={encargoChartData} options={pieOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Gráfico de línea por fecha */}
+          <div className="col-12 col-md-6">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-graph-up text-primary"></i>
+                  Fiscalizaciones por día (últimos 10 días)
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: '250px' }}>
+                  {fechaChartData.datasets[0].data.length > 0 ? (
+                    <Line data={fechaChartData} options={lineOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -772,3 +999,151 @@ function formatDateLabel(dateString: string, periodType: string = "DIA") {
       });
   }
 }
+
+// Opciones para gráficos de barras de estado
+const statusBarOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      titleColor: 'white',
+      bodyColor: 'white',
+      borderColor: '#ddd',
+      borderWidth: 1,
+      callbacks: {
+        label: function(context: any) {
+          const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+          const percentage = ((context.parsed.y / total) * 100).toFixed(1);
+          return `${context.parsed.y} (${percentage}%)`;
+        },
+      },
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        stepSize: 1,
+        callback: function(value: any) {
+          return Number.isInteger(value) ? value : '';
+        },
+        font: {
+          size: 11,
+        },
+      },
+      grid: {
+        color: '#e9ecef',
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+      ticks: {
+        font: {
+          size: 11,
+        },
+      },
+    },
+  },
+  elements: {
+    bar: {
+      borderRadius: 4,
+    },
+  },
+};
+
+// Opciones para gráfico de pastel
+const pieOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'bottom' as const,
+      labels: {
+        boxWidth: 12,
+        padding: 15,
+        font: {
+          size: 11,
+        },
+      },
+    },
+    tooltip: {
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      titleColor: 'white',
+      bodyColor: 'white',
+      borderColor: '#ddd',
+      borderWidth: 1,
+      callbacks: {
+        label: function(context: any) {
+          const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+          const percentage = ((context.parsed / total) * 100).toFixed(1);
+          return `${context.label}: ${context.parsed} (${percentage}%)`;
+        },
+      },
+    },
+  },
+};
+
+// Opciones para gráfico de línea
+const lineOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      titleColor: 'white',
+      bodyColor: 'white',
+      borderColor: '#ddd',
+      borderWidth: 1,
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        stepSize: 1,
+        callback: function(value: any) {
+          return Number.isInteger(value) ? value : '';
+        },
+        font: {
+          size: 11,
+        },
+      },
+      grid: {
+        color: '#e9ecef',
+      },
+      title: {
+        display: true,
+        text: 'Número de fiscalizaciones',
+        font: {
+          size: 12,
+        },
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+      ticks: {
+        font: {
+          size: 11,
+        },
+        maxRotation: 45,
+      },
+    },
+  },
+  elements: {
+    point: {
+      radius: 4,
+      hoverRadius: 6,
+    },
+  },
+};
