@@ -3,6 +3,7 @@
 # base de datos de la Tesorería General de la República
 #####################################################################################
 
+import random
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
@@ -261,6 +262,7 @@ class TarjetasModel(BaseModel):
 class ConfirmacionPagoModel(BaseModel):
     # id: int  # Aquí deberías generar un ID único
     numero_tarjeta: str
+    transaction_id: int  # ID de la transacción
     monto_pago: int
     fecha_pago: date  # Fecha en formato ISO 8601
     estado: str  # Puede ser 'exitoso' o 'fallido'
@@ -407,6 +409,7 @@ def procesar_pago(pago_request: PagoRequest, db: Session = Depends(get_db)):
         # Extraer datos de tarjeta y monto
         tarjeta = TarjetasModel(
             numero_tarjeta=pago_request.numero_tarjeta,
+            rut="",  # No es necesario para el procesamiento del pago
             titular=pago_request.titular,
             mes_vencimiento=pago_request.mes_vencimiento,
             anio_vencimiento=pago_request.anio_vencimiento,
@@ -458,6 +461,7 @@ def procesar_pago(pago_request: PagoRequest, db: Session = Depends(get_db)):
             numero_tarjeta=tarjeta.numero_tarjeta,
             monto_pago=monto_pago,
             fecha_pago=date.today(),
+            transaction_id=random.randint(100000, 999999),  # Generar un ID de transacción aleatorio
             estado="exitoso"
         )
         
@@ -472,7 +476,7 @@ def procesar_pago(pago_request: PagoRequest, db: Session = Depends(get_db)):
         )
     
 # GET - Endpoint para obtener el tipo de tarjeta ingresando el número de tarjeta y RUT
-@app.get("/tipo_tarjeta/{numero_tarjeta}/{rut}")
+@app.get("/banco/{numero_tarjeta}/{rut}")
 def obtener_tipo_tarjeta(numero_tarjeta: str, rut: str, db: Session = Depends(get_db)):
     # Validar el formato del número de tarjeta
     if len(numero_tarjeta) != 16 or not numero_tarjeta.isdigit():
@@ -489,7 +493,18 @@ def obtener_tipo_tarjeta(numero_tarjeta: str, rut: str, db: Session = Depends(ge
     ).first()
     if not tarjeta:
         raise HTTPException(status_code=404, detail="Tarjeta no encontrada")
-    return {"tipo_tarjeta": tarjeta.tipo_tarjeta}
+    if tarjeta.banco == "Banco Estado":
+        return {"banco": "bancoEstado"}
+    if tarjeta.banco == "Banco Chile":
+        return {"banco": "bancoChile"}
+    if tarjeta.banco == "Banco Santander":
+        return {"banco": "bancoSantander"}
+    if tarjeta.banco == "Banco BCI":
+        return {"banco": "bancoBCI"}
+    if tarjeta.banco == "Banco Falabella":
+        return {"banco": "bancoFalabella"}
+    else:
+        return {"banco": "otroBanco"}
 
 # POST - Endpoint para iniciar sesión con rut y clave de tarjeta
 @app.post("/login_tarjeta/", response_model=TokenModel)
@@ -534,7 +549,8 @@ def login_tarjeta(credenciales: LoginModel, db: Session = Depends(get_db)):
             "numero_tarjeta": usuario.numero_tarjeta,
             "tipo_tarjeta": usuario.tipo_tarjeta,
             "banco": usuario.banco,
-            "fecha_vencimiento": usuario.fecha_vencimiento
+            "fecha_vencimiento": usuario.fecha_vencimiento,
+            "cvv": usuario.cvv
         },
         expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
