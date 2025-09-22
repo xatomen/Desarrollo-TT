@@ -7,6 +7,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useAuth, getRutFromCookies } from '@/contexts/AuthContext';
 import API_CONFIG from '@/config/api';
 import React from 'react';
+import { useRouter } from 'next/navigation';
 
 type Estado = 'PAGADO' | 'HABILITADO' | 'VENCIDO';
 type Vehiculo = { 
@@ -177,6 +178,7 @@ function EstadoVehiculoTooltip({ detalle }: { detalle: EstadoVehiculoDetalle }) 
 
 export default function VerVehiculos() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
   const rutFromCookies = getRutFromCookies();
   const rut = user?.rut || rutFromCookies || '';
   const nombre = user?.nombre || 'Usuario';
@@ -711,7 +713,7 @@ export default function VerVehiculos() {
   // Mostrar loading
   if (loading) {
     return (
-      <section className="section card-like" style={{ fontFamily: '"Roboto", Arial, sans-serif' }}>
+      <section className="section card-like" style={{ fontFamily: '"Roboto", Arial, sans-serif', maxWidth: '1200px', alignContent: 'center', margin: '0 auto' }}>
         <div className="section-header px-4 pt-4 pb-3 border-bottom border-primary">
           <h1 className="h4 m-0 text-center">Vehículos Disponibles</h1>
         </div>
@@ -748,31 +750,150 @@ export default function VerVehiculos() {
     );
   }
 
-  // // Estados para paginación de vehículos guardados
-  // const totalItemsGuardados = savedVehicles.length;
-  // const totalPagesGuardados = Math.ceil(totalItemsGuardados / itemsPerPageGuardados);
-  // const startIndexGuardados = (currentPageGuardados - 1) * itemsPerPageGuardados;
-  // const endIndexGuardados = Math.min(startIndexGuardados + itemsPerPageGuardados, totalItemsGuardados);
-  // const currentSavedVehicles = savedVehicles.slice(startIndexGuardados, endIndexGuardados);
-
-  // const getPageNumbersGuardados = () => {
-  //   const pages = [];
-  //   for (let i = 1; i <= totalPagesGuardados; i++) {
-  //     pages.push(i);
-  //   }
-  //   return pages;
-  // };
-
   return (
     <ProtectedRoute>
       <section className="" style={{ fontFamily: '"Roboto", Arial, sans-serif', minHeight: 'max-content', width: '100%' }}>
-        <div className="card-like shadow p-3 m-3">
-          <p className="mb-1">Nombre: {nombre}</p>
-          <p className="mb-4">RUT: {rut}</p>
-          {/* Descripción del sitio */}
-          <h2 className="mb-3" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>Tu Permiso - Gestión de Permisos de Circulación</h2>
+        {/* Volver atrás y Breadcrumb */}
+        <div className="row align-self-center d-flex align-items-center mb-4 px-3">
+          <button className="p-2" style={{ backgroundColor: 'white', border: '1px solid #007bff', color: '#007bff', cursor: 'pointer' }} onClick={() => router.push('/home')}>
+            <span>← Volver</span>
+          </button>
+          <nav aria-label="breadcrumb" className="col">
+            <ol className="breadcrumb p-0 m-0">
+              <li className="align-self-center breadcrumb-item" aria-current="page">Vehículos</li>
+              <li className="align-self-center breadcrumb-item active" aria-current="page">Validación documentos</li>
+              <li className="align-self-center breadcrumb-item active" aria-current="page">Detalles de pago</li>
+              <li className="align-self-center breadcrumb-item active" aria-current="page">Confirmación de pago</li>
+            </ol>
+          </nav>
         </div>
-        <div className="row">
+
+        <div className="row" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div
+            className="card-like shadow p-4 m-3"
+            style={{
+              width: '100%',
+              background: 'linear-gradient(135deg, #f3e6f0 0%, #e0e7ff 100%)',
+              borderRadius: '18px',
+              boxShadow: '0 4px 16px #0002',
+              color: '#222',
+              fontFamily: '"Dosis", "Roboto", sans-serif'
+            }}
+          >
+            <h1 style={{
+              fontWeight: 700,
+              fontSize: '2rem',
+              marginBottom: '0.5rem',
+              letterSpacing: '1px',
+              fontFamily: 'Roboto',
+            }}>
+              ¡Bienvenido{nombre ? `, ${nombre}` : ''}!
+            </h1>
+            <p style={{
+              fontSize: '1.1rem',
+              marginBottom: '0.5rem',
+              fontWeight: 500
+            }}>
+              RUT: <span style={{ fontWeight: 700 }}>{rut}</span>
+            </p>
+            <h2 className="mb-3" style={{
+              fontFamily: 'Roboto',
+              fontWeight: 'bold',
+              fontSize: '1.3rem',
+              color: '#6D2077'
+            }}>
+              Selecciona un vehículo para continuar
+            </h2>
+            <div className="row justify-content-center g-3 mb-2">
+              <div className="col-12 col-md-4">
+                <div style={{
+                  background: 'linear-gradient(90deg, #fbeaf6 0%, #e0e7ff 100%)',
+                  borderRadius: '14px',
+                  boxShadow: '0 2px 8px #0001',
+                  padding: '1.2rem 1rem',
+                  minHeight: 120,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  height: '100%'
+                }}>
+                  <span style={{
+                    display: 'inline-block',
+                    width: 18,
+                    height: 18,
+                    borderRadius: '50%',
+                    background: '#6D2077',
+                    marginBottom: 10
+                  }} />
+                  <b>Mis Vehículos</b>
+                  <span style={{ fontSize: '1rem', fontWeight: 400 }}>
+                    Aquí verás los vehículos asociados a tu RUT y podrás gestionar su permiso de circulación.
+                  </span>
+                </div>
+              </div>
+              <div className="col-12 col-md-4">
+                <div style={{
+                  background: 'linear-gradient(90deg, #e0e7ff 0%, #fbeaf6 100%)',
+                  borderRadius: '14px',
+                  boxShadow: '0 2px 8px #0001',
+                  padding: '1.2rem 1rem',
+                  minHeight: 120,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  height: '100%'
+                }}>
+                  <span style={{
+                    display: 'inline-block',
+                    width: 18,
+                    height: 18,
+                    borderRadius: '50%',
+                    background: '#D00070',
+                    marginBottom: 10
+                  }} />
+                  <b>Vehículos Guardados</b>
+                  <span style={{ fontSize: '1rem', fontWeight: 400 }}>
+                    Aquí puedes acceder rápidamente a los vehículos que hayas guardado manualmente.
+                  </span>
+                </div>
+              </div>
+              <div className="col-12 col-md-4">
+                <div style={{
+                  background: 'linear-gradient(90deg, #e0e7ff 0%, #fbeaf6 100%)',
+                  borderRadius: '14px',
+                  boxShadow: '0 2px 8px #0001',
+                  padding: '1.2rem 1rem',
+                  minHeight: 120,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  height: '100%'
+                }}>
+                  <span style={{
+                    display: 'inline-block',
+                    width: 18,
+                    height: 18,
+                    borderRadius: '50%',
+                    background: '#00C7B1',
+                    marginBottom: 10
+                  }} />
+                  <b>Pagar otro vehículo</b>
+                  <span style={{ fontSize: '1rem', fontWeight: 400 }}>
+                    Si quieres agregar o pagar el permiso de un vehículo nuevo, usa esta opción para buscarlo por su placa patente.
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="mt-3" style={{ fontSize: '1rem', color: '#555' }}>
+              Selecciona la opción que necesites usando los botones de abajo.
+            </div>
+          </div>
+        </div>
+        
+        <div className="row" style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div className="card-like shadow col p-3 m-3">
             <div className="row">
               <data className="col p-3 m-3"></data>

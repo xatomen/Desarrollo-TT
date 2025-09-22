@@ -10,6 +10,7 @@ interface DatosVehiculo {
   // Datos básicos
   ppu: string;
   rut: string;
+  nombre: string;
   valorPermiso: number;
   
   // Información del vehículo
@@ -55,9 +56,7 @@ interface DatosVehiculo {
 
 export default function FormularioPago() {
   const router = useRouter();
-  
   const { user } = useAuth();
-  const nombre_propietario = user?.nombre || '';
 
   const [datosVehiculo, setDatosVehiculo] = useState<DatosVehiculo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -94,9 +93,35 @@ export default function FormularioPago() {
     }
   }, []);
 
+  // Al cargar datos del vehículo, también setear nombre y correo si existen en user
+  useEffect(() => {
+    try {
+      const datosGuardados = sessionStorage.getItem('datos_vehiculo_permiso');
+      if (datosGuardados) {
+        const datos: DatosVehiculo = JSON.parse(datosGuardados);
+        // ...validación de expiración...
+        setDatosVehiculo(datos);
+        // Setear nombre y correo desde user si existen
+        setFormData(prev => ({
+          ...prev,
+          nombre: user?.nombre || '',
+          correo: user?.email || ''
+        }));
+      } else {
+        setError('No se encontraron datos del vehículo. Por favor, realice las validaciones primero.');
+      }
+    } catch (error) {
+      console.error('Error cargando datos desde sessionStorage:', error);
+      setError('Error al cargar los datos del vehículo.');
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.nombre, user?.email]);
+
   // Extraer datos del vehículo para uso directo en el componente
   const ppu = datosVehiculo?.ppu || '';
   const rut = datosVehiculo?.rut || '';
+  const nombre_propietario = datosVehiculo?.nombre || 'Usuario';
   const valorPermiso = datosVehiculo?.valorPermiso || 0;
   const marca = datosVehiculo?.marca || '';
   const modelo = datosVehiculo?.modelo || '';
@@ -494,48 +519,63 @@ export default function FormularioPago() {
   return (
     <ProtectedRoute>
     <div className="container-fluid px-4 py-4" style={{ fontFamily: '"Dosis", sans-serif' }}>
+      {/* Volver atrás y Breadcrumb */}
+      <div className="row align-self-center d-flex align-items-center mb-4 px-3">
+        <button className="p-2" style={{ backgroundColor: 'white', border: '1px solid #007bff', color: '#007bff', cursor: 'pointer' }} onClick={() => router.back()}>
+          <span>← Volver</span>
+        </button>
+        <nav aria-label="breadcrumb" className="col">
+          <ol className="breadcrumb p-0 m-0">
+            <li className="align-self-center breadcrumb-item active" aria-current="page">Vehículos</li>
+            <li className="align-self-center breadcrumb-item active" aria-current="page">Validación documentos</li>
+            <li className="align-self-center breadcrumb-item" aria-current="page">Detalles de pago</li>
+            <li className="align-self-center breadcrumb-item active" aria-current="page">Confirmación de pago</li>
+          </ol>
+        </nav>
+      </div>
+
       <div className="row g-4">
         {/* Columna izquierda - Resumen del vehículo */}
         <div className="col-lg-4 align-self-center">
           <div className="card-like border-0 shadow p-4">
             <div className="card-body text-center p-4">
-              <h6 className="text-muted mb-2" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
+              <h6 className="text-muted mb-2" style={{ fontFamily: '"Roboto", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
                 Patente a pagar
               </h6>
-              <h1 className="display-4 fw-bold mb-3" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700' }}>
+              <h1 className="display-4 fw-bold mb-3" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '700' }}>
                 {ppu || 'AA BB 11'}
               </h1>
 
-              <div><p className="text-muted mb-1" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>Nombre</p>
-                <p className="fw-bold text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '1.25rem', fontWeight: '600' }}>
+              <div><p className="text-muted mb-1" style={{ fontFamily: '"Roboto", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>Nombre</p>
+                <p className="fw-bold text-dark" style={{ fontFamily: '"Roboto", sans-serif', fontSize: '1.25rem', fontWeight: '600' }}>
                   {nombre_propietario || '-'}
                 </p>
               </div>
 
 
               <div className="mb-3">
-                <p className="text-muted mb-1" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>RUT</p>
-                <p className="fw-bold" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '1.25rem', fontWeight: '600' }}>
+                <p className="text-muted mb-1" style={{ fontFamily: '"Roboto", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>RUT</p>
+                <p className="fw-bold" style={{ fontFamily: '"Roboto", sans-serif', fontSize: '1.25rem', fontWeight: '600' }}>
                   {rut || '12.345.678-9'}
                 </p>
               </div>
 
               {/* ✅ Mostrar información del vehículo */}
               <div className="mb-3">
-                <p className="text-muted mb-1" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>Vehículo</p>
-                <p className="fw-medium" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '1rem', fontWeight: '500' }}>
+                <p className="text-muted mb-1" style={{ fontFamily: '"Roboto", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>Vehículo</p>
+                <p className="fw-medium" style={{ fontFamily: '"Roboto", sans-serif', fontSize: '1rem', fontWeight: '500' }}>
                   {marca} {modelo} {anioVehiculo}
                 </p>
-                <p className="text-muted" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.75rem' }}>
+                <p className="text-muted" style={{ fontFamily: '"Roboto", sans-serif', fontSize: '0.75rem' }}>
                   {color} - {tipoVehiculo}
                 </p>
               </div>
               
               <div className="mt-4">
-                <h6 className="text-muted mb-2" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
+                <h6 className="text-muted mb-2" style={{ fontFamily: '"Roboto", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
                   Valor Permiso de Circulación
                 </h6>
-                <h2 className="fw-bold mb-0" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700', fontSize: '2.5rem' }}>
+                <h2 className="fw-bold mb-0" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '700', fontSize: '2.5rem' }}>
                   ${valorPermiso.toLocaleString('es-CL')}
                 </h2>
               </div>
@@ -597,14 +637,14 @@ export default function FormularioPago() {
               <div className="col-12">
                 <div className="card-like border-0 shadow">
                   <div className="card-body text-center border-bottom">
-                    <h5 className="mb-0 fw-bold text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '600', fontSize: '1.125rem' }}>
-                      Datos de Facturación
+                    <h5 className="mb-0 fw-bold text-dark" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '600', fontSize: '1.125rem' }}>
+                      Datos para enviar comprobante de pago
                     </h5>
                   </div>
                   <div className="card-body">
                     {/* Nombre */}
                     <div className="mb-3">
-                      <label className="form-label fw-medium text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '500' }}>
+                      <label className="form-label fw-medium text-dark" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '500' }}>
                         Nombre {errors.nombre && <span className="text-danger">*</span>}
                       </label>
                       <div className="input-group">
@@ -622,17 +662,17 @@ export default function FormularioPago() {
                           onChange={handleInputChange}
                           required
                           disabled={isProcessingPayment}
-                          style={{ fontFamily: '"Dosis", sans-serif' }}
+                          style={{ fontFamily: '"Roboto", sans-serif' }}
                         />
                       </div>
-                      <small className={errors.nombre ? "text-danger" : "text-muted"} style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.75rem' }}>
-                        {errors.nombre || "Ingrese el nombre completo que aparece en su tarjeta"}
+                      <small className={errors.nombre ? "text-danger" : "text-muted"} style={{ fontFamily: '"Roboto", sans-serif', fontSize: '0.75rem' }}>
+                        {errors.nombre || "Ingrese su nombre"}
                       </small>
                     </div>
 
                     {/* Correo electrónico */}
                     <div className="mb-3">
-                      <label className="form-label fw-medium text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '500' }}>
+                      <label className="form-label fw-medium text-dark" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '500' }}>
                         Correo electrónico {errors.correo && <span className="text-danger">*</span>}
                       </label>
                       <div className="input-group">
@@ -651,10 +691,10 @@ export default function FormularioPago() {
                           onChange={handleInputChange}
                           required
                           disabled={isProcessingPayment}
-                          style={{ fontFamily: '"Dosis", sans-serif' }}
+                          style={{ fontFamily: '"Roboto", sans-serif' }}
                         />
                       </div>
-                      <small className={errors.correo ? "text-danger" : "text-muted"} style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.75rem' }}>
+                      <small className={errors.correo ? "text-danger" : "text-muted"} style={{ fontFamily: '"Roboto", sans-serif', fontSize: '0.75rem' }}>
                         {errors.correo || "Ingrese un correo electrónico para recibir el comprobante de pago"}
                       </small>
                     </div>
@@ -665,18 +705,37 @@ export default function FormularioPago() {
               <div className="col-12 text-center">
                 <div className="d-grid p-3">
                   <button 
-                  className="btn p-0 border-0" 
+                  className="btn border-0" 
                   type="submit" 
                   disabled={isProcessingPayment}
-                  style={{ backgroundColor: 'transparent' }}
-                  onClick={() => redirect('/webpay')}
+                  style={{
+                    backgroundColor: '#f7bc3eff',
+                    color: 'black',
+                    fontSize: '1.25rem',
+                    fontWeight: '600',
+                    borderRadius: '60px',
+                    padding: '20px 40px',
+                    cursor: isProcessingPayment ? 'not-allowed' : 'pointer',
+                    opacity: isProcessingPayment ? 0.7 : 1,
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    transition: 'background-color 0.3s ease',
+                    fontFamily: '"Roboto", sans-serif'
+                  }}
+                  onClick={
+                    () => {
+                      // Setear monto_pago en sessionStorage antes de redirigir
+                      sessionStorage.setItem('monto_pago', valorPermiso.toString());
+                      redirect('/webpay')
+                    }
+                  }
                   >
+                    Pagar con
                   <img 
-                    src="/img/boton-pago.png" 
+                    src="/img/webpay-logo-nofondo.png" 
                     alt="Pagar con OnePay" 
                     className="img-fluid"
                     style={{ 
-                    maxWidth: '200px', 
+                    maxWidth: '150px', 
                     height: 'auto',
                     opacity: isProcessingPayment ? 0.7 : 1
                     }}
@@ -685,17 +744,17 @@ export default function FormularioPago() {
                 </div>
               </div>
               {/* Datos de Tarjeta */}
-              <div className="col-12 p-3">
+              {/* <div className="col-12 p-3">
                 <div className="card-like shadow">
                   <div className="card-body text-center border-bottom">
                     <h5 className="mb-0 fw-bold text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '600', fontSize: '1.125rem' }}>
                       Datos de Tarjeta
                     </h5>
                   </div>
-                  <div className="card-body">
-                    <div className="row">
+                  <div className="card-body"> */}
+                    {/* <div className="row"> */}
                       {/* Número de tarjeta */}
-                      <div className="col-md-6 mb-3">
+                      {/* <div className="col-md-6 mb-3">
                         <label className="form-label fw-medium text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '500' }}>
                           Número de tarjeta {errors.numeroTarjeta && <span className="text-danger">*</span>}
                         </label>
@@ -727,10 +786,10 @@ export default function FormularioPago() {
                             <small className="badge bg-primary" style={{ fontFamily: '"Dosis", sans-serif' }}>{marcaTarjeta}</small>
                           )}
                         </div>
-                      </div>
+                      </div> */}
 
                       {/* Tipo de tarjeta */}
-                      <div className="col-md-6 mb-3">
+                      {/* <div className="col-md-6 mb-3">
                         <label className="form-label fw-medium text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '500' }}>
                           Tipo de tarjeta {errors.tipoTarjeta && <span className="text-danger">*</span>}
                         </label>
@@ -758,12 +817,12 @@ export default function FormularioPago() {
                         <small className={errors.tipoTarjeta ? "text-danger" : "text-muted"} style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.75rem' }}>
                           {errors.tipoTarjeta || "Seleccione el tipo de tarjeta"}
                         </small>
-                      </div>
-                    </div>
+                      </div> */}
+                    {/* </div> */}
 
-                    <div className="row">
+                    {/* <div className="row"> */}
                       {/* Código de seguridad */}
-                      <div className="col-md-6 mb-3">
+                      {/* <div className="col-md-6 mb-3">
                         <label className="form-label fw-medium text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '500' }}>
                           Código de seguridad {errors.codigoSeguridad && <span className="text-danger">*</span>}
                         </label>
@@ -789,10 +848,10 @@ export default function FormularioPago() {
                         <small className={errors.codigoSeguridad ? "text-danger" : "text-muted"} style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.75rem' }}>
                           {errors.codigoSeguridad || "Ingrese el código de seguridad de su tarjeta"}
                         </small>
-                      </div>
+                      </div> */}
 
                       {/* Fecha de vencimiento */}
-                      <div className="col-md-6 mb-3">
+                      {/* <div className="col-md-6 mb-3">
                         <label className="form-label fw-medium text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '500' }}>
                           Fecha de vencimiento {errors.fechaVencimiento && <span className="text-danger">*</span>}
                         </label>
@@ -818,14 +877,14 @@ export default function FormularioPago() {
                         <small className={errors.fechaVencimiento ? "text-danger" : "text-muted"} style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.75rem' }}>
                           {errors.fechaVencimiento || "Selecciona la fecha de vencimiento de su tarjeta"}
                         </small>
-                      </div>
-                    </div>
-                  </div>
+                      </div> */}
+                    {/* </div> */}
+                  {/* </div>
                 </div>
-              </div>
+              </div> */}
               
               {/* ✅ Botón de pago con loading */}
-              <div className="col-12 text-center">
+              {/* <div className="col-12 text-center">
                 <div className="d-grid p-3">
                   <button 
                     type="submit"
@@ -852,7 +911,7 @@ export default function FormularioPago() {
                     )}
                   </button>
                 </div>
-              </div>
+              </div> */}
             </div>
           </form>
         </div>

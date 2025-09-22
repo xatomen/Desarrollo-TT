@@ -34,10 +34,25 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="text-white px-6 py-4" style={{ backgroundColor: '#092039'}}>
+    <nav className="text-white px-6 py-4"
+      style={{
+        background: '#092039',
+      }}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <span className="text-xl font-semibold">Permisos de Circulación</span>
+          {/* Imagen link Inicio */}
+          <a href="/inicio">
+            <img src="/img/tupermiso/logo-tupatente.svg" alt="" style={{ width: '150px', height: 'auto' }} />
+          </a>
+          {/* Link a Inicio */}
+          <a href="/inicio" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
+            Inicio
+          </a>
+          {/* Link a Tu Permiso */}
+          <a href="/home" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
+            Tu Permiso
+          </a>
         </div>
         
         <div className="flex items-center space-x-4">

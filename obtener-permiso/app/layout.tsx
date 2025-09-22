@@ -17,11 +17,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@400;500;600&display=swap" rel="stylesheet"></link>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"></link>
+      </head>
       <body className={inter.className}>
         <AuthProvider>{children}</AuthProvider>
       </body>
-              {/* Scripts cargados al final del body para evitar problemas de hidratación */}
+        {/* Scripts cargados al final del body para evitar problemas de hidratación */}
         <script 
           src="https://code.jquery.com/jquery-3.6.0.min.js"
           integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="

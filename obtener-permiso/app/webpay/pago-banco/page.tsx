@@ -1,8 +1,17 @@
 // Página de pago banco
 'use client';
-import { useState } from "react";
+import API_CONFIG from "@/config/api";
+import { useState, useEffect } from "react";
 
 // Bancos
+const bancoPredeterminado = {
+  nombre: "Banco Predeterminado",
+  mensajeBienvenida: 'Ingresa a tu Banca en Línea',
+  color: '#ffffffff',
+  logo: '',
+  mensajeProblemaClave: '¿Problemas con tu clave?'
+}
+
 const bancoEstado = {
   nombre: "BancoEstado",
   mensajeBienvenida: 'Ingresa a tu Banca en Línea',
@@ -39,12 +48,171 @@ const bancoSantander = {
   mensajeProblemaClave: '¿Problemas con tu clave?'
 }
 
+// Mapeo para seleccionar el objeto banco según el string recibido
+const bancosMap: Record<string, typeof bancoEstado> = {
+  bancoEstado,
+  bancoChile,
+  bancoFalabella,
+  bancoBCI,
+  bancoSantander,
+};
+
+interface PagoInfo {
+  ppu: string;
+  rut: string;
+  valorPermiso: number;
+  marca: string;
+  modelo: string;
+  anio: string;
+  color: string;
+  tipoVehiculo: string;
+  numeroTarjeta: string;
+  titular: string;
+  correo: string;
+  fechaPago: string;
+  transactionId?: string;
+  resultadoPago?: 'exitoso' | 'fallido';
+}
 
 export default function PagoBancoPage() {
   // Estado para el banco seleccionado, por ahora está definido estáticamente
   const [selectedBank, setSelectedBank] = useState(bancoEstado);
-  const [numTarjeta, setNumTarjeta] = useState('4345591084215296');
+  const [numTarjeta, setNumTarjeta] = useState('');
   const [tipoTarjeta, setTipoTarjeta] = useState<"crédito" | "débito">("crédito");
+  const [montoPago, setMontoPago] = useState(15000);
+  const [saldoDisponible, setSaldoDisponible] = useState('');
+  const [rutTarjeta, setRutTarjeta] = useState('');
+  const [titularTarjeta, setTitularTarjeta] = useState('');
+  const [mesVencimiento, setMesVencimiento] = useState('');
+  const [anioVencimiento, setAnioVencimiento] = useState('');
+  const [diaVencimiento, setDiaVencimiento] = useState('');
+  const [cvv, setCvv] = useState('');
+
+  // Recuperar datos desde el sessión storage
+  useEffect(() => {
+    const userInfo = sessionStorage.getItem('user_info');
+    if (userInfo) {
+      const datos = JSON.parse(userInfo);
+      setNumTarjeta(datos.numero_tarjeta.toString());
+      setTipoTarjeta(datos.tipo_tarjeta);
+      // setMontoPago(datos.monto_pago);
+      setSaldoDisponible(Number(datos.saldo).toLocaleString('es-CL', { style: 'currency', currency: 'CLP' }));
+      setRutTarjeta(datos.rut);
+      setTitularTarjeta(datos.nombre);
+      // Formatear fecha de vencimiento yyyy-mm-dd
+      const fechaVenc = datos.fecha_vencimiento; // "yyyy-mm-dd"
+      console.log('fechaVenc:', fechaVenc);
+      const [year, month, day] = fechaVenc.split('-');
+      setMesVencimiento(month);
+      setAnioVencimiento(year.slice(-2)); // últimos 2 dígitos
+      setDiaVencimiento(day);
+      setCvv(datos.cvv);
+      // Debug
+      console.log(datos);
+      console.log('numTarjeta:', datos.numero_tarjeta);
+      console.log('tipoTarjeta:', datos.tipo_tarjeta);
+      // console.log('montoPago:', datos.monto_pago);
+      console.log('saldoDisponible:', datos.saldo);
+      console.log('rutTarjeta:', datos.rut);
+      console.log('titularTarjeta:', datos.nombre);
+      console.log('fechaVencimiento:', datos.fecha_vencimiento);
+      console.log('mesVencimiento:', mesVencimiento);
+      console.log('anioVencimiento:', anioVencimiento);
+      console.log('diaVencimiento:', diaVencimiento);
+      console.log('cvv:', datos.cvv);
+
+      // Formato de datos cuando hacemos post para pagar
+      console.log('Datos para pagar:');
+      console.log({
+        numero_tarjeta: numTarjeta,
+        rut: rutTarjeta,
+        monto: montoPago,
+        titular: titularTarjeta,
+        mes_vencimiento: mesVencimiento,
+        anio_vencimiento: anioVencimiento,
+        cvv: cvv
+      });
+    }
+  }, []);
+
+  // Pago
+  const handlePago = async () => {
+    // POST a /procesar_pago/
+    try {
+      const res = await fetch(`${API_CONFIG.TGR}procesar_pago/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          numero_tarjeta: numTarjeta.toString(),
+          // rut: rutTarjeta,
+          titular: titularTarjeta,
+          mes_vencimiento: Number(mesVencimiento),
+          anio_vencimiento: Number(anioVencimiento),
+          tipo_tarjeta: tipoTarjeta,
+          cvv: Number(cvv),
+          monto_pago: Number(montoPago)
+        }),
+      });
+      console.log(res);
+      if (!res.ok) throw new Error('Error en el pago');
+      const data = await res.json();
+      console.log(data);
+      if (data && data.estado === 'exitoso') {
+        // Redirigir a confirmación de pago exitoso
+        sessionStorage.setItem('resultado_pago', 'exitoso');
+        // Guardar info del pago
+        const pagoInfo: PagoInfo = {
+          ppu: sessionStorage.getItem('datos_vehiculo_permiso.') || '',
+          rut: sessionStorage.getItem('rut') || '',
+          valorPermiso: Number(sessionStorage.getItem('monto_pago')) || 0,
+          marca: sessionStorage.getItem('marca') || '',
+          modelo: sessionStorage.getItem('modelo') || '',
+          anio: sessionStorage.getItem('anio') || '',
+          color: sessionStorage.getItem('color') || '',
+          tipoVehiculo: sessionStorage.getItem('tipo_vehiculo') || '',
+          numeroTarjeta: numTarjeta.toString(),
+          titular: titularTarjeta,
+          correo: sessionStorage.getItem('correo') || '',
+          fechaPago: new Date().toISOString(),
+          transactionId: data.transaction_id,
+          resultadoPago: 'exitoso'
+        };
+        sessionStorage.setItem('pago_info', JSON.stringify(pagoInfo));
+        window.location.href = '/webpay/confirmacion-pago';
+      } else {
+        // Redirigir a confirmación de pago fallido
+        sessionStorage.setItem('resultado_pago', 'fallido');
+        window.location.href = '/webpay/confirmacion-pago';
+      }
+    } catch (err) {
+      console.error(err);
+      sessionStorage.setItem('resultado_pago', 'fallido');
+      window.location.href = '/webpay/confirmacion-pago';
+    }
+  };
+
+  // Obtener banco seleccionado usando endpoint get /banco/{numero_tarjeta}/{rut}
+  useEffect(() => {
+    const fetchBankData = async () => {
+      try {
+        const response = await fetch(`${API_CONFIG.TGR}banco/${numTarjeta}/${rutTarjeta}`);
+        const data = await response.json();
+        // data.banco debe ser un string como "bancoChile"
+        if (data.banco && bancosMap[data.banco]) {
+          setSelectedBank(bancosMap[data.banco]);
+        } else {
+          setSelectedBank(bancoEstado); // fallback
+        }
+        console.log(data.banco);
+      } catch (error) {
+        console.error('Error fetching bank data:', error);
+      }
+    };
+
+    if (numTarjeta && rutTarjeta) {
+      fetchBankData();
+    }
+  }, [numTarjeta, rutTarjeta]);
 
   // Formatear fecha y hora actuales
   const date = new Date();
@@ -139,11 +307,17 @@ export default function PagoBancoPage() {
             <p
               style={{ color: '#666', fontSize: '0.9rem' }}
             >
-              {tipoTarjeta === "crédito" ? 'Cupo disponible: $500.000' : 'Saldo disponible: $200.000'}
+              {tipoTarjeta === "crédito" ? `Cupo disponible: ${saldoDisponible}` : `Saldo disponible: ${saldoDisponible}`}
             </p>
             {/* Botón para pagar */}
             <div className="d-flex justify-content-center">
-              <button type="submit" style={{ backgroundColor: selectedBank.color, color: 'white', borderRadius: '30px', width: '75%', height: '3rem' }}>Pagar</button>
+              <button
+                type="submit"
+                style={{ backgroundColor: selectedBank.color, color: 'white', borderRadius: '30px', width: '75%', height: '3rem' }}
+                onClick={handlePago}
+              >
+                  Pagar
+              </button>
             </div>
             {/* Anular transacción */}
             <div className="text-center mt-3">
@@ -157,7 +331,7 @@ export default function PagoBancoPage() {
             <p>Estás pagando en:</p>
             <p style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>TU PERMISO</p>
             <p>Monto a pagar:</p>
-            <p style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>$ 1.000</p>
+            <p style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>$ {montoPago.toLocaleString()}</p>
             <p>Fecha:</p>
             <p style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>{formattedDate}</p>
             <p>Hora:</p>

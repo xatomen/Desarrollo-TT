@@ -1,6 +1,8 @@
 'use client';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import API_CONFIG from '@/config/api';
+import Link from 'next/dist/client/link';
+import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
@@ -9,6 +11,7 @@ interface DatosVehiculo {
   // Datos básicos
   ppu: string;
   rut: string;
+  nombre: string;
   valorPermiso: number;
   
   // Información del vehículo
@@ -80,6 +83,7 @@ function EstadoChip({ estado, documento }: { estado: EstadoValidacion; documento
 }
 
 function ValidacionesPagoContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
 
   const [modalDocumento, setModalDocumento] = useState<{ open: boolean, doc?: DocumentoValidacion }>(
@@ -116,6 +120,7 @@ function ValidacionesPagoContent() {
 
   // Estados para información del vehículo
   const [rutPropietario, setRutPropietario] = useState<string>('-');
+  const [nombrePropietario, setNombrePropietario] = useState<string>('-');
   const [fechaInscripcion, setFechaInscripcion] = useState<string>('-');
   const [numMotor, setNumMotor] = useState<string>('-');
   const [numChasis, setNumChasis] = useState<string>('-');
@@ -128,6 +133,9 @@ function ValidacionesPagoContent() {
   const [tipoSello, setTipoSello] = useState<string>('-');
   const [tipoCombustible, setTipoCombustible] = useState<string>('-');
   const [codigoSii, setCodigoSii] = useState<string>('-');
+
+  // Permiso de circulación
+  const [fechaEmisionPermiso, setFechaEmisionPermiso] = useState<Date | string | null>(null);
 
   // Obtener desde consultar valor permiso
   const [cilindrada, setCilindrada] = useState<string>('-');
@@ -162,6 +170,9 @@ function ValidacionesPagoContent() {
   // Caso - Es para indicar si es renovación o primera obtención del permiso
   const [caso, setCaso] = useState<string | null>(null);
 
+  // Permiso del año actual pagado?
+  const [permisoAnioActualPagado, setPermisoAnioActualPagado] = useState<string>('');
+
   // Crear documentos dinámicamente basado en los estados
   const documentos: DocumentoValidacion[] = [
     { nombre: 'Revisión Técnica', estado: revisionTecnica },
@@ -194,10 +205,29 @@ function ValidacionesPagoContent() {
           setNumChasis(inscripcionData.num_chasis || '-');
           setNumMotor(inscripcionData.num_motor || '-');
           setRutPropietario(inscripcionData.rut || '-');
+          setNombrePropietario(inscripcionData.nombre || '-');
           console.log("Rut propietario:", inscripcionData.rut);
+          console.log("Nombre propietario:", inscripcionData.nombre);
         } catch (error) {
           console.error('Error fetching fecha inscripcion:', error);
           setFechaInscripcion('Desconocido');
+        }
+
+        // Obtener fecha de emisión permiso de circulación
+        try {
+          const permisoRes = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${ppu}`);
+          const permisoData = await permisoRes.json();
+          setFechaEmisionPermiso(permisoData.fecha_emision || '-');
+          // Obtener año de emisión del permiso
+          const anioEmisionPermiso = permisoData.fecha_emision ? new Date(permisoData.fecha_emision).getFullYear() : null;
+          console.log('Año emisión permiso:', anioEmisionPermiso);
+          if (anioEmisionPermiso == new Date().getFullYear()) {
+            setPermisoAnioActualPagado(`Permiso de circulación del año ${anioEmisionPermiso} pagado`);
+            // MOSTRAR MENSAJE ALMACENADO ARRIBA DE PROCEDER AL PAGO SI EL AÑO ACTUAL YA ESTÁ PAGADO ADEMAS DE BLOQUEAR EL BOTÓN
+          }
+        } catch (error) {
+          console.error('Error fetching fecha emision permiso:', error);
+          // setPermisoAnioActualPagado('Desconocido');
         }
 
         // Obtener Revisión Técnica
@@ -276,6 +306,17 @@ function ValidacionesPagoContent() {
 
         // Obtener Multas RPI
         try {
+          // Esperar a que se recupere el RUT del propietario
+          if (!rutPropietario || rutPropietario === '-') {
+            await new Promise(resolve => {
+              const interval = setInterval(() => {
+                if (rutPropietario && rutPropietario !== '-') {
+                  clearInterval(interval);
+                  resolve(null);
+                }
+              }, 100);
+            });
+          }
           const rpiRes = await fetch(`${API_CONFIG.BACKEND}consultar-multas-rpi/${rutPropietario}`);
           const rpiData = await rpiRes.json();
           console.log('Multas RPI data:', rpiData);
@@ -404,6 +445,21 @@ function ValidacionesPagoContent() {
   return (
     <ProtectedRoute>
       <div className="container-fluid px-4 py-4" style={{ fontFamily: '"Dosis", sans-serif' }}>
+        {/* Volver atrás y Breadcrumb */}
+        <div className="row align-self-center d-flex align-items-center mb-4 px-3">
+          <button className="p-2" style={{ backgroundColor: 'white', border: '1px solid #007bff', color: '#007bff', cursor: 'pointer' }} onClick={() => router.back()}>
+            <span>← Volver</span>
+          </button>
+          <nav aria-label="breadcrumb" className="col">
+            <ol className="breadcrumb p-0 m-0">
+              <li className="align-self-center breadcrumb-item active" aria-current="page">Vehículos</li>
+              <li className="align-self-center breadcrumb-item" aria-current="page">Validación documentos</li>
+              <li className="align-self-center breadcrumb-item active" aria-current="page">Detalles de pago</li>
+              <li className="align-self-center breadcrumb-item active" aria-current="page">Confirmación de pago</li>
+            </ol>
+          </nav>
+        </div>
+        
         <div className="row g-4">
           {/* Columna izquierda */}
           <div className="col-lg-6">
@@ -431,6 +487,12 @@ function ValidacionesPagoContent() {
               </p>
               <h2 className="fw-bold mb-4 text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700', fontSize: '1.5rem' }}>
                 {rutPropietario || '-'}
+              </h2>
+              <p className="text-muted mb-3" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
+                Nombre propietario
+              </p>
+              <h2 className="fw-bold mb-4 text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700', fontSize: '1.5rem' }}>
+                {nombrePropietario || '-'}
               </h2>
 
               <p className="text-muted" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
@@ -662,26 +724,48 @@ function ValidacionesPagoContent() {
             </div>
           </div>
 
+          {/* Mostrar mensaje si el permiso del año actual ya está pagado */}
+          {permisoAnioActualPagado !== '' && (
+            <div
+              className="mb-4"
+              style={{
+                backgroundColor: '#c7eed3ff',
+                color: '#33b158',
+                // borderRadius: '14px',
+                border: '2px solid #33b158',
+                padding: '18px 20px',
+                fontWeight: 600,
+                fontSize: '1rem',
+                textAlign: 'center',
+                fontFamily: '"Dosis", sans-serif',
+                boxShadow: '0 2px 8px #0001'
+              }}
+            >
+              {permisoAnioActualPagado}
+            </div>
+          )}
+
           {/* Botón proceder al pago */}
           <div className="d-grid text-center">
             <button 
               className="btn btn-lg py-3 text-white fw-bold" 
-              disabled={!todosDocumentosValidos}
+              disabled={!todosDocumentosValidos || permisoAnioActualPagado !== ''}
               style={{ 
-                backgroundColor: todosDocumentosValidos ? '#0d6efd' : '#6c757d', 
+                backgroundColor: todosDocumentosValidos && permisoAnioActualPagado === '' ? '#0d6efd' : '#6c757d', 
                 border: 'none',
                 fontFamily: '"Dosis", sans-serif',
                 fontWeight: '600',
-                cursor: todosDocumentosValidos ? 'pointer' : 'not-allowed',
-                opacity: todosDocumentosValidos ? 1 : 0.7
+                cursor: todosDocumentosValidos && permisoAnioActualPagado === '' ? 'pointer' : 'not-allowed',
+                opacity: todosDocumentosValidos && permisoAnioActualPagado === '' ? 1 : 0.7
               }}
               onClick={() => {
-                if (todosDocumentosValidos) {
+                if (todosDocumentosValidos && permisoAnioActualPagado === '') {
                   // ✅ Crear objeto con todos los datos
                   const datosVehiculo: DatosVehiculo = {
                     // Datos básicos
                     ppu: ppu || '',
-                    rut: rut || '',
+                    rut: rutPropietario || '',
+                    nombre: nombrePropietario || '',
                     valorPermiso: valorPermiso || 0,
                     
                     // Información del vehículo

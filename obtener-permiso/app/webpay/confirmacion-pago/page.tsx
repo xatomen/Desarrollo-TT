@@ -2,10 +2,18 @@
 // que muestra detalles del pago realizado
 
 'use client';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
 // Bancos
+const bancoPredeterminado = {
+  nombre: "Banco Predeterminado",
+  mensajeBienvenida: 'Ingresa a tu Banca en Línea',
+  color: '#ffffffff',
+  logo: '',
+  mensajeProblemaClave: '¿Problemas con tu clave?'
+}
+
 const bancoEstado = {
   nombre: "BancoEstado",
   mensajeBienvenida: 'Ingresa a tu Banca en Línea',
@@ -42,14 +50,52 @@ const bancoSantander = {
   mensajeProblemaClave: '¿Problemas con tu clave?'
 }
 
+// Mapeo para seleccionar el objeto banco según el string recibido
+const bancosMap: Record<string, typeof bancoEstado> = {
+  bancoEstado,
+  bancoChile,
+  bancoFalabella,
+  bancoBCI,
+  bancoSantander,
+};
+
 export default function ConfirmacionPagoLayout({ children }: { children: React.ReactNode }) {
   // Estado para el banco seleccionado, por ahora está definido estáticamente
   const [selectedBank, setSelectedBank] = useState(bancoEstado);
   const [numTarjeta, setNumTarjeta] = useState('');
   const [tipoTarjeta, setTipoTarjeta] = useState<"crédito" | "débito">("crédito");
-  const [montoPago, setMontoPago] = useState(0);
+  const [montoPago, setMontoPago] = useState(15000);
   const [resultadoPago, setResultadoPago] = useState<'exitoso' | 'fallido' | null>('exitoso');
   
+  // Recuperamos resultado del pago desde sessionStorage
+  useEffect(() => {
+    const resultado = sessionStorage.getItem('resultado_pago');
+    if (resultado === 'exitoso' || resultado === 'fallido') {
+      setResultadoPago(resultado);
+    }
+  }, []);
+
+  // Recuperar banco desde el sessión storage
+  useEffect(() => {
+    const banco = sessionStorage.getItem('banco');
+    if (banco && bancosMap[banco]) {
+      setSelectedBank(bancosMap[banco]);
+    } else {
+      setSelectedBank(bancoEstado); // fallback
+    }
+  }, []);
+
+  // Recuperar datos desde el sessión storage
+  useEffect(() => {
+    const userInfo = sessionStorage.getItem('user_info');
+    if (userInfo) {
+      const datos = JSON.parse(userInfo);
+      setNumTarjeta(datos.numero_tarjeta);
+      setTipoTarjeta(datos.tipo_tarjeta);
+      // setMontoPago(Number(datos.monto_pago).toLocaleString());
+    }
+  }, []);
+
   return (
     <div style={{
         fontFamily: 'Arial, sans-serif',
@@ -113,16 +159,25 @@ export default function ConfirmacionPagoLayout({ children }: { children: React.R
             >
               <p className="text-center"><strong>Detalles del Pago</strong></p>
               <p><strong>Banco:</strong> {selectedBank.nombre}</p>
-              <p><strong>Número de Tarjeta:</strong> {numTarjeta}</p>
+              <p><strong>Número de Tarjeta:</strong> **** **** **** {numTarjeta.slice(-4)}</p>
               <p><strong>Tipo de Tarjeta:</strong> {tipoTarjeta}</p>
-              <p><strong>Monto de Pago:</strong> ${montoPago.toFixed(2)}</p>
+              <p><strong>Monto de Pago:</strong> ${montoPago.toLocaleString()}</p>
               <p><strong>Resultado de Pago:</strong> {resultadoPago === 'exitoso' ? 'Pago Aprobado' : 'Pago Rechazado'}</p>
             </div>
           <div className="text-center mt-4 row">
             {resultadoPago === 'exitoso' && (
             <button className="col m-2 p-4" style={{ backgroundColor: '#6b6b6bff', color: 'white', borderRadius: '30px', fontWeight: 'bold', fontSize: '0.8rem' }}>Descargar comprobante</button>
             )}
-            <button className="col m-2 p-4" style={{ backgroundColor: selectedBank.color, color: 'white', borderRadius: '30px', fontWeight: 'bold', fontSize: '0.8rem' }}>Volver al comercio</button>
+            <button
+              className="col m-2 p-4"
+              style={{ backgroundColor: selectedBank.color, color: 'white', borderRadius: '30px', fontWeight: 'bold', fontSize: '0.8rem' }}
+              onClick={() => {
+                // Redirigir a /home/confirmacion-pago
+                window.location.href = '/home/confirmacion-pago';
+              }}
+            >
+              Volver al comercio
+            </button>
           </div>
         </div>
       </div>
