@@ -554,3 +554,16 @@ def login_tarjeta(credenciales: LoginModel, db: Session = Depends(get_db)):
         },
         expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
+
+# GET para obtener la cantidad total de permisos de circulación emitidos en un año en específico
+@app.get("/permiso_count/{anio}")
+def get_permiso_count(anio: int, db: Session = Depends(get_db)):
+    if anio < 1900 or anio > datetime.now().year:
+        raise HTTPException(status_code=400, detail="Año inválido")
+    count = db.query(PermisoCirculacion).filter(
+        and_(
+            PermisoCirculacion.fecha_emision >= date(anio, 1, 1),
+            PermisoCirculacion.fecha_emision <= date(anio, 12, 31)
+        )
+    ).count()
+    return {"anio": anio, "count": count}
