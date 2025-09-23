@@ -12,6 +12,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import { applyChartTheme, palette, CHART_HEIGHT, buildBarOptions } from "@/app/components/charts/theme";
 import API_CONFIG from "@/config/api";
 
 // Registrar componentes de Chart.js
@@ -23,6 +24,9 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
+// Aplicar tema global
+applyChartTheme();
 
 // Tipos para la respuesta de la API
 type ApiResponse = {
@@ -188,8 +192,8 @@ export default function RegistroObtencionPermisosPage() {
         {
           label: 'Permisos emitidos',
           data: chartData.map(item => item.miles), // Ya son unidades individuales, no miles
-          backgroundColor: '#0d6efd',
-          borderColor: '#0d6efd',
+          backgroundColor: palette.primary,
+          borderColor: palette.primary,
           borderWidth: 1,
         },
       ],
@@ -197,67 +201,7 @@ export default function RegistroObtencionPermisosPage() {
   }, [chartData, groupBy]);
 
   // Opciones para el gráfico
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: 'white',
-        bodyColor: 'white',
-        borderColor: '#ddd',
-        borderWidth: 1,
-        callbacks: {
-          label: function(context: any) {
-            return `Permisos emitidos: ${context.parsed.y.toLocaleString('es-CL')}`;
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 1,
-          callback: function(value: any) {
-            return Number.isInteger(value) ? value.toLocaleString('es-CL') : '';
-          },
-          font: {
-            size: 11,
-          },
-        },
-        grid: {
-          color: '#e9ecef',
-        },
-        title: {
-          display: true,
-          text: 'Permisos emitidos (unidades)',
-          font: {
-            size: 12,
-          },
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          font: {
-            size: 11,
-          },
-          maxRotation: 45,
-        },
-      },
-    },
-    elements: {
-      bar: {
-        borderRadius: 4,
-      },
-    },
-  };
+  const chartOptions = buildBarOptions({ showLegend: false, yTitle: 'Permisos emitidos (unidades)' });
 
   // Función para manejar el submit del formulario
   const handleFilterSubmit = (e: React.FormEvent) => {
@@ -415,12 +359,12 @@ export default function RegistroObtencionPermisosPage() {
           <div className="card h-100 shadow-sm">
             <div className="card-header bg-light">
               <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
-                <i className="bi bi-bar-chart-fill text-primary"></i>
+                <i className="bi bi-bar-chart-fill" style={{ color: palette.primary }}></i>
                 Emisiones por período (unidades)
               </h6>
             </div>
             <div className="card-body">
-              <div style={{ height: '250px' }}>
+              <div style={{ height: CHART_HEIGHT.md }}>
                 {emisionesChartData.datasets[0].data.length > 0 ? (
                   <Bar data={emisionesChartData} options={chartOptions} />
                 ) : (

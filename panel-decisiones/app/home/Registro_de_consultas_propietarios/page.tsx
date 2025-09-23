@@ -11,6 +11,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import { applyChartTheme, palette, CHART_HEIGHT, buildBarOptions } from "@/app/components/charts/theme";
 import API_CONFIG from "@/config/api";
 
 // Registrar componentes de Chart.js
@@ -22,6 +23,9 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
+// Aplicar tema global
+applyChartTheme();
 
 // Tipos para la respuesta de la API
 type ApiResponse = {
@@ -170,8 +174,8 @@ export default function RegistroConsultasPropietariosPage() {
         {
           label: 'Consultas',
           data: recentData.map(item => item.consultas),
-          backgroundColor: '#0d6efd',
-          borderColor: '#0d6efd',
+          backgroundColor: palette.primary,
+          borderColor: palette.primary,
           borderWidth: 1,
         },
       ],
@@ -187,8 +191,8 @@ export default function RegistroConsultasPropietariosPage() {
         {
           label: 'Usuarios únicos',
           data: recentData.map(item => item.usuarios_unicos),
-          backgroundColor: '#198754',
-          borderColor: '#198754',
+          backgroundColor: palette.success,
+          borderColor: palette.success,
           borderWidth: 1,
         },
       ],
@@ -196,61 +200,7 @@ export default function RegistroConsultasPropietariosPage() {
   }, [chartData, groupBy]);
 
   // Opciones comunes para los gráficos
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: 'white',
-        bodyColor: 'white',
-        borderColor: '#ddd',
-        borderWidth: 1,
-        callbacks: {
-          label: function(context: any) {
-            const datasetLabel = context.dataset.label;
-            return `${datasetLabel}: ${context.parsed.y.toLocaleString('es-CL')}`;
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 1,
-          callback: function(value: any) {
-            return Number.isInteger(value) ? value.toLocaleString('es-CL') : '';
-          },
-          font: {
-            size: 11,
-          },
-        },
-        grid: {
-          color: '#e9ecef',
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          font: {
-            size: 11,
-          },
-          maxRotation: 45,
-        },
-      },
-    },
-    elements: {
-      bar: {
-        borderRadius: 4,
-      },
-    },
-  };
+  const chartOptions = buildBarOptions({ showLegend: false });
 
   // Actualizar localStorage cuando se genere PDF
   function handleGeneratePDF() {
@@ -372,7 +322,7 @@ export default function RegistroConsultasPropietariosPage() {
               Consultas — Últimos períodos
               </h6>
             <div className="card-body">
-              <div style={{ height: '200px' }}>
+              <div style={{ height: CHART_HEIGHT.sm }}>
                 {consultasChartData.datasets[0].data.length > 0 ? (
                   <Bar data={consultasChartData} options={chartOptions} />
                 ) : (
@@ -389,7 +339,7 @@ export default function RegistroConsultasPropietariosPage() {
               Usuarios únicos — Últimos períodos
             </h6>
             <div className="card-body">
-              <div style={{ height: '200px' }}>
+              <div style={{ height: CHART_HEIGHT.sm }}>
                 {usuariosChartData.datasets[0].data.length > 0 ? (
                   <Bar data={usuariosChartData} options={chartOptions} />
                 ) : (
