@@ -60,13 +60,13 @@ const bancosMap: Record<string, typeof bancoEstado> = {
 };
 
 export default function ConfirmacionPagoLayout({ children }: { children: React.ReactNode }) {
-  // Estado para el banco seleccionado, por ahora está definido estáticamente
   const [selectedBank, setSelectedBank] = useState(bancoEstado);
   const [numTarjeta, setNumTarjeta] = useState('');
   const [tipoTarjeta, setTipoTarjeta] = useState<"crédito" | "débito">("crédito");
   const [montoPago, setMontoPago] = useState(15000);
   const [resultadoPago, setResultadoPago] = useState<'exitoso' | 'fallido' | null>('exitoso');
-  
+  const [loadingBank, setLoadingBank] = useState(true); // Estado para loading
+
   // Recuperamos resultado del pago desde sessionStorage
   useEffect(() => {
     const resultado = sessionStorage.getItem('resultado_pago');
@@ -77,12 +77,16 @@ export default function ConfirmacionPagoLayout({ children }: { children: React.R
 
   // Recuperar banco desde el sessión storage
   useEffect(() => {
+    setLoadingBank(true);
     const banco = sessionStorage.getItem('banco');
-    if (banco && bancosMap[banco]) {
-      setSelectedBank(bancosMap[banco]);
-    } else {
-      setSelectedBank(bancoEstado); // fallback
-    }
+    setTimeout(() => { // Simula carga real
+      if (banco && bancosMap[banco]) {
+        setSelectedBank(bancosMap[banco]);
+      } else {
+        setSelectedBank(bancoEstado); // fallback
+      }
+      setLoadingBank(false);
+    }, 600); // 600ms de carga simulada
   }, []);
 
   // Recuperar datos desde el sessión storage
@@ -110,6 +114,16 @@ export default function ConfirmacionPagoLayout({ children }: { children: React.R
         alignItems: 'center'
       }}
     >
+      {loadingBank ? (
+        <div className="d-flex flex-column align-items-center justify-content-center" style={{ minHeight: 320 }}>
+          <div className="spinner-border" style={{ width: 60, height: 60, color: '#6D2077' }} role="status">
+            <span className="visually-hidden">Cargando banco...</span>
+          </div>
+          <div className="mt-3" style={{ color: '#6D2077', fontWeight: 600, fontSize: '1.2rem' }}>
+            Cargando banco...
+          </div>
+        </div>
+      ) : (
       <div className="card-like m-4" style={{ maxWidth: '600px', minWidth: '500px', margin: 'auto', borderRadius: '30px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', backgroundColor: 'white' }}>
         <div className="col p-4">
           {/* Logo Banco */}
@@ -126,10 +140,6 @@ export default function ConfirmacionPagoLayout({ children }: { children: React.R
               color: 'white',
               backgroundColor: resultadoPago === 'exitoso' ? '#4caf50' : '#ff3535',
               fontWeight: 'bold',
-              // height: '150px',
-              // display: 'flex',
-              // justifyContent: 'center',
-              // alignItems: 'center'
             }}
           >
             {/* Ícono de éxito o fallo */}
@@ -181,6 +191,7 @@ export default function ConfirmacionPagoLayout({ children }: { children: React.R
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

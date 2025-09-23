@@ -66,6 +66,7 @@ export default function LoginBancoPage() {
   const router = useRouter();
   // Estado para el banco seleccionado, por ahora está definido estáticamente
   const [selectedBank, setSelectedBank] = useState(bancoEstado);
+  const [loadingBank, setLoadingBank] = useState(true); // Nuevo estado para loading
   const [numTarjeta, setNumTarjeta] = useState('');
   const [tipoTarjeta, setTipoTarjeta] = useState<"crédito" | "débito">("crédito");
   const [rut, setRut] = useState('');
@@ -74,10 +75,14 @@ export default function LoginBancoPage() {
 
   // Setear banco seleccionado desde sessionStorage
   useEffect(() => {
+    setLoadingBank(true);
     const bancoGuardado = sessionStorage.getItem('banco');
-    if (bancoGuardado && bancosMap[bancoGuardado]) {
-      setSelectedBank(bancosMap[bancoGuardado]);
-    }
+    setTimeout(() => { // Simula carga real
+      if (bancoGuardado && bancosMap[bancoGuardado]) {
+        setSelectedBank(bancosMap[bancoGuardado]);
+      }
+      setLoadingBank(false);
+    }, 600); // 600ms de carga simulada
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -124,74 +129,84 @@ export default function LoginBancoPage() {
         alignItems: 'center'
       }}
     >
-      {/* Login Card */}
-      <div className="card-like p-4 m-4 row" style={{ maxWidth: '500px', margin: 'auto', borderRadius: '30px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
-        <div className="col p-4 mx-4">
-          {/* Logo banco */}
-          <div className="text-center mb-4 d-flex justify-content-center">
-            <img src={selectedBank.logo} alt={`Logo ${selectedBank.nombre}`} style={{ maxHeight: '50px' }} />
+      {loadingBank ? (
+        <div className="d-flex flex-column align-items-center justify-content-center" style={{ minHeight: 320 }}>
+          <div className="spinner-border" style={{ width: 60, height: 60, color: '#6D2077' }} role="status">
+            <span className="visually-hidden">Cargando banco...</span>
           </div>
-          {/* Mensaje de bienvenida */}
-          <p className="text-center mb-5" style={{ fontSize: '1.25rem' }}>{selectedBank.mensajeBienvenida}</p>
-          {/* Formulario de login */}
-          <form className="" style={{ maxWidth: '350px', margin: 'auto' }} onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="rut" className="form-label">RUT</label>
-              <input
-                type="text"
-                className="form-control"
-                id="rut"
-                value={rut}
-                onChange={e => {
-                  // Eliminar puntos y guión antes de formatear para evitar duplicados
-                  const limpio = e.target.value.replace(/[.\-]/g, '');
-                  setRut(formatearRut(limpio));
-                }}
-                style={{
-                  borderRadius: '10px',
-                  border: '1px solid #ccc',
-                  padding: '10px',
-                  fontSize: '1rem',
-                  height: '3rem'
-                }}
-                placeholder="Ingresa tu RUT"
-                required
-              />
-            </div>
-            <div className="mb-5">
-              <label htmlFor="password" className="form-label">Clave</label>
-              <input
-                type="password"
-                className="form-control"
-                id="password"
-                value={contrasena}
-                onChange={e => setContrasena(e.target.value)}
-                style={{
-                  borderRadius: '10px',
-                  border: '1px solid #ccc',
-                  padding: '10px',
-                  fontSize: '1rem',
-                  height: '3rem'
-                }}
-                placeholder="Ingresa tu clave"
-                required
-              />
-            </div>
-            {error && (
-              <div className="alert alert-danger py-2 text-center" style={{ borderRadius: 10, fontSize: '0.95rem' }}>
-                {error}
-              </div>
-            )}
-            <div className="d-flex justify-content-center">
-              <button type="submit" style={{ backgroundColor: selectedBank.color, color: 'white', borderRadius: '30px', width: '75%', height: '3rem' }}>Ingresar</button>
-            </div>
-          </form>
-          {/* Mensaje de problema con clave */}
-          <div className="text-center mt-3">
-            <a href="#" style={{ color: selectedBank.color, textDecoration: 'none' }}>{selectedBank.mensajeProblemaClave}</a>
+          <div className="mt-3" style={{ color: '#6D2077', fontWeight: 600, fontSize: '1.2rem' }}>
+            Cargando banco...
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="card-like p-4 m-4 row" style={{ maxWidth: '500px', margin: 'auto', borderRadius: '30px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+          <div className="col p-4 mx-4">
+            {/* Logo banco */}
+            <div className="text-center mb-4 d-flex justify-content-center">
+              <img src={selectedBank.logo} alt={`Logo ${selectedBank.nombre}`} style={{ maxHeight: '50px' }} />
+            </div>
+            {/* Mensaje de bienvenida */}
+            <p className="text-center mb-5" style={{ fontSize: '1.25rem' }}>{selectedBank.mensajeBienvenida}</p>
+            {/* Formulario de login */}
+            <form className="" style={{ maxWidth: '350px', margin: 'auto' }} onSubmit={handleSubmit}>
+              <div className="mb-4">
+                <label htmlFor="rut" className="form-label">RUT</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="rut"
+                  value={rut}
+                  onChange={e => {
+                    // Eliminar puntos y guión antes de formatear para evitar duplicados
+                    const limpio = e.target.value.replace(/[.\-]/g, '');
+                    setRut(formatearRut(limpio));
+                  }}
+                  style={{
+                    borderRadius: '10px',
+                    border: '1px solid #ccc',
+                    padding: '10px',
+                    fontSize: '1rem',
+                    height: '3rem'
+                  }}
+                  placeholder="Ingresa tu RUT"
+                  required
+                />
+              </div>
+              <div className="mb-5">
+                <label htmlFor="password" className="form-label">Clave</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  id="password"
+                  value={contrasena}
+                  onChange={e => setContrasena(e.target.value)}
+                  style={{
+                    borderRadius: '10px',
+                    border: '1px solid #ccc',
+                    padding: '10px',
+                    fontSize: '1rem',
+                    height: '3rem'
+                  }}
+                  placeholder="Ingresa tu clave"
+                  required
+                />
+              </div>
+              {error && (
+                <div className="alert alert-danger py-2 text-center" style={{ borderRadius: 10, fontSize: '0.95rem' }}>
+                  {error}
+                </div>
+              )}
+              <div className="d-flex justify-content-center">
+                <button type="submit" style={{ backgroundColor: selectedBank.color, color: 'white', borderRadius: '30px', width: '75%', height: '3rem' }}>Ingresar</button>
+              </div>
+            </form>
+            {/* Mensaje de problema con clave */}
+            <div className="text-center mt-3">
+              <a href="#" style={{ color: selectedBank.color, textDecoration: 'none' }}>{selectedBank.mensajeProblemaClave}</a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

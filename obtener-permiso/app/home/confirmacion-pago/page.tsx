@@ -77,6 +77,7 @@ interface PermisoCirculacionPDFProps {
 }
 
 interface PermisoCirculacionDatos {
+  id?: number;
   ppu: string;
   rut: string;
   nombre: string;
@@ -224,7 +225,7 @@ const PermisoCirculacionPDF = forwardRef<HTMLDivElement, PermisoCirculacionPDFPr
               </div>
               <div className="row m-0 p-2">
                 <div className="col m-0 p-0">
-                  <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Número Comprobante</strong> -</p>
+                  <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Número Comprobante</strong> {datos?.id}</p>
                   <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Tasación</strong> ${datos?.tasacion.toLocaleString('es-CL')}</p>
                   <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Código SII</strong> {datos?.codigo_sii ? datos.codigo_sii : 'No disponible'}</p>
                   <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Valor Permiso</strong> ${datos?.valor_permiso.toLocaleString('es-CL')}</p>
@@ -251,6 +252,15 @@ export default function ConfirmacionPago() {
   const [numeroComprobante, setNumeroComprobante] = useState('');
   const cardRef = useRef<HTMLDivElement>(null);
   const pdfRef = useRef<HTMLDivElement>(null);
+  const [resultadoPago, setResultadoPago] = useState<'exitoso' | 'fallido'>('fallido');
+
+  // Resultado del pago
+  useEffect(() => {
+    const stored = sessionStorage.getItem('resultado_pago');
+    if (stored) {
+      setResultadoPago(stored === 'exitoso' ? 'exitoso' : 'fallido');
+    }
+  }, []);
 
   // Datos vehículo desde datos_vehiculo_permiso en sessionStorage
   const [datosVehiculo, setDatosVehiculo] = useState<DatosVehiculo | null>(null);
@@ -284,7 +294,7 @@ export default function ConfirmacionPago() {
   const handleVolverSistema = () => {
     // Limpiar datos del pago
     sessionStorage.removeItem('pagoInfo');
-    router.push('/home');
+    router.push('/home/ver-vehiculos');
   };
 
   const handleCerrarSesion = () => {
@@ -295,7 +305,7 @@ export default function ConfirmacionPago() {
 
   // Si el resultado del pago es correcto, cargar permiso de circulación
   const emitirPermiso = async () => {
-    if (pagoInfo?.resultadoPago === 'exitoso') {
+    if (resultadoPago === 'exitoso') {
       try {
         // Obtener datos del vehículo desde sessionStorage
         const datosString = sessionStorage.getItem('datos_vehiculo_permiso');
@@ -460,12 +470,18 @@ export default function ConfirmacionPago() {
                          style={{
                            width: '120px',
                            height: '120px',
-                           backgroundColor: '#28a745',
+                           backgroundColor: `${resultadoPago === 'exitoso' ? '#28a745' : '#dc3545'}`,
                            borderRadius: '50%'
                          }}>
-                      <svg width="60" height="60" fill="white" viewBox="0 0 16 16">
-                        <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
-                      </svg>
+                          {resultadoPago === 'exitoso' ? (
+                            <svg width="60" height="60" fill="white" viewBox="0 0 16 16">
+                              <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                            </svg>
+                          ) : (
+                            <svg width="60" height="60" fill="white" viewBox="0 0 16 16">
+                              <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                          )}
                     </div>
                   </div>
 
@@ -477,7 +493,7 @@ export default function ConfirmacionPago() {
                         fontWeight: '700',
                         color: '#212529'
                       }}>
-                    Pago Exitoso
+                    {resultadoPago === 'exitoso' ? 'Pago Exitoso' : 'Pago Fallido'}
                   </h1>
 
                   {/* Texto descriptivo */}
@@ -487,8 +503,8 @@ export default function ConfirmacionPago() {
                        fontSize: '1.1rem',
                        fontWeight: '400'
                      }}>
-                    Puede revisar el Permiso de Circulación obtenido<br />
-                    en la aplicación para propietarios
+                    {resultadoPago === 'exitoso' ? 'Su pago ha sido procesado correctamente.' : 'Hubo un problema al procesar su pago. Por favor, intente nuevamente.'}<br />
+                    {resultadoPago === 'exitoso' ? 'Puede descargar su permiso de circulación a continuación y verlo desde la aplicación para propietarios.' : 'Si el problema persiste, contacte al soporte.'}
                   </p>
 
                   {/* Información del vehículo */}
@@ -517,49 +533,54 @@ export default function ConfirmacionPago() {
                       {datosVehiculo?.marca} {datosVehiculo?.modelo} {datosVehiculo?.anio} - {datosVehiculo?.color}
                     </small>
                   </div>
-
+                  
                   {/* Número de comprobante */}
-                  <div className="mb-4">
-                    <h6 className="text-muted mb-2" 
-                        style={{ 
-                          fontFamily: '"Roboto", sans-serif',
-                          fontSize: '0.875rem',
-                          fontWeight: '400'
-                        }}>
-                      N° de comprobante
-                    </h6>
-                    <h2 className="fw-bold mb-0" 
-                        style={{ 
-                          fontFamily: '"Roboto", sans-serif',
-                          fontSize: '2rem',
-                          fontWeight: '700',
-                          color: '#212529',
-                          letterSpacing: '2px'
-                        }}>
-                      {numeroComprobante}
-                    </h2>
-                  </div>
-
+                  {resultadoPago === 'exitoso' && (
+                    <div className="mb-4">
+                      <h6 className="text-muted mb-2" 
+                          style={{ 
+                            fontFamily: '"Roboto", sans-serif',
+                            fontSize: '0.875rem',
+                            fontWeight: '400'
+                          }}>
+                        N° de comprobante
+                      </h6>
+                      <h2 className="fw-bold mb-0" 
+                          style={{ 
+                            fontFamily: '"Roboto", sans-serif',
+                            fontSize: '2rem',
+                            fontWeight: '700',
+                            color: '#212529',
+                            letterSpacing: '2px'
+                          }}>
+                        {numeroComprobante}
+                      </h2>
+                    </div>
+                  )}
+                  
                   {/* Monto pagado */}
-                  <div className="mb-5">
-                    <h6 className="text-muted mb-2" 
-                        style={{ 
-                          fontFamily: '"Roboto", sans-serif',
-                          fontSize: '0.875rem',
-                          fontWeight: '400'
-                        }}>
-                      Monto pagado
-                    </h6>
-                    <h1 className="fw-bold mb-0" 
-                        style={{ 
-                          fontFamily: '"Roboto", sans-serif',
-                          fontSize: '3rem',
-                          fontWeight: '700',
-                          color: '#212529'
-                        }}>
-                      ${pagoInfo.valorPermiso.toLocaleString('es-CL')}
-                    </h1>
-                  </div>
+                  {resultadoPago === 'exitoso' && (
+                    <div className="mb-5">
+                      <h6 className="text-muted mb-2" 
+                          style={{ 
+                            fontFamily: '"Roboto", sans-serif',
+                            fontSize: '0.875rem',
+                            fontWeight: '400'
+                          }}>
+                        Monto pagado
+                      </h6>
+                      <h1 className="fw-bold mb-0" 
+                          style={{ 
+                            fontFamily: '"Roboto", sans-serif',
+                            fontSize: '3rem',
+                            fontWeight: '700',
+                            color: '#212529'
+                          }}>
+                        ${pagoInfo.valorPermiso.toLocaleString('es-CL')}
+                      </h1>
+                    </div>
+                  )}
+                  
 
                   {/* Información adicional */}
                   <div className="mb-4 p-3 bg-light rounded">
@@ -609,14 +630,15 @@ export default function ConfirmacionPago() {
 
                   {/* Botones de acción */}
                   <div className="row g-3">
-                    <div className="col-md-4">
+                    {resultadoPago === 'exitoso' && (
+                    <div className="col">
                       <button
                         onClick={() => {
                           console.log("Descargando PDF del permiso de circulación...");
                           console.log("Placa del vehículo:", datosVehiculo?.ppu);
                           handleDescargarPDF();
                         }}
-                        className="btn btn-lg w-100 py-3 text-white fw-bold"
+                        className="btn btn-lg w-100 py-3 text-white fw-bold text-center"
                         style={{
                           backgroundColor: '#33b158ff',
                           border: 'none',
@@ -627,7 +649,8 @@ export default function ConfirmacionPago() {
                         Descargar Permiso
                       </button>
                     </div>
-                    <div className="col-md-4">
+                    )}
+                    <div className="col">
                       <button 
                         onClick={handleVolverSistema}
                         className="btn btn-lg w-100 py-3 text-white fw-bold"
@@ -641,7 +664,7 @@ export default function ConfirmacionPago() {
                         Volver al sistema
                       </button>
                     </div>
-                    <div className="col-md-4">
+                    <div className="col">
                       <button 
                         onClick={handleCerrarSesion}
                         className="btn btn-outline-secondary btn-lg w-100 py-3 fw-bold"

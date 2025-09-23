@@ -27,41 +27,88 @@ export default function HomePage() {
   return (
     <ProtectedRoute>
       <div className="" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <div className="card-like p-4 m-4 shadow" style={{
-          background: 'linear-gradient(135deg, #ecf2f7ff 0%, #d8edfdff 100%)',
-          color: '#222', // Cambiado a negro
-          borderRadius: '18px',
-          boxShadow: '0 4px 16px #0002',
-          textAlign: 'center',
-          fontFamily: 'Roboto'
-        }}>
-          <p style={{
-            fontWeight: 700,
-            fontSize: '2.2rem',
-            marginTop: '1.5rem',
-            marginBottom: '1rem',
-            letterSpacing: '1px',
-            color: '#222' // Cambiado a negro
-          }}>
-            ¡Bienvenido{user.name ? `, ${user.name}` : ''}!
-          </p>
-          <p style={{
-            fontSize: '1.25rem',
-            marginBottom: '0.5rem',
-            fontWeight: 500,
-            letterSpacing: '0.5px',
-            color: '#222' // Cambiado a negro
-          }}>
-            a <span style={{ fontWeight: 700, color: '#000000ff', textShadow: '0 1px 8px #0004' }}>TU PERMISO</span>
-          </p>
-          <h2 className="mb-3" style={{
-            fontFamily: 'Roboto',
-            fontWeight: 'bold',
-            fontSize: '1.5rem',
-            color: '#222' // Cambiado a negro
-          }}>
-            Gestión de Permisos de Circulación
-          </h2>
+        <div
+          className="card-like p-4 m-4 shadow"
+          style={{
+            background: 'linear-gradient(135deg, #e0e7ff 0%, #fbeaf6 100%)',
+            color: '#222',
+            borderRadius: '22px',
+            boxShadow: '0 6px 24px #0002',
+            textAlign: 'center',
+            fontFamily: 'Dosis, Roboto, Arial, sans-serif',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          {/* Marca de agua decorativa */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%) rotate(-18deg)',
+              fontSize: '5rem',
+              color: '#6D20771a',
+              fontWeight: 900,
+              letterSpacing: '8px',
+              pointerEvents: 'none',
+              userSelect: 'none',
+              zIndex: 0,
+              textShadow: '0 2px 16px #fff8'
+            }}
+          >
+            {/* TU PERMISO */}
+          </div>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <p
+              style={{
+                fontWeight: 700,
+                fontSize: '2.3rem',
+                marginTop: '1.5rem',
+                marginBottom: '0.5rem',
+                letterSpacing: '1px',
+                color: '#6D2077',
+                fontFamily: 'Dosis, Roboto, Arial, sans-serif',
+                textShadow: '1px 1px 8px #fff'
+              }}
+            >
+              ¡Bienvenido{user.name ? `, ${user.name}` : ''}!
+            </p>
+            <p
+              style={{
+                fontSize: '1.15rem',
+                marginBottom: '0.5rem',
+                fontWeight: 500,
+                letterSpacing: '0.5px',
+                color: '#222'
+              }}
+            >
+              <span style={{ fontWeight: 700, color: '#D00070', textShadow: '0 1px 8px #fff4' }}>Tu Permiso</span> es tu plataforma digital para gestionar permisos de circulación y mantener todos tus documentos vehiculares organizados y accesibles.
+            </p>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.5rem',
+                margin: '1.2rem 0 0.5rem 0'
+              }}
+            >
+              <span style={{ color: '#555', fontSize: '1.05rem' }}>
+                <i className="bi bi-person-badge" style={{ color: '#6D2077', marginRight: 6 }}></i>
+                <b>RUT:</b> {user.rut || 'No disponible'}
+              </span>
+              <span style={{ color: '#555', fontSize: '1.05rem' }}>
+                <i className="bi bi-envelope" style={{ color: '#6D2077', marginRight: 6 }}></i>
+                <b>Email:</b> {user.email || 'No disponible'}
+              </span>
+            </div>
+            <hr style={{ margin: '1.5rem 0', borderColor: '#e0e7ff' }} />
+            <div style={{ fontSize: '1.08rem', color: '#333', fontWeight: 500 }}>
+              <i className="bi bi-info-circle" style={{ color: '#00C7B1', marginRight: 6 }}></i>
+              Desde aquí puedes pagar tus permisos, revisar tu historial y acceder a todos los documentos de tus vehículos de forma rápida y segura.
+            </div>
+          </div>
         </div>
         {/* Tres secciones */}
         <div className="row mx-2">

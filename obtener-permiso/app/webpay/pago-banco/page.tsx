@@ -87,6 +87,7 @@ export default function PagoBancoPage() {
   const [anioVencimiento, setAnioVencimiento] = useState('');
   const [diaVencimiento, setDiaVencimiento] = useState('');
   const [cvv, setCvv] = useState('');
+  const [loadingBank, setLoadingBank] = useState(true); // Estado para loading
 
   // Recuperar datos desde el sessión storage
   useEffect(() => {
@@ -95,7 +96,6 @@ export default function PagoBancoPage() {
       const datos = JSON.parse(userInfo);
       setNumTarjeta(datos.numero_tarjeta.toString());
       setTipoTarjeta(datos.tipo_tarjeta);
-      // setMontoPago(datos.monto_pago);
       setSaldoDisponible(Number(datos.saldo).toLocaleString('es-CL', { style: 'currency', currency: 'CLP' }));
       setRutTarjeta(datos.rut);
       setTitularTarjeta(datos.nombre);
@@ -194,6 +194,7 @@ export default function PagoBancoPage() {
   // Obtener banco seleccionado usando endpoint get /banco/{numero_tarjeta}/{rut}
   useEffect(() => {
     const fetchBankData = async () => {
+      setLoadingBank(true);
       try {
         const response = await fetch(`${API_CONFIG.TGR}banco/${numTarjeta}/${rutTarjeta}`);
         const data = await response.json();
@@ -206,6 +207,8 @@ export default function PagoBancoPage() {
         console.log(data.banco);
       } catch (error) {
         console.error('Error fetching bank data:', error);
+      } finally {
+        setLoadingBank(false);
       }
     };
 
@@ -238,7 +241,17 @@ export default function PagoBancoPage() {
         alignItems: 'center'
       }}
     >
-      {/* Payment Card */}
+      {loadingBank ? (
+        <div className="d-flex flex-column align-items-center justify-content-center" style={{ minHeight: 320 }}>
+          <div className="spinner-border" style={{ width: 60, height: 60, color: '#6D2077' }} role="status">
+            <span className="visually-hidden">Cargando banco...</span>
+          </div>
+          <div className="mt-3" style={{ color: '#6D2077', fontWeight: 600, fontSize: '1.2rem' }}>
+            Cargando banco...
+          </div>
+        </div>
+      ) : (
+      // Payment Card
       <div className="card-like m-4 row" style={{ minWidth: '300px', maxWidth: '1200px', margin: 'auto', borderRadius: '30px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
         <div className="col p-4 m-4 mx-4">
           {/* Logo banco */}
@@ -325,20 +338,80 @@ export default function PagoBancoPage() {
             </div>
           </div>
         </div>
-        <div className="col p-4" style={{ backgroundColor: '#f8f8f8ff', borderTopRightRadius: '30px', borderBottomRightRadius: '30px', borderLeft: '1px solid #ddd', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div className="col p-4" style={{
+          backgroundColor: '#f8f8f8ff',
+          borderTopRightRadius: '30px',
+          borderBottomRightRadius: '30px',
+          borderLeft: '1px solid #ddd',
+          padding: '32px 24px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          minWidth: 260
+        }}>
           {/* Información de la transacción */}
-          <div className="text-center mt-4" style={{ fontSize: '0.9rem', color: '#666' }}>
-            <p>Estás pagando en:</p>
-            <p style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>TU PERMISO</p>
-            <p>Monto a pagar:</p>
-            <p style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>$ {montoPago.toLocaleString()}</p>
-            <p>Fecha:</p>
-            <p style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>{formattedDate}</p>
-            <p>Hora:</p>
-            <p style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>{formattedTime}</p>
+          <div
+            className="mx-auto"
+            style={{
+              background: 'linear-gradient(135deg, #f3f6ffff 60%, #fff6fcff 100%)',
+              borderRadius: '18px',
+              boxShadow: '0 2px 8px #0001',
+              padding: '28px 18px',
+              maxWidth: 320,
+              width: '100%',
+              textAlign: 'center'
+            }}
+          >
+            <div style={{ marginBottom: 18 }}>
+              <span style={{
+                display: 'inline-block',
+                background: selectedBank.color,
+                color: '#fff',
+                borderRadius: '12px',
+                padding: '6px 18px',
+                fontWeight: 700,
+                fontSize: '1.1rem',
+                letterSpacing: '1px',
+                marginBottom: 8
+              }}>
+                TU PERMISO
+              </span>
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <span style={{ color: selectedBank.color, fontWeight: 700, fontSize: '1.1rem' }}>Monto a pagar</span>
+              <div style={{
+                fontWeight: 800,
+                fontSize: '2rem',
+                color: '#222',
+                margin: '4px 0 0 0'
+              }}>
+                $ {montoPago.toLocaleString()}
+              </div>
+            </div>
+            <div style={{ marginBottom: 10 }}>
+              <span style={{ color: selectedBank.color, fontWeight: 700, fontSize: '1.1rem' }}>Fecha</span>
+              <div style={{
+                fontWeight: 600,
+                fontSize: '1.1rem',
+                color: '#333'
+              }}>
+                {formattedDate}
+              </div>
+            </div>
+            <div>
+              <span style={{ color: selectedBank.color, fontWeight: 700, fontSize: '1.1rem' }}>Hora</span>
+              <div style={{
+                fontWeight: 600,
+                fontSize: '1.1rem',
+                color: '#333'
+              }}>
+                {formattedTime}
+              </div>
+            </div>
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

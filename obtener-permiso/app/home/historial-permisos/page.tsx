@@ -7,6 +7,8 @@ import API_CONFIG from "@/config/api";
 import { useAuth } from '@/contexts/AuthContext';
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Pagination from "react-bootstrap/Pagination";
 
 // Componente para mostrar el permiso de circulación en un modal
 function PermisoCirculacionModal({ show, onHide, permiso }: { show: boolean, onHide: () => void, permiso: any }) {
@@ -75,6 +77,26 @@ export default function HistorialPermisosPage() {
   const [showModal, setShowModal] = useState(false);
   const [permisoSeleccionado, setPermisoSeleccionado] = useState<any>(null);
 
+  // Estados para búsqueda y paginación
+  const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const permisosPorPagina = 8;
+
+  // Filtrar permisos por búsqueda
+  const permisosFiltrados = permisos.filter(
+    (permiso) =>
+      permiso.ppu?.toLowerCase().includes(search.toLowerCase()) ||
+      permiso.nombre?.toLowerCase().includes(search.toLowerCase()) ||
+      permiso.rut?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Paginación
+  const totalPaginas = Math.ceil(permisosFiltrados.length / permisosPorPagina);
+  const permisosPagina = permisosFiltrados.slice(
+    (currentPage - 1) * permisosPorPagina,
+    currentPage * permisosPorPagina
+  );
+
   console.log("RUT del usuario autenticado:", user?.rut);
   // Obtener los permisos emitidos por el usuario
   React.useEffect(() => {
@@ -120,48 +142,98 @@ export default function HistorialPermisosPage() {
   return (
     <ProtectedRoute>
       <div className="" style={{ fontFamily: '"Roboto", Arial, sans-serif', minHeight: 'max-content', width: '100%' }}>
+        {/* Volver atrás y Breadcrumb */}
+        <div className="row align-self-center d-flex align-items-center mb-4 px-3">
+          <button className="p-2" style={{ backgroundColor: 'white', border: '1px solid #007bff', color: '#007bff', cursor: 'pointer' }} onClick={() => router.back()}>
+            <span>← Volver</span>
+          </button>
+          <nav aria-label="breadcrumb" className="col">
+            <ol className="breadcrumb p-0 m-0">
+              <li className="align-self-center breadcrumb-item active" aria-current="page">Historial de Permisos de Circulación</li>
+            </ol>
+          </nav>
+        </div>
+        
         <div className="row" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <div className="card-like shadow col p-3 m-3">
-                <h1 className="text-center my-4" style={{ fontSize: '2rem', fontWeight: '500', fontFamily: '"Roboto", Arial, sans-serif' }}>Historial de Permisos de Circulación</h1>
-                <p className="text-center mb-4">Aquí puedes ver el historial de permisos de circulación que has emitido.</p>
-                <div className="table-responsive">
-                    <table className="table table-striped">
-                        <thead>
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">PPU</th>
-                                <th scope="col">Fecha de Emisión</th>
-                                <th scope="col">Tarjeta</th>
-                                <th scope="col">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {permisos.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="text-center">No hay permisos emitidos.</td>
-                                </tr>
-                            ) : (
-                                permisos.map((permiso, index) => (
-                                    <tr key={permiso.id}>
-                                        <td>{index + 1}</td>
-                                        <td>{permiso.ppu}</td>
-                                        <td>{new Date(permiso.fecha_emision).toLocaleDateString()}</td>
-                                        <td>{"**** **** **** " + permiso.tarjeta}</td>
-                                        <td>
-                                            <button
-                                                className="btn btn-primary"
-                                                onClick={() => obtenerPermisoCirculacion(permiso.ppu)}
-                                            >
-                                                Ver Permiso
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+          <div className="card-like shadow col p-3 m-3">
+            <h1 className="text-center my-4" style={{ fontSize: '2rem', fontWeight: '500', fontFamily: '"Roboto", Arial, sans-serif' }}>Historial de Permisos de Circulación</h1>
+            <p className="text-center mb-4">Aquí puedes ver el historial de permisos de circulación que has emitido.</p>
+            
+            {/* Barra de búsqueda */}
+            <div className="mb-3 d-flex justify-content-end">
+              <Form.Control
+                type="text"
+                placeholder="Buscar por PPU, nombre o RUT..."
+                value={search}
+                onChange={e => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
+                style={{ maxWidth: 320 }}
+              />
             </div>
+
+            <div className="table-responsive">
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">PPU</th>
+                    <th scope="col">Fecha de Emisión</th>
+                    <th scope="col">Tarjeta</th>
+                    <th scope="col">Valor Permiso</th>
+                    <th scope="col">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {permisosFiltrados.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center">No hay permisos emitidos.</td>
+                    </tr>
+                  ) : (
+                    permisosPagina.map((permiso, index) => (
+                      <tr key={permiso.id || permiso.ppu || index}>
+                        <td>{(currentPage - 1) * permisosPorPagina + index + 1}</td>
+                        <td>{permiso.ppu}</td>
+                        <td>{new Date(permiso.fecha_emision).toLocaleDateString()}</td>
+                        <td>{"**** **** **** " + permiso.tarjeta}</td>
+                        <td>${permiso.valor_permiso?.toLocaleString('es-CL')}</td>
+                        <td>
+                          <button
+                            className="btn btn-primary"
+                            onClick={() => obtenerPermisoCirculacion(permiso.ppu)}
+                          >
+                            Ver Permiso
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Paginación */}
+            {totalPaginas > 1 && (
+              <div className="d-flex justify-content-center mt-4">
+                <Pagination>
+                  <Pagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
+                  <Pagination.Prev onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} />
+                  {Array.from({ length: totalPaginas }, (_, i) => (
+                    <Pagination.Item
+                      key={i + 1}
+                      active={currentPage === i + 1}
+                      onClick={() => setCurrentPage(i + 1)}
+                    >
+                      {i + 1}
+                    </Pagination.Item>
+                  ))}
+                  <Pagination.Next onClick={() => setCurrentPage(p => Math.min(totalPaginas, p + 1))} disabled={currentPage === totalPaginas} />
+                  <Pagination.Last onClick={() => setCurrentPage(totalPaginas)} disabled={currentPage === totalPaginas} />
+                </Pagination>
+              </div>
+            )}
+          </div>
         </div>
         {/* Modal para mostrar el permiso */}
         <PermisoCirculacionModal show={showModal} onHide={() => setShowModal(false)} permiso={permisoSeleccionado} />

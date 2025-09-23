@@ -8,16 +8,20 @@ import { useAuth, getRutFromCookies } from '@/contexts/AuthContext';
 import API_CONFIG from '@/config/api';
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { FaTrashAlt } from 'react-icons/fa';
+import { BiEdit } from 'react-icons/bi';
 
 type Estado = 'PAGADO' | 'HABILITADO' | 'VENCIDO';
 type Vehiculo = { 
   id?: number; 
   name?: string;
   plate?: string; 
+  ppu?: string; // <-- Agregado para evitar error de propiedad inexistente
   brand?: string; 
   model?: string; 
   estado?: Estado;
   estadoVehiculo?: EstadoVehiculoDetalle;
+  nombre_vehiculo?: string; // <-- Agregado para evitar error de propiedad inexistente
 };
 
 type EstadoVehiculoDetalle = {
@@ -182,6 +186,10 @@ export default function VerVehiculos() {
   const rutFromCookies = getRutFromCookies();
   const rut = user?.rut || rutFromCookies || '';
   const nombre = user?.nombre || 'Usuario';
+
+  // Dropdown agregar vehículo
+  const [mostrarDropdownAgregar, setMostrarDropdownAgregar] = useState(false);
+  const [nombrePersonalizado, setNombrePersonalizado] = useState('');
 
   // TODOS LOS HOOKS VAN AQUÍ, ANTES DE CUALQUIER RETURN
   const [vehicles, setVehicles] = useState<Vehiculo[]>([]);
@@ -507,7 +515,7 @@ export default function VerVehiculos() {
           // Consultar estado de cada vehículo
           const vehiclesWithEstado = await Promise.all(
             mappedVehicles.map(async (veh) => {
-              const estadoVehiculo = await getVehicleStatus(veh.plate, rut);
+              const estadoVehiculo = await getVehicleStatus(veh.plate || '', rut);
               return { ...veh, estadoVehiculo };
             })
           );
@@ -1162,7 +1170,7 @@ export default function VerVehiculos() {
                               <td className="fw-bold text-dark align-middle" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
                                 {vehicle.ppu}
                               </td>
-                              <td className="align-middle fw-bold" style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>
+                              <td className="align-middle" style={{ fontSize: '1rem' }}>
                                 {vehicle.nombre_vehiculo}
                               </td>
                               <td className="align-middle mb-0">
@@ -1220,10 +1228,10 @@ export default function VerVehiculos() {
                                   : <span className="text-muted">No disponible</span>
                                 }
                               </td> */}
-                              <td className="align-middle">
+                              <td className="align-middle row">
                                 <button
                                   type="button"
-                                  className="btn btn-sm px-3 text-decoration-none btn-primary"
+                                  className="col btn btn-sm px-3 text-decoration-none btn-primary"
                                   onClick={() => {
                                     sessionStorage.setItem('ppu', vehicle.ppu || '');
                                     sessionStorage.setItem('rut', rut);
@@ -1241,6 +1249,7 @@ export default function VerVehiculos() {
                                   }}
                                 >
                                   Editar
+                                  {/* <BiEdit /> */}
                                 </button>
                                 <button
                                   type="button"
@@ -1250,6 +1259,7 @@ export default function VerVehiculos() {
                                   }}
                                 >
                                   Eliminar
+                                  {/* <FaTrashAlt /> */}
                                 </button>
                               </td>
                             </tr>

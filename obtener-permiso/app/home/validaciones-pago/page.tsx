@@ -74,7 +74,7 @@ function EstadoChip({ estado, documento }: { estado: EstadoValidacion; documento
       className="badge rounded-pill px-3 py-2 fw-medium text-white"
       style={{ 
         backgroundColor: esPositivo ? '#2E7D32' : '#CD1E2C',
-        fontFamily: '"Dosis", sans-serif'
+        fontFamily: '"Roboto", sans-serif'
       }}
     >
       {estado}
@@ -433,7 +433,7 @@ function ValidacionesPagoContent() {
   // Mostrar loading mientras se cargan los datos
   if (loading) {
     return (
-      <div className="container-fluid px-4 py-4 text-center" style={{ fontFamily: '"Dosis", sans-serif' }}>
+      <div className="container-fluid px-4 py-4 text-center" style={{ fontFamily: '"Roboto", sans-serif' }}>
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Cargando...</span>
         </div>
@@ -444,7 +444,7 @@ function ValidacionesPagoContent() {
 
   return (
     <ProtectedRoute>
-      <div className="container-fluid px-4 py-4" style={{ fontFamily: '"Dosis", sans-serif' }}>
+      <div className="container-fluid px-4 py-4" style={{ fontFamily: '"Roboto", sans-serif' }}>
         {/* Volver atrás y Breadcrumb */}
         <div className="row align-self-center d-flex align-items-center mb-4 px-3">
           <button className="p-2" style={{ backgroundColor: 'white', border: '1px solid #007bff', color: '#007bff', cursor: 'pointer' }} onClick={() => router.back()}>
@@ -466,10 +466,10 @@ function ValidacionesPagoContent() {
             {/* Card de patente */}
           <div className="card-like mb-4 shadow">
             <div className="card-body text-center p-4">
-              <h6 className="text-muted mb-2" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
+              <h6 className="text-muted mb-2" style={{ fontFamily: '"Roboto", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
                 Patente a pagar
               </h6>
-              <h1 className="display-4 fw-bold text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700' }}>
+              <h1 className="display-4 fw-bold text-dark" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '700' }}>
                 {ppu || 'AA BB 11'}
               </h1>
 
@@ -477,32 +477,32 @@ function ValidacionesPagoContent() {
                 className="badge rounded-pill px-3 py-2 mb-4 text-white fw-medium"
                 style={{ 
                   backgroundColor: '#17a2b8',
-                  fontFamily: '"Dosis", sans-serif'
+                  fontFamily: '"Roboto", sans-serif'
                 }}
               >
                 {caso || '-'}
               </span>
-              <p className="text-muted mb-3" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
+              <p className="text-muted mb-3" style={{ fontFamily: '"Roboto", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
                 RUT propietario
               </p>
-              <h2 className="fw-bold mb-4 text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700', fontSize: '1.5rem' }}>
+              <h2 className="fw-bold mb-4 text-dark" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '700', fontSize: '1.5rem' }}>
                 {rutPropietario || '-'}
               </h2>
-              <p className="text-muted mb-3" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
+              <p className="text-muted mb-3" style={{ fontFamily: '"Roboto", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
                 Nombre propietario
               </p>
-              <h2 className="fw-bold mb-4 text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700', fontSize: '1.5rem' }}>
+              <h2 className="fw-bold mb-4 text-dark" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '700', fontSize: '1.5rem' }}>
                 {nombrePropietario || '-'}
               </h2>
 
-              <p className="text-muted" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
+              <p className="text-muted" style={{ fontFamily: '"Roboto", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
                 Estado
               </p>
               <span 
                 className="badge rounded-pill px-4 py-2 mb-4 text-white fw-medium"
                 style={{ 
                   backgroundColor: todosDocumentosValidos ? '#2E7D32' : '#CD1E2C',
-                  fontFamily: '"Dosis", sans-serif',
+                  fontFamily: '"Roboto", sans-serif',
                   fontWeight: '500'
                 }}
               >
@@ -510,10 +510,10 @@ function ValidacionesPagoContent() {
               </span>
               
               <div className="">
-                <h6 className="text-muted" style={{ fontFamily: '"Dosis", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
+                <h6 className="text-muted" style={{ fontFamily: '"Roboto", sans-serif', fontSize: '0.875rem', fontWeight: '400' }}>
                   Valor Permiso de Circulación
                 </h6>
-                <h2 className="fw-bold mb-0 text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '700', fontSize: '2rem' }}>
+                <h2 className="fw-bold mb-0 text-dark" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '700', fontSize: '2rem' }}>
                   ${valorPermiso?.toLocaleString('es-CL') || '0'}
                 </h2>
               </div>
@@ -525,12 +525,12 @@ function ValidacionesPagoContent() {
             <div className="card-header text-white " style={{ backgroundColor: '#0d6efd' }}>
               <div className="row">
                 <div className="col-6">
-                  <h6 className="mb-0 fw-bold" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '600' }}>
+                  <h6 className="mb-0 fw-bold" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '600' }}>
                     Documento
                   </h6>
                 </div>
                 <div className="col-6">
-                  <h6 className="mb-0 fw-bold" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '600' }}>
+                  <h6 className="mb-0 fw-bold" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '600' }}>
                     Estado
                   </h6>
                 </div>
@@ -540,7 +540,7 @@ function ValidacionesPagoContent() {
               {documentos.map((doc, index) => (
                 <div key={index} className={`row align-items-center py-3 px-0 ${index % 2 === 1 ? 'bg-light' : 'bg-white'} ${index !== documentos.length - 1 ? 'border-bottom border-light' : ''}`}>
                   <div className="col-5">
-                    <span className="fw-medium text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '500' }}>
+                    <span className="fw-medium text-dark" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '500' }}>
                       {doc.nombre}
                     </span>
                   </div>
@@ -702,7 +702,7 @@ function ValidacionesPagoContent() {
           {/* Card información del vehículo */}
           <div className="card-like border-0 shadow mb-4">
             <div className="card-body border-bottom text-center">
-              <h5 className="mb-0 fw-bold text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '600', fontSize: '1.125rem' }}>
+              <h5 className="mb-0 fw-bold text-dark" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '600', fontSize: '1.125rem' }}>
                 Información Vehículo
               </h5>
             </div>
@@ -710,12 +710,12 @@ function ValidacionesPagoContent() {
               {informacionVehiculo.map((item, index) => (
                 <div key={index} className={`row py-2 ${index !== informacionVehiculo.length - 1 ? 'border-bottom border-light' : ''}`}>
                   <div className="col-8">
-                    <span className="text-muted" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '400', fontSize: '0.875rem' }}>
+                    <span className="text-muted" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '400', fontSize: '0.875rem' }}>
                       {item.label}
                     </span>
                   </div>
                   <div className="col-4 text-end">
-                    <span className="fw-medium text-dark" style={{ fontFamily: '"Dosis", sans-serif', fontWeight: '500' }}>
+                    <span className="fw-medium text-dark" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '500' }}>
                       {item.valor}
                     </span>
                   </div>
@@ -737,7 +737,7 @@ function ValidacionesPagoContent() {
                 fontWeight: 600,
                 fontSize: '1rem',
                 textAlign: 'center',
-                fontFamily: '"Dosis", sans-serif',
+                fontFamily: '"Roboto", sans-serif',
                 boxShadow: '0 2px 8px #0001'
               }}
             >
@@ -753,7 +753,7 @@ function ValidacionesPagoContent() {
               style={{ 
                 backgroundColor: todosDocumentosValidos && permisoAnioActualPagado === '' ? '#0d6efd' : '#6c757d', 
                 border: 'none',
-                fontFamily: '"Dosis", sans-serif',
+                fontFamily: '"Roboto", sans-serif',
                 fontWeight: '600',
                 cursor: todosDocumentosValidos && permisoAnioActualPagado === '' ? 'pointer' : 'not-allowed',
                 opacity: todosDocumentosValidos && permisoAnioActualPagado === '' ? 1 : 0.7
@@ -837,7 +837,7 @@ function ValidacionesPagoContent() {
 export default function ValidacionesPago() {
   return (
     <Suspense fallback={
-      <div className="container-fluid px-4 py-4 text-center" style={{ fontFamily: '"Dosis", sans-serif' }}>
+      <div className="container-fluid px-4 py-4 text-center" style={{ fontFamily: '"Roboto", sans-serif' }}>
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Cargando...</span>
         </div>
