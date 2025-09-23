@@ -8,6 +8,7 @@ import { useAuth } from './context/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { Collapsible } from '@/components/Collapsible';
 import API_CONFIG from '@/config/api';
+import PermisoCirculacionModal from '@/components/PermisoCirculacionModal';
 
 export default function VehicleDetailsScreen() {
   const params = useLocalSearchParams();
@@ -17,9 +18,11 @@ export default function VehicleDetailsScreen() {
   const [ppu, setPpu] = useState('');
   
   // Padrón
-	const [fechaInscripcion, setFechaInscripcion] = useState('');
+  const [fechaInscripcion, setFechaInscripcion] = useState('');
+  const [padron_data, setPadronData] = useState<any>(null);
 
   // Permiso de circulación
+  const [permiso_data, setPermisoData] = useState<any>(null);
 	const [tipoSello, setTipoSello] = useState('');
 	const [vigenciaPermiso, setVigenciaPermiso] = useState('');
   const [fechaEmisionPermiso, setFechaEmisionPermiso] = useState('');
@@ -38,6 +41,7 @@ export default function VehicleDetailsScreen() {
   const [pts, setPts] = useState('');
 
   // Revisión Técnica
+  const [revision_data, setRevisionData] = useState<any>(null);
 	const [revisionTecnica, setRevisionTecnica] = useState('');
   const [numCertificadoRevision, setNumCertificadoRevision] = useState('');
   const [fechaEmisionRevision, setFechaEmisionRevision] = useState('');
@@ -45,12 +49,14 @@ export default function VehicleDetailsScreen() {
   const [plantaPrt, setPlantaPrt] = useState('');
 
   // SOAP
+  const [soap_data, setSoapData] = useState<any>(null);
 	const [soap, setSoap] = useState('');
   const [fechaEmisionSoap, setFechaEmisionSoap] = useState('');
   const [fechaExpiracionSoap, setFechaExpiracionSoap] = useState('');
   const [numPoliza, setNumPoliza] = useState('');
 
   // Encargo por Robo
+  const [encargo_data, setEncargoData] = useState<any>(null);
 	const [encargoRobo, setEncargoRobo] = useState('');
 
   // Estado vehículo
@@ -58,6 +64,7 @@ export default function VehicleDetailsScreen() {
 
 	const [loading, setLoading] = useState(false);
 	const [showModal, setShowModal] = useState(false);
+  const [showPermisoModal, setShowPermisoModal] = useState(false);
 
   // Estados para controlar los logs
   const [datosCompletos, setDatosCompletos] = useState(false);
@@ -130,6 +137,7 @@ export default function VehicleDetailsScreen() {
       // Obtener Padrón
       const padron_response = await fetch(`${API_CONFIG.BACKEND}consultar_patente/${params.ppu}`);
       const padron_data = await padron_response.json();
+      setPadronData(padron_data);
       
       setPpu(padron_data.ppu);
 			// Transformar fecha. Ejemplo: 01 de Marzo de 1992
@@ -141,6 +149,7 @@ export default function VehicleDetailsScreen() {
 			const permiso_response = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${params.ppu}`);
 			const permiso_data = await permiso_response.json();
 			console.log(permiso_data)
+			setPermisoData(permiso_data);
 			setTipoSello(permiso_data.tipo_sello);
 			if (permiso_data.vigencia === true) {
 				setVigenciaPermiso("Vigente");
@@ -166,6 +175,7 @@ export default function VehicleDetailsScreen() {
       // Obtener Revisión Técnica
 			const revision_response = await fetch(`${API_CONFIG.BACKEND}consultar_revision_tecnica/${params.ppu}`);
 			const revision_data = await revision_response.json();
+      setRevisionData(revision_data);
 			setRevisionTecnica(revision_data.vigencia);
       if (revision_response.status !== 200) {
         setRevisionTecnica('Vencido');
@@ -179,6 +189,7 @@ export default function VehicleDetailsScreen() {
       // Obtener SOAP
 			const soap_response = await fetch(`${API_CONFIG.BACKEND}consultar_soap/${params.ppu}`);
 			const soap_data = await soap_response.json();
+      setSoapData(soap_data);
 			setSoap(soap_data.vigencia);
 			if (soap_response.status !== 200) {
 				setSoap('Vencido');
@@ -215,230 +226,480 @@ export default function VehicleDetailsScreen() {
           <Collapsible title="Padrón">
             <View style={styles.tableRowModal}>
               <View style={styles.tableCellModal}>
+                <Text style={styles.tableLabel}>Patente</Text>
+              </View>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableValue}>{ppu}</Text>
+              </View>
+            </View>
+            <View style={styles.tableRowModal}>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableLabel}>RUT propietario</Text>
+              </View>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableValue}>{padron_data?.rut}</Text>
+              </View>
+            </View>
+            <View style={styles.tableRowModal}>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableLabel}>Nombre propietario</Text>
+              </View>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableValue}>{padron_data?.nombre}</Text>
+              </View>
+            </View>
+            <View style={styles.tableRowModal}>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableLabel}>Tipo de vehículo</Text>
+              </View>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableValue}>{padron_data?.tipo_vehiculo}</Text>
+              </View>
+            </View>
+            <View style={styles.tableRowModal}>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableLabel}>Marca</Text>
+              </View>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableValue}>{padron_data?.marca}</Text>
+              </View>
+            </View>
+            <View style={styles.tableRowModal}>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableLabel}>Modelo</Text>
+              </View>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableValue}>{padron_data?.modelo}</Text>
+              </View>
+            </View>
+            <View style={styles.tableRowModal}>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableLabel}>Año</Text>
+              </View>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableValue}>{padron_data?.anio}</Text>
+              </View>
+            </View>
+            <View style={styles.tableRowModal}>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableLabel}>Color</Text>
+              </View>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableValue}>{padron_data?.color}</Text>
+              </View>
+            </View>
+            <View style={styles.tableRowModal}>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableLabel}>N° Motor</Text>
+              </View>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableValue}>{padron_data?.num_motor}</Text>
+              </View>
+            </View>
+            <View style={styles.tableRowModal}>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableLabel}>N° Chasis</Text>
+              </View>
+              <View style={styles.tableCellModal}>
+                <Text style={styles.tableValue}>{padron_data?.num_chasis}</Text>
+              </View>
+            </View>
+            <View style={styles.tableRowModal}>
+              <View style={styles.tableCellModal}>
                 <Text style={styles.tableLabel}>Fecha de inscripción</Text>
               </View>
               <View style={styles.tableCellModal}>
                 <Text style={styles.tableValue}>{fechaInscripcion}</Text>
               </View>
             </View>
+            <View style={{ alignItems: 'center', marginTop: 8 }}>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#0051A8',
+                  paddingVertical: 10,
+                  paddingHorizontal: 18,
+                  // borderRadius: 8,
+                  alignItems: 'center',
+                }}
+                onPress={() => {
+                  // Aquí puedes abrir el documento, mostrar modal, o navegar a otra pantalla
+                  // Por ejemplo: router.push('/ruta-del-documento');
+                  // O mostrar un modal con el PDF, etc.
+                }}
+              >
+                <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>Ver documento</Text>
+              </TouchableOpacity>
+            </View>
           </Collapsible>
 
           <Collapsible title="Permiso de Circulación">
-            
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Estado</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{vigenciaPermiso}</Text>
-              </View>
-            </View>
-            
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Fecha de emisión permiso</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{fechaEmisionPermiso}</Text>
-              </View>
-            </View>
-
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Fecha de expiración permiso</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{fechaExpiracionPermiso}</Text>
-              </View>
-            </View>
-
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>N° Motor</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{numMotor}</Text>
-              </View>
-            </View>
-
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>N° Chasis</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{numChasis}</Text>
-              </View>
-            </View>
-
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Tipo de vehículo</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{tipoVehiculo}</Text>
-              </View>
-            </View>
-
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Color de la carrocería</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{color}</Text>
-              </View>
-            </View>
-
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Marca del vehículo</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{marca}</Text>
-              </View>
-            </View>
-
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Modelo</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{modelo}</Text>
-              </View>
-            </View>
-
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Año</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{anio}</Text>
-              </View>
-            </View>
-
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Capacidad de carga</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{carga}</Text>
-              </View>
-            </View>
-
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Tipo de sello</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{tipoSello}</Text>
-              </View>
-            </View>
-
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Tipo de combustible</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{combustible}</Text>
-              </View>
-            </View>
-
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Cilindrada del motor</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{cilindrada}</Text>
-              </View>
-            </View>
-
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Transmisión</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{transmision}</Text>
-              </View>
-            </View>
-
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>PTS</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{pts}</Text>
-              </View>
-            </View>
-          </Collapsible>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Patente</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.ppu}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>RUT propietario</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.rut}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Nombre propietario</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.nombre}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Fecha de emisión</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.fecha_emision}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Fecha de expiración</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.fecha_expiracion}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Valor permiso</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>
+        {permiso_data?.valor_permiso ? `$${permiso_data.valor_permiso.toLocaleString('es-CL')}` : ''}
+      </Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Motor</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.motor}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Chasis</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.chasis}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Tipo de vehículo</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.tipo_vehiculo}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Color</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.color}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Marca</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.marca}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Modelo</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.modelo}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Año</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.anio}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Capacidad de carga</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.carga}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Tipo de sello</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.tipo_sello}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Combustible</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.combustible}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Cilindrada</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.cilindrada}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Transmisión</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.transmision}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>PTS</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.pts}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>AST</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.ast}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Equipamiento</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.equipamiento}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Código SII</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{permiso_data?.codigo_sii}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Tasación</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>
+        {permiso_data?.tasacion ? `$${permiso_data.tasacion.toLocaleString('es-CL')}` : ''}
+      </Text>
+    </View>
+  </View>
+  <View style={{ alignItems: 'center', marginTop: 8 }}>
+    <TouchableOpacity
+      style={{
+        backgroundColor: '#0051A8',
+        paddingVertical: 10,
+        paddingHorizontal: 18,
+        // borderRadius: 8,
+        alignItems: 'center',
+      }}
+      onPress={() => setShowPermisoModal(true)}
+    >
+      <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>Ver documento</Text>
+    </TouchableOpacity>
+  </View>
+</Collapsible>
 
           <Collapsible title="SOAP">
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Estado</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{soap}</Text>
-              </View>
-            </View>
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Fecha de emisión SOAP</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{fechaEmisionSoap}</Text>
-              </View>
-            </View>
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Fecha de expiración SOAP</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{fechaExpiracionSoap}</Text>
-              </View>
-            </View>
-          </Collapsible>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>N° Póliza</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{soap_data?.num_poliza}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Patente</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{soap_data?.ppu}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Compañía</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{soap_data?.compania}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Rige desde</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{soap_data?.rige_desde}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Rige hasta</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{soap_data?.rige_hasta}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Prima</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>
+        {soap_data?.prima ? `$${soap_data.prima.toLocaleString('es-CL')}` : ''}
+      </Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Vigencia</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{soap_data?.vigencia}</Text>
+    </View>
+  </View>
+  <View style={{ alignItems: 'center', marginTop: 8 }}>
+    <TouchableOpacity
+      style={{
+        backgroundColor: '#0051A8',
+        paddingVertical: 10,
+        paddingHorizontal: 18,
+        // borderRadius: 8,
+        alignItems: 'center',
+      }}
+      onPress={() => {
+        // Aquí puedes abrir el documento, mostrar modal, o navegar a otra pantalla
+        // Por ejemplo: router.push('/ruta-del-documento');
+        // O mostrar un modal con el PDF, etc.
+      }}
+    >
+      <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>Ver documento</Text>
+    </TouchableOpacity>
+  </View>
+</Collapsible>
 
           <Collapsible title="Revisión Técnica">
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Estado</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{revisionTecnica}</Text>
-              </View>
-            </View>
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Fecha de emisión revisión</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{fechaEmisionRevision}</Text>
-              </View>
-            </View>
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Fecha de expiración revisión</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{fechaExpiracionRevision}</Text>
-              </View>
-            </View>
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>N° Certificado</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{numCertificadoRevision}</Text>
-              </View>
-            </View>
-            <View style={styles.tableRowModal}>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableLabel}>Planta</Text>
-              </View>
-              <View style={styles.tableCellModal}>
-                <Text style={styles.tableValue}>{plantaPrt}</Text>
-              </View>
-            </View>
-          </Collapsible>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Patente</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{revision_data?.ppu}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Fecha de revisión</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{revision_data?.fecha}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Código planta</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{revision_data?.codigo_planta}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Planta</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{revision_data?.planta}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>N° Certificado</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{revision_data?.nom_certificado}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Fecha de vencimiento</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{revision_data?.fecha_vencimiento}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Estado</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{revision_data?.estado}</Text>
+    </View>
+  </View>
+  <View style={styles.tableRowModal}>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableLabel}>Vigencia</Text>
+    </View>
+    <View style={styles.tableCellModal}>
+      <Text style={styles.tableValue}>{revision_data?.vigencia}</Text>
+    </View>
+  </View>
+  <View style={{ alignItems: 'center', marginTop: 8 }}>
+    <TouchableOpacity
+      style={{
+        backgroundColor: '#0051A8',
+        paddingVertical: 10,
+        paddingHorizontal: 18,
+        // borderRadius: 8,
+        alignItems: 'center',
+      }}
+      onPress={() => {
+        // Aquí puedes abrir el documento, mostrar modal, o navegar a otra pantalla
+        // Por ejemplo: router.push('/ruta-del-documento');
+        // O mostrar un modal con el PDF, etc.
+      }}
+    >
+      <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 15 }}>Ver documento</Text>
+    </TouchableOpacity>
+  </View>
+</Collapsible>
 
 
 				</View>
@@ -450,6 +711,11 @@ export default function VehicleDetailsScreen() {
 
 			</ScrollView>
 		</ScrollView>
+    <PermisoCirculacionModal
+      visible={showPermisoModal}
+      onClose={() => setShowPermisoModal(false)}
+      datos={permiso_data}
+    />
     </ProtectedRoute>
 	);
 }

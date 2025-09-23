@@ -170,7 +170,7 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Ingrese su Credencial</Text>
+          <Text style={styles.inputLabel}>Ingrese su Clave Única</Text>
           <View style={styles.inputWrapper}>
             <Ionicons name="lock-closed-outline" size={20} color="#4A4A4A" style={styles.inputIconLeft} />
             <TextInput
