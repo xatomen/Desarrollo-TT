@@ -178,3 +178,9 @@ def get_padron_by_ppu(ppu: str, db: Session = Depends(get_db)):
     if not padron:
         raise HTTPException(status_code=404, detail="Padrón no encontrado")
     return Padron(**padron.__dict__)
+
+# Get para obtener la cantidad total de padrones existentes
+@app.get("/padron_count")
+def get_padron_count(db: Session = Depends(get_db)):
+    count = db.query(PadronModel).count()
+    return {"count": count}
