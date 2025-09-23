@@ -35,6 +35,8 @@ export default function VehicleDetailsScreen() {
   const [cilindrada, setCilindrada] = useState('');
   const [transmision, setTransmision] = useState('');
   const [pts, setPts] = useState('');
+  const [rutPropietario, setRutPropietario] = useState('');
+  const [nombrePropietario, setNombrePropietario] = useState('');
 
   // Revisión Técnica
 	const [revisionTecnica, setRevisionTecnica] = useState('');
@@ -46,6 +48,10 @@ export default function VehicleDetailsScreen() {
 
   // Encargo por Robo
 	const [encargoRobo, setEncargoRobo] = useState('');
+  const [encargoPatenteDelantera, setEncargoPatenteDelantera] = useState('');
+  const [encargoPatenteTrasera, setEncargoPatenteTrasera] = useState('');
+  const [encargoVin, setEncargoVin] = useState('');
+  const [encargoMotor, setEncargoMotor] = useState('');
 
   // Estado vehículo
 	const [estadoVehiculo, setEstadoVehiculo] = useState('');
@@ -160,6 +166,8 @@ export default function VehicleDetailsScreen() {
       setMarca(padron_data.marca);
       setModelo(padron_data.modelo);
       setAnio(padron_data.anio);
+      setRutPropietario(padron_data.rut);
+      setNombrePropietario(padron_data.nombre);
 
       // Obtener Permiso de Circulación
 			try {
@@ -229,11 +237,16 @@ export default function VehicleDetailsScreen() {
       // Obtener Encargo por Robo
 			const robo_response = await fetch(`${API_CONFIG.BACKEND}consultar_encargo/${params.ppu}`);
 			const robo_data = await robo_response.json();
-			if (robo_data.encargo === "true") {
+      console.log(robo_data);
+			if (robo_data.encargo === true) {
 				setEncargoRobo('Sí');
 			} else {
 				setEncargoRobo('No');
 			}
+      setEncargoPatenteDelantera(robo_data.patente_delantera);
+      setEncargoPatenteTrasera(robo_data.patente_trasera);
+      setEncargoVin(robo_data.vin);
+      setEncargoMotor(robo_data.motor);
 
     } catch (error) {
       console.error('Error al obtener información del vehículo:', error);
@@ -253,9 +266,65 @@ export default function VehicleDetailsScreen() {
     <ProtectedRoute>
     <ScrollView style={styles.container}>
       <Navbar />
+      {/* Si posee encargo por robo, mostramos una alerta */}
+      {encargoRobo === 'Sí' ? (
+        <View style={[styles.alertBox]}>
+          <Text style={[styles.alertText]}>¡Atención! Este vehículo tiene un encargo por robo.</Text>
+          <Text style={[styles.alertSubText, { color: '#222', fontWeight: 'bold', marginBottom: 6 }]}>Detalles del encargo:</Text>
+          {/* Tabla simple sin colores */}
+          <View style={{ borderWidth: 1, borderColor: '#fc9797ff', borderRadius: 6, marginTop: 6, marginBottom: 8, width: '80%' }}>
+            {/* Header */}
+            <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderColor: '#fc9797ff' }}>
+              <View style={{ flex: 1, padding: 8 }}>
+                <Text style={{ fontWeight: 'bold', fontSize: 13, textAlign: 'center' }}>Ítem</Text>
+              </View>
+              <View style={{ flex: 1, padding: 8 }}>
+                <Text style={{ fontWeight: 'bold', fontSize: 13, textAlign: 'center' }}>¿Posee encargo?</Text>
+              </View>
+            </View>
+            {/* Filas */}
+            <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderColor: '#fc9797ff' }}>
+              <View style={{ flex: 1, padding: 8 }}>
+                <Text style={{ fontSize: 13, textAlign: 'center' }}>Patente delantera</Text>
+              </View>
+              <View style={{ flex: 1, padding: 8 }}>
+                <Text style={{ fontSize: 13, textAlign: 'center' }}>{encargoPatenteDelantera ? 'Sí' : 'No'}</Text>
+              </View>
+            </View>
+            <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderColor: '#fc9797ff' }}>
+              <View style={{ flex: 1, padding: 8 }}>
+                <Text style={{ fontSize: 13, textAlign: 'center' }}>Patente trasera</Text>
+              </View>
+              <View style={{ flex: 1, padding: 8 }}>
+                <Text style={{ fontSize: 13, textAlign: 'center' }}>{encargoPatenteTrasera ? 'Sí' : 'No'}</Text>
+              </View>
+            </View>
+            <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderColor: '#fc9797ff' }}>
+              <View style={{ flex: 1, padding: 8 }}>
+                <Text style={{ fontSize: 13, textAlign: 'center' }}>VIN</Text>
+              </View>
+              <View style={{ flex: 1, padding: 8 }}>
+                <Text style={{ fontSize: 13, textAlign: 'center' }}>{encargoVin ? 'Sí' : 'No'}</Text>
+              </View>
+            </View>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ flex: 1, padding: 8 }}>
+                <Text style={{ fontSize: 13, textAlign: 'center' }}>Motor</Text>
+              </View>
+              <View style={{ flex: 1, padding: 8 }}>
+                <Text style={{ fontSize: 13, textAlign: 'center' }}>{encargoMotor ? 'Sí' : 'No'}</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      ) : null}
       <View style={styles.card}>
         <Text style={styles.cardText}>Patente consultada</Text>
         <Text style={styles.patente}>{ppu || params.ppu}</Text>
+        <Text style={styles.cardText}>{rutPropietario
+          ? rutPropietario.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+          : ''}</Text>
+        <Text style={styles.date}>{nombrePropietario}</Text>
         <Text style={styles.cardText}>Estado</Text>
         <Text style={estadoVehiculo === 'Vehículo al Día' ? styles.chipPrimaryGreen : styles.chipPrimaryRed}>{estadoVehiculo}</Text>
         <Text style={styles.cardText}>Tipo de sello</Text>
@@ -515,6 +584,51 @@ export default function VehicleDetailsScreen() {
 }
 
 const styles = StyleSheet.create({
+  alertBox: {
+    backgroundColor: '#FFEBEE',
+    borderRadius: 10,
+    padding: 16,
+    marginHorizontal: 24,
+    marginTop: 16,
+    marginBottom: 8,
+    borderColor: '#D32F2F',
+    borderWidth: 2,
+    alignItems: 'center',
+  },
+  alertText: {
+    color: '#D32F2F',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 8,
+    fontFamily: 'Roboto',
+  },
+  alertSubText: {
+    color: '#D32F2F',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginVertical: 4,
+    fontFamily: 'Roboto',
+    backgroundColor: 'transparent',
+    marginHorizontal: 24,
+  },
+  alertDetails: {
+    // backgroundColor: '#FFF3E0',
+    borderRadius: 8,
+    padding: 12,
+    marginHorizontal: 24,
+    // marginTop: 8,
+    marginBottom: 8,
+  },
+  alertDetailText: {
+    color: '#000000ff',
+    fontSize: 16,
+    fontFamily: 'Roboto',
+    fontWeight: '600',
+    marginVertical: 2,
+    textAlign: 'left',
+  },
   tableValue: {
     paddingHorizontal: 16,
     borderBottomColor: '#e5e7eb',
