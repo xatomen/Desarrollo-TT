@@ -137,6 +137,7 @@ function ValidacionesPagoContent() {
   // Permiso de circulación
   const [fechaEmisionPermiso, setFechaEmisionPermiso] = useState<Date | string | null>(null);
   const [fechaVencimientoPermiso, setFechaVencimientoPermiso] = useState<Date | string | null>(null);
+  const [permisoJson, setPermisoJson] = useState<any>(null);
 
   // Obtener desde consultar valor permiso
   const [cilindrada, setCilindrada] = useState<string>('-');
@@ -218,6 +219,7 @@ function ValidacionesPagoContent() {
         try {
           const permisoRes = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${ppu}`);
           const permisoData = await permisoRes.json();
+          setPermisoJson(permisoData);
           setFechaEmisionPermiso(permisoData.fecha_emision || '-');
           setFechaVencimientoPermiso(permisoData.fecha_expiracion || '-');
           // Obtener año de emisión del permiso
@@ -388,6 +390,17 @@ function ValidacionesPagoContent() {
 
   // Obtener valor permiso de circulación
   const fetchValorPermiso = async (ppu: string) => {
+    // Esperar a tener la fecha de emisión del permiso
+    if (fechaEmisionPermiso === null) {
+      await new Promise(resolve => {
+        const interval = setInterval(() => {
+          if (fechaEmisionPermiso !== null) {
+            clearInterval(interval);
+            resolve(null);
+          }
+        }, 100);
+      });
+    }
     try {
       const response = await fetch(`${API_CONFIG.BACKEND}consultar_valor_permiso/${ppu}`);
       if (!response.ok) {
