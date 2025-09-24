@@ -398,8 +398,8 @@ function ValidacionesPagoContent() {
       // Por ejemplo: Si se emitió el 2025 y estamos en 2025, no debemos pagar nada
       // Si se emitió el 2024 y estamos en 2025, debemos pagar 1 año
       // Si se emitió el 2023 y estamos en 2025, debemos pagar 2 años, etc.
-      if (data.fecha_ultima_emision) {
-        const anioUltimaEmision = new Date(data.fecha_ultima_emision).getFullYear();
+      if (fechaEmisionPermiso) {
+        const anioUltimaEmision = new Date(fechaEmisionPermiso).getFullYear();
         const anioActual = new Date().getFullYear();
         const aniosAPagar = Math.max(0, anioActual - anioUltimaEmision);
         const valorTotal = (data.valor || 0) * aniosAPagar;
