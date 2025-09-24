@@ -341,7 +341,7 @@ export default function ConfirmacionPago() {
             pts: parseInt(datos.puertas) || 0, // Fixed: was using datos.peso instead of datos.puertas
             ast: parseInt(datos.asientos) || 0,
             equipamiento: datos.equipamiento || '',
-            codigo_sii: datos.codigoSII || '',
+            codigo_sii: datos.codigoSii || '',
             tasacion: parseInt(datos.tasacion) || 0
           }),
         });

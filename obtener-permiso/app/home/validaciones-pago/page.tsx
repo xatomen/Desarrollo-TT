@@ -103,6 +103,7 @@ function ValidacionesPagoContent() {
   
   // Valor permiso
   const [valorPermiso, setValorPermiso] = useState<number | null>(null);
+  const [mensajeAtraso, setMensajeAtraso] = useState<string>('');
 
   // Estados para cada API
   const [revisionTecnica, setRevisionTecnica] = useState<EstadoValidacion>('Desconocido');
@@ -177,6 +178,7 @@ function ValidacionesPagoContent() {
 
   // Crear documentos dinámicamente basado en los estados
   const documentos: DocumentoValidacion[] = [
+    { nombre: 'Permiso de Circulación', estado: permisoJson && permisoJson.vigencia === true ? 'Vigente' : 'No' },
     { nombre: 'Revisión Técnica', estado: revisionTecnica },
     { nombre: 'SOAP (Año vigente)', estado: soap },
     { nombre: 'Encargo por Robo', estado: encargoRobo },
@@ -219,8 +221,8 @@ function ValidacionesPagoContent() {
         try {
           const permisoRes = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${ppu}`);
           const permisoData = await permisoRes.json();
-          setPermisoJson(permisoData);
           setFechaEmisionPermiso(permisoData.fecha_emision || '-');
+          console.log('Fecha emisión permiso:', permisoData.fecha_emision);
           setFechaVencimientoPermiso(permisoData.fecha_expiracion || '-');
           // Obtener año de emisión del permiso
           const anioEmisionPermiso = permisoData.fecha_emision ? new Date(permisoData.fecha_emision).getFullYear() : null;
@@ -390,38 +392,32 @@ function ValidacionesPagoContent() {
 
   // Obtener valor permiso de circulación
   const fetchValorPermiso = async (ppu: string) => {
-    // Esperar a tener la fecha de emisión del permiso
-    if (fechaEmisionPermiso === null) {
-      await new Promise(resolve => {
-        const interval = setInterval(() => {
-          if (fechaEmisionPermiso !== null) {
-            clearInterval(interval);
-            resolve(null);
-          }
-        }, 100);
-      });
-    }
     try {
       const response = await fetch(`${API_CONFIG.BACKEND}consultar_valor_permiso/${ppu}`);
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
       const data = await response.json();
-      // Si tenemos un permiso emitido anteriormente, calculamos la cantidad de años desde la última emisión
-      // Por ejemplo: Si se emitió el 2025 y estamos en 2025, no debemos pagar nada
-      // Si se emitió el 2024 y estamos en 2025, debemos pagar 1 año
-      // Si se emitió el 2023 y estamos en 2025, debemos pagar 2 años, etc.
-      if (fechaEmisionPermiso) {
-        const anioUltimaEmision = new Date(fechaEmisionPermiso).getFullYear();
+      const permisoRes = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${ppu}`);
+      const permisoData = await permisoRes.json();
+      setPermisoJson(permisoData);
+      if (permisoData.fecha_emision) {
+        const anioUltimaEmision = new Date(permisoData.fecha_emision).getFullYear();
         const anioActual = new Date().getFullYear();
         const aniosAPagar = Math.max(0, anioActual - anioUltimaEmision);
+        console.log('#########Años a pagar:', aniosAPagar);
         const valorTotal = (data.valor || 0) * aniosAPagar;
         setValorPermiso(valorTotal);
+        // Mostrar mensaje si la patente está atrasada
+        if (aniosAPagar > 1) {
+          setMensajeAtraso(`La patente estaba atrasada por ${aniosAPagar} años.`);
+        } else {
+          setMensajeAtraso('');
+        }
       } else {
-        // Si no hay fecha de última emisión, se paga el valor completo
         setValorPermiso(data.valor || 0);
+        setMensajeAtraso('');
       }
-      setValorPermiso(data.valor || 0);
       // Nuevos datos
       setCilindrada(data.cilindrada || '-');
       setTasacion(data.tasacion || '-');
@@ -545,6 +541,11 @@ function ValidacionesPagoContent() {
                 <h2 className="fw-bold mb-0 text-dark" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '700', fontSize: '2rem' }}>
                   ${valorPermiso?.toLocaleString('es-CL') || '0'}
                 </h2>
+                {mensajeAtraso && (
+                  <div className="mt-2" style={{ color: '#CD1E2C', fontWeight: 500, fontSize: '1rem' }}>
+                    {mensajeAtraso}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -619,6 +620,24 @@ function ValidacionesPagoContent() {
                   <b>Estado:</b>{' '}
                   <EstadoChip estado={modalDocumento.doc.estado} documento={modalDocumento.doc.nombre} />
                 </p>
+                {/* Detalles Permiso */}
+                {modalDocumento.doc.nombre === 'Permiso de Circulación' && permisoJson && (
+                  <div>
+                    <p><b>PPU:</b> {ppu}</p>
+                    <p><b>RUT Propietario:</b> {rutPropietario}</p>
+                    <p><b>Nombre Propietario:</b> {nombrePropietario}</p>
+                    <p><b>Fecha Emisión:</b> {permisoJson.fecha_emision || '-'}</p>
+                    <p><b>Fecha Expiración:</b> {permisoJson.fecha_expiracion || '-'}</p>
+                    <p><b>Código SII:</b> {codigoSii}</p>
+                    <p><b>Cilindrada:</b> {cilindrada}</p>
+                    <p><b>Tasación:</b> {tasacion}</p>
+                    <p><b>Peso:</b> {peso}</p>
+                    <p><b>N° Asientos:</b> {asientos}</p>
+                    <p><b>N° Puertas:</b> {puertas}</p>
+                    <p><b>Transmisión:</b> {transmision}</p>
+                    <p><b>Equipamiento:</b> {equipamiento}</p>
+                  </div>
+                )}
                 {/* Detalles SOAP */}
                 {modalDocumento.doc.nombre === 'SOAP (Año vigente)' && (
                   <div>
