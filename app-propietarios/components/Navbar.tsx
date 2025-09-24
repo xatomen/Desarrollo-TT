@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuth } from '@/app/context/AuthContext';
@@ -15,8 +15,10 @@ export default function Navbar() {
   return (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
-        <Ionicons name="person-circle-outline" size={24} color="white" />
-        <Text style={styles.headerTitle}>APP Propietarios</Text>
+        {/* <Ionicons name="person-circle-outline" size={24} color="white" />
+        <Text style={styles.headerTitle}>APP Propietarios</Text> */}
+        {/* Logotipo */}
+        <Image source={require('../assets/images/tupermiso/logo-tupermiso.png')} style={styles.logo} resizeMode="contain" />
       </View>
       
       {/* Solo mostrar el botón de logout si el usuario está autenticado */}
@@ -58,6 +60,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     fontFamily: 'Roboto',
+  },
+  logo: {
+    width: 200,
+    height: 60,
+    marginRight: 12,
+    // marginLeft: -20,
   },
   logoutButton: {
     backgroundColor: '#0051A8',

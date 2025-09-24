@@ -159,7 +159,7 @@ const PermisoCirculacionPDF = forwardRef<HTMLDivElement, PermisoCirculacionPDFPr
       }}
     >
       <div className="pb-3">
-        <img src="/img/tupermiso/logo-texto-permiso.svg" style={{ height: '25px' }} />
+        <img src="/img/tupermiso/logo-texto-permiso.png" style={{ height: '25px' }} />
       </div>
       <div
         style={{

@@ -26,7 +26,7 @@ export default function PermisoCirculacionModal({ visible, onClose, datos }: Per
           >
             <ScrollView>
               {/* Logo superior */}
-              <Image source={require('../assets/images/tupermiso/logo-texto-permiso.svg')} style={styles.logo} resizeMode="contain" />
+              <Image source={require('../assets/images/tupermiso/logo-texto-permiso.png')} style={styles.logo} resizeMode="contain" />
               {/* Marca de agua y contenido */}
               <View style={styles.watermarkContainer}>
                 <Image source={require('../assets/images/tupermiso/marca-agua-simple.png')} style={styles.watermark} resizeMode="contain" />
