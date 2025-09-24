@@ -136,6 +136,7 @@ function ValidacionesPagoContent() {
 
   // Permiso de circulación
   const [fechaEmisionPermiso, setFechaEmisionPermiso] = useState<Date | string | null>(null);
+  const [fechaVencimientoPermiso, setFechaVencimientoPermiso] = useState<Date | string | null>(null);
 
   // Obtener desde consultar valor permiso
   const [cilindrada, setCilindrada] = useState<string>('-');
@@ -218,6 +219,7 @@ function ValidacionesPagoContent() {
           const permisoRes = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${ppu}`);
           const permisoData = await permisoRes.json();
           setFechaEmisionPermiso(permisoData.fecha_emision || '-');
+          setFechaVencimientoPermiso(permisoData.fecha_expiracion || '-');
           // Obtener año de emisión del permiso
           const anioEmisionPermiso = permisoData.fecha_emision ? new Date(permisoData.fecha_emision).getFullYear() : null;
           console.log('Año emisión permiso:', anioEmisionPermiso);
@@ -392,6 +394,20 @@ function ValidacionesPagoContent() {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
       const data = await response.json();
+      // Si tenemos un permiso emitido anteriormente, calculamos la cantidad de años desde la última emisión
+      // Por ejemplo: Si se emitió el 2025 y estamos en 2025, no debemos pagar nada
+      // Si se emitió el 2024 y estamos en 2025, debemos pagar 1 año
+      // Si se emitió el 2023 y estamos en 2025, debemos pagar 2 años, etc.
+      if (data.fecha_ultima_emision) {
+        const anioUltimaEmision = new Date(data.fecha_ultima_emision).getFullYear();
+        const anioActual = new Date().getFullYear();
+        const aniosAPagar = Math.max(0, anioActual - anioUltimaEmision);
+        const valorTotal = (data.valor || 0) * aniosAPagar;
+        setValorPermiso(valorTotal);
+      } else {
+        // Si no hay fecha de última emisión, se paga el valor completo
+        setValorPermiso(data.valor || 0);
+      }
       setValorPermiso(data.valor || 0);
       // Nuevos datos
       setCilindrada(data.cilindrada || '-');
