@@ -116,7 +116,7 @@ export default function Home() {
                 fontWeight: 400,
                 fontSize: '1.05rem'
               }}>
-                Solicita, renueva y administra tus permisos de conducir de manera fácil y rápida.
+                Solicita, renueva y administra tus permisos de circulación de manera fácil y rápida.
               </p>
             </div>
           </div>
@@ -176,7 +176,7 @@ export default function Home() {
                 fontWeight: 400,
                 fontSize: '1.05rem'
               }}>
-                Accede a todos tus documentos relacionados con permisos de conducir en un solo lugar.
+                Accede a todos tus documentos relacionados con permisos de circulación en un solo lugar.
               </p>
             </div>
           </div>
@@ -265,9 +265,9 @@ export default function Home() {
                   className="bi bi-people-fill"
                   style={{ fontSize: '2.2rem', color: '#D00070', marginBottom: 10 }}
                 ></i>
-                <h4 style={{ color: '#D00070', fontWeight: 700, fontSize: '1.15rem' }}>Soporte personalizado</h4>
+                <h4 style={{ color: '#D00070', fontWeight: 700, fontSize: '1.15rem' }}>Información siempre disponible</h4>
                 <p style={{ color: '#222', fontSize: '1rem' }}>
-                  Nuestro equipo te acompaña en cada paso, resolviendo tus dudas y ayudándote a completar tus gestiones.
+                  Consulta y descarga tus documentos y permisos en cualquier momento, desde cualquier dispositivo, sin esperas ni trámites presenciales.
                 </p>
               </div>
             </div>
@@ -313,10 +313,10 @@ export default function Home() {
                 Puedes pagar con tarjetas de <b>crédito</b>, <b>débito</b> y <b>prepago</b> de todos los bancos a través de WebPay.
                 <br />
                 <span style={{ color: '#6D2077', fontWeight: 500 }}>Rápido, seguro y sin complicaciones.</span>
-                <div className="justify-content-center d-flex">
-                  <img src="/img/medios-pago.png" className="" style={{ maxWidth: '100%', height: '30px', marginTop: '1rem' }} />
-                </div>
               </p>
+              <div className="justify-content-center d-flex">
+                <img src="/img/medios-pago.png" className="" style={{ maxWidth: '100%', height: '30px', marginTop: '1rem' }} />
+              </div>
             </div>
             {/* Columna imagen cuotas */}
             <div className="col-12 col-md-6 d-flex justify-content-center align-items-center">

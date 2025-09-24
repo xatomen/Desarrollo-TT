@@ -387,10 +387,10 @@ export default function ConfirmacionPago() {
           },
           body: JSON.stringify({
             ppu: datos.ppu,
-            rut: pagoInfo.rut,
+            rut: pagoInfo?.rut,
             valor_permiso: datos.valorPermiso,
             fecha_emision: new Date(),
-            tarjeta: pagoInfo.numeroTarjeta.slice(-4),
+            tarjeta: pagoInfo?.numeroTarjeta.slice(-4),
           }),
         });
 
