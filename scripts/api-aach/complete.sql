@@ -81,7 +81,7 @@ INSERT INTO soap (ppu, compania, rige_desde, rige_hasta, prima) VALUES
 
 -- SOAP Vehículos Jorge Gallardo Contreras
 ('HFXX27', 'Consorcio', '2025-02-07', '2026-02-07', 11000),
-('JH1234', 'Consorcio', '2025-11-20', '2026-11-20', 9500),
+('AH1234', 'Consorcio', '2025-11-20', '2026-11-20', 9500),
 ('BWFD87', 'Consorcio', '2025-06-15', '2026-06-15', 8700),
 ('CBKS56', 'Consorcio', '2025-03-10', '2026-03-10', 9900),
 

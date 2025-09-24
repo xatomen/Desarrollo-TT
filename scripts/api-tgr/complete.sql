@@ -108,7 +108,7 @@ INSERT INTO permiso_circulacion (ppu, rut, nombre, fecha_emision, fecha_expiraci
 -- ###########################################################################
 
 -- Jorge Gallardo Contreras
-('JH1234', '20961960-1', 'Jorge Gallardo Contreras', '2023-11-20 00:00:00', '2024-11-20 00:00:00', 78000, '5566778', '1G1BE5SM0J7123456', 'Sedán', 'Blanco', 'Chevrolet', 'Cruze', 2020, 0, 'Verde', 'Gasolina', 1600, 'Automática', 4, 2, 'Bluetooth, ABS', 'SD634452', 7800000),
+('AH1234', '20961960-1', 'Jorge Gallardo Contreras', '2023-11-20 00:00:00', '2024-11-20 00:00:00', 78000, '5566778', '1G1BE5SM0J7123456', 'Sedán', 'Blanco', 'Chevrolet', 'Cruze', 2020, 0, 'Verde', 'Gasolina', 1600, 'Automática', 4, 2, 'Bluetooth, ABS', 'SD634452', 7800000),
 ('BWFD87', '20961960-1', 'Jorge Gallardo Contreras', '2022-06-15 00:00:00', '2023-06-15 00:00:00', 62000, '998877', 'VF1BR0B0C12345678', 'Sedán', 'Rojo', 'Renault', 'Clio', 2019, 0, 'Verde', 'Gasolina', 1200, 'Manual', 4, 2, 'Aire Acondicionado, Radio', 'SD635443', 6200000),
 ('CBKS56', '20961960-1', 'Jorge Gallardo Contreras', '2023-03-10 00:00:00', '2024-03-10 00:00:00', 35000, '334455', 'VBKRD1100M1234567', 'Hatchback', 'Blanco', 'Kia', 'Rio 3', 2021, 0, 'Verde', 'Gasolina', 1200, 'Manual', 5, 2, 'Bluetooth, Airbags', 'SD654233', 3500000),
 -- Felipe Vera Andrade

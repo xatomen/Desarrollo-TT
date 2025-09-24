@@ -49,7 +49,7 @@ INSERT INTO REVISION_TECNICA (ppu, fecha, codigo_planta, planta, nom_certificado
 
 -- REVISION_TECNICA para vehículos de Jorge Gallardo Contreras
 ('HFXX27', '2025-09-07', 'PLT1001', 'PRT Santiago', 'CERT-2024-011', '2026-09-07', 'aprobada'),
-('JH1234', '2024-11-20', 'PLT1002', 'PRT Providencia', 'CERT-2023-012', '2025-11-20', 'aprobada'),
+('AH1234', '2024-11-20', 'PLT1002', 'PRT Providencia', 'CERT-2023-012', '2025-11-20', 'aprobada'),
 ('BWFD87', '2025-06-15', 'PLT1003', 'PRT Ñuñoa', 'CERT-2022-013', '2026-06-15', 'aprobada'),
 ('CBKS56', '2025-03-10', 'PLT1004', 'PRT Las Condes', 'CERT-2023-014', '2026-03-10', 'aprobada'),
 -- REVISION_TECNICA para vehículo de Felipe Vera Andrade

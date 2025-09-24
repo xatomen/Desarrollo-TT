@@ -79,7 +79,7 @@ INSERT INTO PADRON (PPU, RUT, NOMBRE, TIPO_VEHICULO, MARCA, MODELO, ANIO, COLOR,
 
 -- Vehículos Jorge Gallardo Contreras (RUT 20961960-1)
 ('HFXX27', '20961960-1', 'Jorge Gallardo Contreras', 'Camioneta', 'Foton', 'Midi', 2025, 'Plateado', 1300, '4123523', 'CH1249123412d23', '2025-09-07'),
-('JH1234', '20961960-1', 'Jorge Gallardo Contreras', 'Sedán', 'Chevrolet', 'Cruze', 2020, 'Blanco', 1600, '5566778', '1G1BE5SM0J7123456', '2023-11-20'),
+('AH1234', '20961960-1', 'Jorge Gallardo Contreras', 'Sedán', 'Chevrolet', 'Cruze', 2020, 'Blanco', 1600, '5566778', '1G1BE5SM0J7123456', '2023-11-20'),
 ('BWFD87', '20961960-1', 'Jorge Gallardo Contreras', 'Sedán', 'Renault', 'Clio', 2019, 'Rojo', 1200, '998877', 'VF1BR0B0C12345678', '2022-06-15'),
 ('CBKS56', '20961960-1', 'Jorge Gallardo Contreras', 'Hatchback', 'Kia', 'Rio 3', 2021, 'Blanco', 200, '334455', 'VBKRD1100M1234567', '2023-03-10'),
 -- Vehículo Felipe Vera Andrade (RUT 20857826-K)
@@ -156,5 +156,5 @@ INSERT INTO MULTAS_TRANSITO (PPU, ROL_CAUSA, JPL) VALUES
 -- ############################################################
 -- Multas para vehículos de demostración
 -- ############################################################
-('JH1234', 2025001, 'JPL Santiago'), -- Foton Midi - 1 multa
-('JH1234', 2024002, 'JPL Providencia'); -- Chevrolet Cruze - 1 multa
+('AH1234', 2025001, 'JPL Santiago'), -- Foton Midi - 1 multa
+('AH1234', 2024002, 'JPL Providencia'); -- Chevrolet Cruze - 1 multa
