@@ -178,7 +178,7 @@ function ValidacionesPagoContent() {
 
   // Crear documentos dinámicamente basado en los estados
   const documentos: DocumentoValidacion[] = [
-    { nombre: 'Permiso de Circulación', estado: permisoJson && permisoJson.vigencia === true ? 'Vigente' : 'No' },
+    { nombre: 'Permiso de Circulación', estado: permisoJson && permisoJson.vigencia === true ? 'Vigente' : 'No Vigente' },
     { nombre: 'Revisión Técnica', estado: revisionTecnica },
     { nombre: 'SOAP (Año vigente)', estado: soap },
     { nombre: 'Encargo por Robo', estado: encargoRobo },
@@ -384,11 +384,13 @@ function ValidacionesPagoContent() {
 
   // Verificar si todos los documentos están en estado ideal
   const documentosNegativosPositivos = ['Encargo por Robo', 'Multas de Tránsito', 'Multas RPI'];
-  const todosDocumentosValidos = documentos.every(doc => {
-    if (doc.estado === 'Desconocido') return false; // Si hay datos desconocidos, no es válido
-    const esDocumentoNegativo = documentosNegativosPositivos.includes(doc.nombre);
-    return doc.estado === 'Vigente' || (doc.estado === 'No' && esDocumentoNegativo);
-  });
+  const todosDocumentosValidos = documentos
+    .filter(doc => doc.nombre !== 'Permiso de Circulación')
+    .every(doc => {
+      if (doc.estado === 'Desconocido') return false;
+      const esDocumentoNegativo = documentosNegativosPositivos.includes(doc.nombre);
+      return doc.estado === 'Vigente' || (doc.estado === 'No' && esDocumentoNegativo);
+    });
 
   // Obtener valor permiso de circulación
   const fetchValorPermiso = async (ppu: string) => {
