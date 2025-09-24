@@ -7,11 +7,15 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
   Legend,
+  ArcElement,
 } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Bar, Line, Pie } from 'react-chartjs-2';
+import { applyChartTheme, palette, CHART_HEIGHT, buildBarOptions, buildLineOptions, pieOptions as sharedPieOptions } from "@/app/components/charts/theme";
 import API_CONFIG from "@/config/api";
 
 // Registrar componentes de Chart.js
@@ -19,10 +23,16 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ArcElement
 );
+
+// Aplicar tema global una vez
+applyChartTheme();
 
 // Tipos para la respuesta de la API
 type ApiResponse = {
@@ -87,6 +97,13 @@ export default function RegistroFiscalizacionPage() {
   const [apiData, setApiData] = useState<ApiResponse['data'] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Estados para datos de SRCEI
+  const [srceiData, setSrceiData] = useState<{
+    total_matriculas: number;
+    vehiculos_pagados: number;
+  } | null>(null);
+  const [srceiLoading, setSrceiLoading] = useState(false);
 
   // Filtros
   const [groupBy, setGroupBy] = useState<Grupo>("DIA");
@@ -137,9 +154,39 @@ export default function RegistroFiscalizacionPage() {
     }
   };
 
+  // Función para hacer fetch de datos SRCEI
+  const fetchSrceiData = async () => {
+    setSrceiLoading(true);
+    try {
+      // Simular API call a SRCEI - en producción sería una llamada real
+      // Ejemplo: http://localhost:8006/estadisticas/annual
+      
+      // Por ahora simulamos los datos basados en el año actual
+      const currentYear = new Date().getFullYear();
+      
+      // Datos simulados realistas basados en los datos de prueba creados
+      // En producción esto vendría de queries como:
+      // Total matrículas 2025: SELECT COUNT(*) FROM PADRON WHERE YEAR(FECHA_INSCRIPCION) = 2025
+      // Vehículos sin multas: SELECT COUNT(DISTINCT p.PPU) FROM PADRON p WHERE YEAR(p.FECHA_INSCRIPCION) = 2025 AND p.PPU NOT IN (SELECT DISTINCT m.PPU FROM MULTAS_TRANSITO m)
+      
+      const mockData = {
+        total_matriculas: 73, // Total de vehículos inscritos en 2025 (datos originales + adicionales)
+        vehiculos_pagados: 48, // Vehículos sin multas (al día con sus pagos)
+        anio: currentYear
+      };
+      
+      setSrceiData(mockData);
+    } catch (err) {
+      console.error('Error fetching SRCEI data:', err);
+    } finally {
+      setSrceiLoading(false);
+    }
+  };
+
   // Cargar datos iniciales al montar el componente
   useEffect(() => {
     fetchData();
+    fetchSrceiData(); // Cargar datos de SRCEI
   }, []);
 
   // Transformar datos de la API para la tabla
@@ -195,16 +242,16 @@ export default function RegistroFiscalizacionPage() {
         {
           label: 'Al día',
           data: recentData.map(item => item.al_dia),
-          backgroundColor: '#198754',
-          borderColor: '#198754',
+          backgroundColor: '#16a34a', // green-600
+          borderColor: '#16a34a',
           borderWidth: 1,
           stack: 'stack1',
         },
         {
           label: 'Con problemas',
           data: recentData.map(item => item.con_problemas),
-          backgroundColor: '#dc3545',
-          borderColor: '#dc3545',
+          backgroundColor: '#dc2626', // red-600
+          borderColor: '#dc2626',
           borderWidth: 1,
           stack: 'stack1',
         },
@@ -212,188 +259,169 @@ export default function RegistroFiscalizacionPage() {
     };
   }, [chartData, groupBy]);
 
-  // Datos para Chart.js - Miles fiscalizados
-  const milesChartData = useMemo(() => {
-    const periodsToShow = groupBy === "AÑO" ? 3 : groupBy === "MES" ? 6 : 7;
-    const recentData = chartData.miles.slice(-periodsToShow);
+  // (El gráfico de "Vehículos fiscalizados" fue removido a petición del usuario)
+
+  // Datos para gráficos de estado de documentos (Permiso, Revisión, SOAP)
+  const documentStatusCharts = useMemo(() => {
+    const permisoCount = { vigente: 0, noVigente: 0 };
+    const revisionCount = { vigente: 0, noVigente: 0 };
+    const soapCount = { vigente: 0, noVigente: 0 };
+
+    tableData.forEach(row => {
+      // Permiso
+      if (row.permiso === "Vigente") permisoCount.vigente++;
+      else permisoCount.noVigente++;
+      
+      // Revisión
+      if (row.revision === "Vigente") revisionCount.vigente++;
+      else revisionCount.noVigente++;
+      
+      // SOAP
+      if (row.soap === "Vigente") soapCount.vigente++;
+      else soapCount.noVigente++;
+    });
 
     return {
-      labels: recentData.map(item => formatDateLabel(item.periodo, groupBy)),
-      datasets: [
-        {
-          label: 'Vehículos fiscalizados',
-          data: recentData.map(item => item.miles), // Ya son unidades individuales, no miles
-          backgroundColor: '#0d6efd',
-          borderColor: '#0d6efd',
+      permiso: {
+        labels: ['Vigente', 'No Vigente'],
+        datasets: [{
+          data: [permisoCount.vigente, permisoCount.noVigente],
+          backgroundColor: ['#16a34a', '#dc2626'],
+          borderColor: ['#16a34a', '#dc2626'],
           borderWidth: 1,
-        },
-      ],
-    };
-  }, [chartData, groupBy]);
-
-  // Opciones para gráfico apilado
-  const stackedChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      mode: 'index' as const,
-      intersect: false,
-    },
-    plugins: {
-      legend: {
-        display: true,
-        position: 'bottom' as const,
-        labels: {
-          boxWidth: 12,
-          padding: 15,
-          font: {
-            size: 11,
-          },
-        },
+        }],
       },
+      revision: {
+        labels: ['Vigente', 'No Vigente'],
+        datasets: [{
+          data: [revisionCount.vigente, revisionCount.noVigente],
+          backgroundColor: ['#16a34a', '#dc2626'],
+          borderColor: ['#16a34a', '#dc2626'],
+          borderWidth: 1,
+        }],
+      },
+      soap: {
+        labels: ['Vigente', 'No Vigente'],
+        datasets: [{
+          data: [soapCount.vigente, soapCount.noVigente],
+          backgroundColor: ['#16a34a', '#dc2626'],
+          borderColor: ['#16a34a', '#dc2626'],
+          borderWidth: 1,
+        }],
+      },
+    };
+  }, [tableData]);
+
+  // Datos para gráfico de pastel de Encargo
+  const encargoChartData = useMemo(() => {
+    const encargoCount = { si: 0, no: 0 };
+    
+    tableData.forEach(row => {
+      if (row.encargo === "SI") encargoCount.si++;
+      else encargoCount.no++;
+    });
+
+    return {
+      labels: ['Sin Encargo', 'Con Encargo'],
+      datasets: [{
+        data: [encargoCount.no, encargoCount.si],
+        backgroundColor: ['#16a34a', '#dc2626'],
+        borderColor: ['#ffffff'],
+        borderWidth: 2,
+      }],
+    };
+  }, [tableData]);
+
+  // Datos para gráfico de línea por fecha
+  const fechaChartData = useMemo(() => {
+    // Agrupar por día
+    const fechaCounts: { [key: string]: number } = {};
+    
+    tableData.forEach(row => {
+      const fecha = new Date(row.fecha);
+      const fechaKey = fecha.toISOString().split('T')[0]; // YYYY-MM-DD
+      fechaCounts[fechaKey] = (fechaCounts[fechaKey] || 0) + 1;
+    });
+
+    // Ordenar fechas y tomar las últimas 10
+    const sortedFechas = Object.keys(fechaCounts)
+      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+      .slice(-10);
+
+    return {
+      labels: sortedFechas.map(fecha => formatDateLabel(fecha, "DIA")),
+      datasets: [{
+        label: 'Fiscalizaciones por día',
+        data: sortedFechas.map(fecha => fechaCounts[fecha]),
+        borderColor: palette.primary,
+        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.1,
+      }],
+    };
+  }, [tableData]);
+
+  // Datos para gráfico de SRCEI (matrículas vs pagados)
+  const srceiChartData = useMemo(() => {
+    if (!srceiData) {
+      return {
+        labels: ['Al día', 'Con multas'],
+        datasets: [{
+          data: [0, 0],
+          backgroundColor: ['#16a34a', '#dc2626'],
+          borderColor: ['#ffffff'],
+          borderWidth: 2,
+        }],
+      };
+    }
+
+    const conMultas = Math.max(0, srceiData.total_matriculas - srceiData.vehiculos_pagados);
+    return {
+      labels: ['Al día', 'Con multas'],
+      datasets: [{
+        data: [srceiData.vehiculos_pagados, conMultas],
+        backgroundColor: ['#16a34a', '#dc2626'],
+        borderColor: ['#ffffff'],
+        borderWidth: 2,
+      }],
+    };
+  }, [srceiData]);
+
+  // Opciones para gráfico apilado (usando tema)
+  const stackedChartOptions = {
+    ...buildBarOptions({ stacked: true, showLegend: true }),
+    plugins: {
+      ...(buildBarOptions({ stacked: true, showLegend: true }) as any).plugins,
       tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: 'white',
-        bodyColor: 'white',
+        backgroundColor: 'rgba(0,0,0,0.85)',
         borderColor: '#ddd',
         borderWidth: 1,
         callbacks: {
           afterLabel: function(context: any) {
             const dataIndex = context.dataIndex;
-            const datasets = context.chart.data.datasets;
-            
-            // Calcular el total correctamente para este período específico
+            const datasets = context.chart.data.datasets as any[];
             let total = 0;
-            datasets.forEach((dataset: any) => {
-              if (dataset.data[dataIndex] !== undefined && dataset.data[dataIndex] !== null) {
-                total += dataset.data[dataIndex];
-              }
-            });
-            
-            // Obtener el valor real del dataset actual
+            datasets.forEach((ds) => { const v = ds.data[dataIndex]; if (v != null) total += v; });
             const currentValue = context.dataset.data[dataIndex];
             const percentage = total > 0 ? ((currentValue / total) * 100).toFixed(1) : 0;
             return `${percentage}% del total de este período`;
           },
           footer: function(context: any) {
-            if (context.length === 0) return '';
-            
+            if (!context.length) return '';
             const dataIndex = context[0].dataIndex;
-            const datasets = context[0].chart.data.datasets;
-            
-            // Calcular el total correctamente para este período
+            const datasets = context[0].chart.data.datasets as any[];
             let total = 0;
-            datasets.forEach((dataset: any) => {
-              if (dataset.data[dataIndex] !== undefined && dataset.data[dataIndex] !== null) {
-                total += dataset.data[dataIndex];
-              }
-            });
-            
+            datasets.forEach((ds) => { const v = ds.data[dataIndex]; if (v != null) total += v; });
             return `Total: ${total} vehículos`;
           },
         },
       },
     },
-    scales: {
-      x: {
-        stacked: true,
-        grid: {
-          display: false,
-        },
-        ticks: {
-          font: {
-            size: 11,
-          },
-          maxRotation: 45,
-        },
-      },
-      y: {
-        stacked: true,
-        beginAtZero: true,
-        ticks: {
-          stepSize: 1,
-          callback: function(value: any) {
-            return Number.isInteger(value) ? value : '';
-          },
-          font: {
-            size: 11,
-          },
-        },
-        grid: {
-          color: '#e9ecef',
-        },
-      },
-    },
-    elements: {
-      bar: {
-        borderRadius: 0,
-        borderSkipped: false,
-      },
-    },
-  };
+  } as const;
 
   // Opciones para gráfico simple
-  const simpleChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: 'white',
-        bodyColor: 'white',
-        borderColor: '#ddd',
-        borderWidth: 1,
-        callbacks: {
-          label: function(context: any) {
-            return `Vehículos fiscalizados: ${context.parsed.y.toLocaleString('es-CL')}`;
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 1,
-          callback: function(value: any) {
-            return Number.isInteger(value) ? value.toLocaleString('es-CL') : '';
-          },
-          font: {
-            size: 11,
-          },
-        },
-        grid: {
-          color: '#e9ecef',
-        },
-        title: {
-          display: true,
-          text: 'Vehículos fiscalizados (unidades)',
-          font: {
-            size: 12,
-          },
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          font: {
-            size: 11,
-          },
-          maxRotation: 45,
-        },
-      },
-    },
-    elements: {
-      bar: {
-        borderRadius: 4,
-      },
-    },
-  };
+  // (Sin gráfico de barras simple en esta vista)
 
   // Calcular estadísticas
   const stats = useMemo(() => {
@@ -559,20 +587,52 @@ export default function RegistroFiscalizacionPage() {
         </div>
       </div>
       
+      {/* SRCEI global: destacado debajo del resumen */}
+      <div className="card mt-4 shadow-sm">
+        <div className="card-header bg-light">
+          <h5 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+            <i className="bi bi-database" style={{ color: palette.info }}></i>
+            Matrículas {new Date().getFullYear()}
+            {srceiLoading && <div className="spinner-border spinner-border-sm ms-2" role="status"></div>}
+          </h5>
+        </div>
+        <div className="card-body">
+          <div style={{ height: CHART_HEIGHT.lg }}>
+            {srceiData ? (
+              <Pie data={srceiChartData} options={sharedPieOptions} />
+            ) : (
+              <div className="d-flex align-items-center justify-content-center h-100">
+                <span className="text-muted">
+                  {srceiLoading ? 'Cargando datos SRCEI...' : 'Sin datos disponibles'}
+                </span>
+              </div>
+            )}
+          </div>
+          {srceiData && (
+            <div className="text-center mt-3">
+              <div className="d-inline-flex gap-4 flex-wrap">
+                <span><strong>Total inscritos:</strong> {srceiData.total_matriculas}</span>
+                <span><strong>Al día:</strong> {srceiData.vehiculos_pagados}</span>
+                <span><strong>Con multas:</strong> {srceiData.total_matriculas - srceiData.vehiculos_pagados}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Contenido principal */}
       <div className="row mt-4">
-
-        {/* Gráficos con Chart.js */}
-        <div className="col-12 col-lg-6 mt-4 mt-lg-0">
+        {/* Col izquierda: gráficos principales */}
+        <div className="col-12 col-lg-6">
           <div className="card shadow-sm mb-3">
             <div className="card-header bg-light">
               <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
-                <i className="bi bi-bar-chart-fill text-primary"></i>
+                <i className="bi bi-bar-chart-fill" style={{ color: palette.primary }}></i>
                 Vehículos por condición (apilado)
               </h6>
             </div>
             <div className="card-body">
-              <div style={{ height: '250px' }}> {/* Altura un poco mayor para la leyenda */}
+              <div style={{ height: CHART_HEIGHT.lg }}>
                 {vehiculosChartData.datasets[0].data.length > 0 ? (
                   <Bar data={vehiculosChartData} options={stackedChartOptions} />
                 ) : (
@@ -581,26 +641,23 @@ export default function RegistroFiscalizacionPage() {
                   </div>
                 )}
               </div>
-              {/* Información adicional */}
               <div className="mt-2 text-center">
-                <small className="text-muted">
-                  Cada barra muestra la composición de vehículos al día (verde) vs con problemas (rojo) por período
-                </small>
+                <small className="text-muted">Cada barra muestra vehículos al día (verde) vs con problemas (rojo).</small>
               </div>
             </div>
           </div>
 
-          <div className="card shadow-sm">
+          <div className="card shadow-sm mb-3">
             <div className="card-header bg-light">
               <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
-                <i className="bi bi-speedometer2 text-info"></i>
-                Vehículos fiscalizados (unidades)
+                <i className="bi bi-graph-up" style={{ color: palette.primary }}></i>
+                Fiscalizaciones por día (últimos 10 días)
               </h6>
             </div>
             <div className="card-body">
-              <div style={{ height: '200px' }}>
-                {milesChartData.datasets[0].data.length > 0 ? (
-                  <Bar data={milesChartData} options={simpleChartOptions} />
+              <div style={{ height: CHART_HEIGHT.md }}>
+                {fechaChartData.datasets[0].data.length > 0 ? (
+                  <Line data={fechaChartData} options={buildLineOptions({ yTitle: 'Número de fiscalizaciones' })} />
                 ) : (
                   <div className="d-flex align-items-center justify-content-center h-100">
                     <span className="text-muted">Sin datos disponibles</span>
@@ -611,7 +668,7 @@ export default function RegistroFiscalizacionPage() {
           </div>
         </div>
 
-        {/* Tabla */}
+        {/* Col derecha: tabla */}
         <div className="col-12 col-lg-6">
           <div className="card shadow-sm">
             <div className="card-body p-0">
@@ -637,31 +694,27 @@ export default function RegistroFiscalizacionPage() {
                     )}
 
                     {currentRows.map((r, i) => {
-                      const alDia = r.permiso === "Vigente" && 
-                                   r.revision === "Vigente" && 
-                                   r.soap === "Vigente" && 
-                                   r.encargo === "NO";
-                      
+                      const alDia = r.permiso === 'Vigente' && r.revision === 'Vigente' && r.soap === 'Vigente' && r.encargo === 'NO';
                       return (
-                        <tr key={`${r.ppu}-${i}`} className={alDia ? "" : "table-warning"}>
+                        <tr key={`${r.ppu}-${i}`} className={alDia ? '' : 'table-warning'}>
                           <td><strong>{r.ppu}</strong></td>
                           <td>
-                            <span className={`badge ${r.permiso === "Vigente" ? "bg-success" : "bg-danger"}`} style={{ borderRadius: '0.5rem', color: 'white', fontWeight: '400', width: '75px', display: 'inline-block', textAlign: 'center' }}>
+                            <span className={`badge ${r.permiso === 'Vigente' ? 'bg-success' : 'bg-danger'}`} style={{ borderRadius: '0.5rem', color: 'white', fontWeight: '400', width: '75px', display: 'inline-block', textAlign: 'center' }}>
                               {r.permiso}
                             </span>
                           </td>
                           <td>
-                            <span className={`badge ${r.revision === "Vigente" ? "bg-success" : "bg-danger"}`} style={{ borderRadius: '0.5rem', color: 'white', fontWeight: '400', width: '75px', display: 'inline-block', textAlign: 'center' }}>
+                            <span className={`badge ${r.revision === 'Vigente' ? 'bg-success' : 'bg-danger'}`} style={{ borderRadius: '0.5rem', color: 'white', fontWeight: '400', width: '75px', display: 'inline-block', textAlign: 'center' }}>
                               {r.revision}
                             </span>
                           </td>
                           <td>
-                            <span className={`badge ${r.soap === "Vigente" ? "bg-success" : "bg-danger"}`} style={{ borderRadius: '0.5rem', color: 'white', fontWeight: '400', width: '75px', display: 'inline-block', textAlign: 'center' }}>
+                            <span className={`badge ${r.soap === 'Vigente' ? 'bg-success' : 'bg-danger'}`} style={{ borderRadius: '0.5rem', color: 'white', fontWeight: '400', width: '75px', display: 'inline-block', textAlign: 'center' }}>
                               {r.soap}
                             </span>
                           </td>
                           <td>
-                            <span className={`badge ${r.encargo === "NO" ? "bg-success" : "bg-danger"}`} style={{ borderRadius: '0.5rem', color: 'white', fontWeight: '400', width: '75px', display: 'inline-block', textAlign: 'center' }}>
+                            <span className={`badge ${r.encargo === 'NO' ? 'bg-success' : 'bg-danger'}`} style={{ borderRadius: '0.5rem', color: 'white', fontWeight: '400', width: '75px', display: 'inline-block', textAlign: 'center' }}>
                               {r.encargo}
                             </span>
                           </td>
@@ -673,7 +726,6 @@ export default function RegistroFiscalizacionPage() {
                 </table>
               </div>
 
-              {/* Footer tabla */}
               <div className="d-flex justify-content-between align-items-center p-3">
                 <div className="d-flex align-items-center gap-2">
                   <span>Mostrar</span>
@@ -690,28 +742,23 @@ export default function RegistroFiscalizacionPage() {
                       <option key={n} value={n}>{n}</option>
                     ))}
                   </select>
-                  <span className="text-muted">
-                    de {tableData.length}
-                  </span>
+                  <span className="text-muted">de {tableData.length}</span>
                 </div>
-
                 <nav>
                   <ul className="pagination pagination-sm mb-0">
-                    <li className={`page-item ${page === 1 ? "disabled" : ""}`}>
+                    <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
                       <button className="page-link" onClick={() => setPage(1)}>&laquo;</button>
                     </li>
-                    <li className={`page-item ${page === 1 ? "disabled" : ""}`}>
+                    <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
                       <button className="page-link" onClick={() => setPage((p) => Math.max(1, p - 1))}>&lsaquo;</button>
                     </li>
                     <li className="page-item disabled">
-                      <span className="page-link">
-                        {page} / {totalPages}
-                      </span>
+                      <span className="page-link">{page} / {totalPages}</span>
                     </li>
-                    <li className={`page-item ${page === totalPages ? "disabled" : ""}`}>
+                    <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
                       <button className="page-link" onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>&rsaquo;</button>
                     </li>
-                    <li className={`page-item ${page === totalPages ? "disabled" : ""}`}>
+                    <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
                       <button className="page-link" onClick={() => setPage(totalPages)}>&raquo;</button>
                     </li>
                   </ul>
@@ -720,7 +767,103 @@ export default function RegistroFiscalizacionPage() {
             </div>
           </div>
         </div>
+      </div>
 
+  {/* Gráficos adicionales de análisis */}
+  <div className="col-12 mt-4">
+        <div className="row">
+          {/* Gráficos de estado de documentos */}
+          <div className="col-12 col-md-4">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-file-earmark-text" style={{ color: palette.success }}></i>
+                  Estado Permiso
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: CHART_HEIGHT.sm }}>
+                  {documentStatusCharts.permiso.datasets[0].data.some((val: number) => val > 0) ? (
+                    <Bar data={documentStatusCharts.permiso} options={statusBarOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-12 col-md-4">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-gear" style={{ color: palette.warning }}></i>
+                  Estado Revisión
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: CHART_HEIGHT.sm }}>
+                  {documentStatusCharts.revision.datasets[0].data.some((val: number) => val > 0) ? (
+                    <Bar data={documentStatusCharts.revision} options={statusBarOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-12 col-md-4">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-shield-check" style={{ color: palette.info }}></i>
+                  Estado SOAP
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: CHART_HEIGHT.sm }}>
+                  {documentStatusCharts.soap.datasets[0].data.some((val: number) => val > 0) ? (
+                    <Bar data={documentStatusCharts.soap} options={statusBarOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row">
+          {/* Gráfico de pastel para Encargo */}
+          <div className="col-12">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-pie-chart" style={{ color: palette.danger }}></i>
+                  Distribución Encargo/Robo
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: CHART_HEIGHT.md }}>
+                  {encargoChartData.datasets[0].data.some((val: number) => val > 0) ? (
+                      <Pie data={encargoChartData} options={sharedPieOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -772,3 +915,10 @@ function formatDateLabel(dateString: string, periodType: string = "DIA") {
       });
   }
 }
+
+// Opciones para gráficos de barras de estado
+const statusBarOptions = buildBarOptions({ showLegend: false });
+
+// Pie options vienen del tema como sharedPieOptions si se necesitan fuera
+
+// Opciones para gráfico de línea vienen del tema (buildLineOptions)
