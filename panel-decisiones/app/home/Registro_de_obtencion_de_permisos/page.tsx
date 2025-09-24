@@ -7,12 +7,15 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
   Legend,
+  ArcElement,
 } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
-import { applyChartTheme, palette, CHART_HEIGHT, buildBarOptions } from "@/app/components/charts/theme";
+import { Bar, Line, Pie } from 'react-chartjs-2';
+import { applyChartTheme, palette, CHART_HEIGHT, buildBarOptions, buildLineOptions, pieOptions as sharedPieOptions } from "@/app/components/charts/theme";
 import API_CONFIG from "@/config/api";
 
 // Registrar componentes de Chart.js
@@ -20,9 +23,12 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ArcElement
 );
 
 // Aplicar tema global
@@ -78,11 +84,27 @@ type Permiso = {
 
 type GroupBy = "DIA" | "MES" | "AÑO";
 
+// Tipos para los nuevos endpoints
+type PadronCountResponse = {
+  count: number;
+};
+
+type PermisoCountResponse = {
+  count: number;
+  year: number;
+};
+
 export default function RegistroObtencionPermisosPage() {
   // Estados para datos de la API
   const [apiData, setApiData] = useState<ApiResponse['data'] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Estados para el nuevo gráfico de comparación
+  const [padronCount, setPadronCount] = useState<number>(0);
+  const [permisosCount, setPermisosCount] = useState<number>(0);
+  const [loadingComparison, setLoadingComparison] = useState(false);
+  const [comparisonYear, setComparisonYear] = useState<number>(new Date().getFullYear());
 
   // Filtros
   const [groupBy, setGroupBy] = useState<GroupBy>("DIA");
@@ -133,10 +155,77 @@ export default function RegistroObtencionPermisosPage() {
     }
   };
 
+  // Función para obtener datos de comparación (padrones vs permisos)
+  const fetchComparisonData = async () => {
+    setLoadingComparison(true);
+    
+    try {
+      // Inicializar con valores por defecto
+      let padronData: PadronCountResponse = { count: 0 };
+      let permisoData: PermisoCountResponse = { count: 0, year: comparisonYear };
+
+      try {
+        // Obtener cantidad total de padrones a través del proxy de Next.js
+        const padronResponse = await fetch('/api/padron-count', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (padronResponse.ok) {
+          padronData = await padronResponse.json();
+          console.log('✅ Datos de padrones obtenidos vía proxy:', padronData);
+        } else {
+          console.error('❌ Error en proxy de padrones:', padronResponse.status, padronResponse.statusText);
+          throw new Error(`Error ${padronResponse.status}`);
+        }
+      } catch (padronError) {
+        console.error('❌ Error conectando al proxy de padrones:', padronError);
+        // Sin fallback - dejar en 0 para mostrar el error real
+      }
+
+      try {
+        // Obtener cantidad de permisos emitidos a través del proxy de Next.js
+        const permisoResponse = await fetch(`/api/permiso-count/${comparisonYear}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (permisoResponse.ok) {
+          permisoData = await permisoResponse.json();
+          console.log('✅ Datos de permisos obtenidos vía proxy:', permisoData);
+        } else {
+          console.error('❌ Error en proxy de permisos:', permisoResponse.status, permisoResponse.statusText);
+          throw new Error(`Error ${permisoResponse.status}`);
+        }
+      } catch (permisoError) {
+        console.error('❌ Error conectando al proxy de permisos:', permisoError);
+        // Sin fallback - dejar en 0 para mostrar el error real
+      }
+      
+      // Actualizar estados con los datos obtenidos
+      setPadronCount(padronData.count || 0);
+      setPermisosCount(permisoData.count || 0);
+      
+    } catch (err) {
+      console.error('❌ Error general en fetchComparisonData:', err);
+      // Sin fallback - mantener valores en 0 para mostrar error real
+    } finally {
+      setLoadingComparison(false);
+    }
+  };
+
   // Cargar datos iniciales
   useEffect(() => {
     fetchData();
+    fetchComparisonData();
   }, []);
+
+  // Cargar datos de comparación cuando cambie el año
+  useEffect(() => {
+    fetchComparisonData();
+  }, [comparisonYear]);
 
   // Datos filtrados por rango de fechas
   const permisosData: Permiso[] = useMemo(() => {
@@ -202,6 +291,100 @@ export default function RegistroObtencionPermisosPage() {
 
   // Opciones para el gráfico
   const chartOptions = buildBarOptions({ showLegend: false, yTitle: 'Permisos emitidos (unidades)' });
+
+  // Configuración para el gráfico de comparación
+  const comparisonChartData = useMemo(() => {
+    const porcentajePagado = padronCount > 0 ? ((permisosCount / padronCount) * 100) : 0;
+    
+    return {
+      labels: ['Total Padrones', `Permisos Pagados ${comparisonYear}`, 'Porcentaje Pagado (%)'],
+      datasets: [
+        {
+          label: 'Cantidad',
+          data: [padronCount, permisosCount, porcentajePagado],
+          backgroundColor: [
+            palette.info,      // Azul para total padrones
+            palette.success,   // Verde para permisos pagados
+            palette.warning    // Naranja para porcentaje
+          ],
+          borderColor: [
+            palette.info,
+            palette.success,
+            palette.warning
+          ],
+          borderWidth: 1,
+        },
+      ],
+    };
+  }, [padronCount, permisosCount, comparisonYear]);
+
+  const comparisonChartOptions = buildBarOptions({ 
+    showLegend: false, 
+    yTitle: 'Cantidad / Porcentaje'
+  });
+
+  // Datos para gráfico de distribución por valor
+  const valorRangeChartData = useMemo(() => {
+    const ranges = {
+      bajo: 0,      // < 50,000
+      medio: 0,     // 50,000 - 100,000
+      alto: 0,      // 100,000 - 200,000
+      premium: 0    // > 200,000
+    };
+    
+    permisosData.forEach(permiso => {
+      const valor = permiso.valor_permiso;
+      if (valor < 50000) ranges.bajo++;
+      else if (valor <= 100000) ranges.medio++;
+      else if (valor <= 200000) ranges.alto++;
+      else ranges.premium++;
+    });
+
+    return {
+      labels: ['Bajo (<$50.000)', 'Medio ($50.000-$100.000)', 'Alto ($100.000-$200.000)', 'Premium (>$200.000)'],
+      datasets: [{
+        data: [ranges.bajo, ranges.medio, ranges.alto, ranges.premium],
+        backgroundColor: [
+          '#16a34a', // verde para bajo
+          '#3b82f6', // azul para medio
+          '#f59e0b', // amarillo para alto
+          '#ef4444'  // rojo para premium
+        ],
+        borderColor: ['#ffffff'],
+        borderWidth: 2,
+      }],
+    };
+  }, [permisosData]);
+
+  // Datos para gráfico de línea por fecha de emisión
+  const fechaEmisionChartData = useMemo(() => {
+    // Agrupar por día
+    const fechaCounts: { [key: string]: number } = {};
+    
+    permisosData.forEach(permiso => {
+      const fecha = new Date(permiso.fecha_emision);
+      const fechaKey = fecha.toISOString().split('T')[0]; // YYYY-MM-DD
+      fechaCounts[fechaKey] = (fechaCounts[fechaKey] || 0) + 1;
+    });
+
+    // Ordenar fechas y tomar las últimas 10
+    const sortedFechas = Object.keys(fechaCounts)
+      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+      .slice(-10);
+
+    return {
+      labels: sortedFechas.map(fecha => formatDateLabel(fecha, "DIA")),
+      datasets: [{
+        label: 'Permisos por día',
+        data: sortedFechas.map(fecha => fechaCounts[fecha]),
+        borderColor: palette.primary,
+        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.1,
+      }],
+    };
+  }, [permisosData]);
 
   // Función para manejar el submit del formulario
   const handleFilterSubmit = (e: React.FormEvent) => {
@@ -351,12 +534,74 @@ export default function RegistroObtencionPermisosPage() {
         </div>
       </div>
 
-      {/* Layout: gráfico Chart.js + tabla */}
-      <div className="row g-3 mt-3">
-
-        {/* Gráficos */}
+      {/* Contenido principal */}
+      <div className="row mt-4">
+        {/* Col izquierda: gráficos principales */}
         <div className="col-12 col-lg-6">
-          <div className="card h-100 shadow-sm">
+          <div className="card shadow-sm mb-3">
+            <div className="card-header bg-light d-flex justify-content-between align-items-center">
+              <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                <i className="bi bi-pie-chart-fill" style={{ color: palette.success }}></i>
+                Padrones vs Permisos
+              </h6>
+              <div className="d-flex align-items-center gap-2">
+                <label className="form-label mb-0 small">Año:</label>
+                <select
+                  className="form-select form-select-sm"
+                  style={{ width: '80px', fontSize: '12px' }}
+                  value={comparisonYear}
+                  onChange={(e) => setComparisonYear(Number(e.target.value))}
+                >
+                  {Array.from({length: 5}, (_, i) => new Date().getFullYear() - i).map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="card-body">
+              {loadingComparison ? (
+                <div className="d-flex align-items-center justify-content-center" style={{ height: CHART_HEIGHT.lg }}>
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Cargando...</span>
+                  </div>
+                </div>
+              ) : padronCount === 0 && permisosCount === 0 ? (
+                <div className="d-flex align-items-center justify-content-center" style={{ height: CHART_HEIGHT.lg }}>
+                  <span className="text-muted">Servicios no disponibles</span>
+                </div>
+              ) : (
+                <div style={{ height: CHART_HEIGHT.lg }}>
+                  <Bar data={comparisonChartData} options={comparisonChartOptions} />
+                </div>
+              )}
+              
+              {/* Resumen de datos */}
+              <div className="mt-3 pt-3 border-top">
+                <div className="row text-center">
+                  <div className="col-4">
+                    <div className="text-info">
+                      <strong>{padronCount.toLocaleString()}</strong>
+                      <div className="small text-muted">Total Padrones</div>
+                    </div>
+                  </div>
+                  <div className="col-4">
+                    <div className="text-success">
+                      <strong>{permisosCount.toLocaleString()}</strong>
+                      <div className="small text-muted">Permisos {comparisonYear}</div>
+                    </div>
+                  </div>
+                  <div className="col-4">
+                    <div className="text-warning">
+                      <strong>{padronCount > 0 ? ((permisosCount / padronCount) * 100).toFixed(1) : 0}%</strong>
+                      <div className="small text-muted">Pagados</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="card shadow-sm mb-3">
             <div className="card-header bg-light">
               <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
                 <i className="bi bi-bar-chart-fill" style={{ color: palette.primary }}></i>
@@ -368,20 +613,19 @@ export default function RegistroObtencionPermisosPage() {
                 {emisionesChartData.datasets[0].data.length > 0 ? (
                   <Bar data={emisionesChartData} options={chartOptions} />
                 ) : (
-                  <div className="d-flex align-items-center justify-content-center h-100 flex-column">
-                    <div style={{ fontSize: '32px', color: '#6c757d' }}>📊</div>
-                    <span className="text-muted mt-2 text-center">
-                      No hay emisiones registradas<br/>
-                      <small>en el período seleccionado</small>
-                    </span>
+                  <div className="d-flex align-items-center justify-content-center h-100">
+                    <span className="text-muted">Sin datos disponibles</span>
                   </div>
                 )}
+              </div>
+              <div className="mt-2 text-center">
+                <small className="text-muted">Cada barra representa permisos emitidos en el período.</small>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Tabla */}
+        {/* Col derecha: tabla */}
         <div className="col-12 col-lg-6">
           <div className="card shadow-sm">
             <div className="card-body p-0">
@@ -392,19 +636,20 @@ export default function RegistroObtencionPermisosPage() {
                       <th>PPU</th>
                       <th>Propietario</th>
                       <th>Vehículo</th>
-                      <th>Valor (CLP)</th>
-                      <th>Fecha Emisión</th>
-                      <th>Fecha Expiración</th>
+                      <th>Valor</th>
+                      <th>Emisión</th>
+                      <th>Expiración</th>
                     </tr>
                   </thead>
                   <tbody>
                     {currentRows.length === 0 && (
                       <tr>
-                        <td colSpan={7} className="text-center py-5 text-muted">
-                          {loading ? 'Cargando...' : 'Sin resultados para el período seleccionado'}
+                        <td colSpan={6} className="text-center py-5 text-muted">
+                          {loading ? 'Cargando...' : 'Sin resultados'}
                         </td>
                       </tr>
                     )}
+
                     {currentRows.map((r, i) => (
                       <tr key={`${r.ppu}-${i}`}>
                         <td><strong>{r.ppu}</strong></td>
@@ -417,9 +662,9 @@ export default function RegistroObtencionPermisosPage() {
                           <small className="text-muted">{r.anio}</small>
                         </td>
                         <td>
-                          <strong className="text-success">
+                          <span className="badge bg-success" style={{ borderRadius: '0.5rem', color: 'white', fontWeight: '400', width: '90px', display: 'inline-block', textAlign: 'center', fontSize: '11px' }}>
                             ${r.valor_permiso.toLocaleString("es-CL")}
-                          </strong>
+                          </span>
                         </td>
                         <td>{formatDate(r.fecha_emision)}</td>
                         <td>{formatDate(r.fecha_expiracion)}</td>
@@ -429,7 +674,6 @@ export default function RegistroObtencionPermisosPage() {
                 </table>
               </div>
 
-              {/* Footer tabla: paginación + tamaño página */}
               <div className="d-flex justify-content-between align-items-center p-3">
                 <div className="d-flex align-items-center gap-2">
                   <span>Mostrar</span>
@@ -446,28 +690,23 @@ export default function RegistroObtencionPermisosPage() {
                       <option key={n} value={n}>{n}</option>
                     ))}
                   </select>
-                  <span className="text-muted">
-                    de {permisosData.length}
-                  </span>
+                  <span className="text-muted">de {permisosData.length}</span>
                 </div>
-
                 <nav>
                   <ul className="pagination pagination-sm mb-0">
-                    <li className={`page-item ${page === 1 ? "disabled" : ""}`}>
+                    <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
                       <button className="page-link" onClick={() => setPage(1)}>&laquo;</button>
                     </li>
-                    <li className={`page-item ${page === 1 ? "disabled" : ""}`}>
+                    <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
                       <button className="page-link" onClick={() => setPage((p) => Math.max(1, p - 1))}>&lsaquo;</button>
                     </li>
                     <li className="page-item disabled">
-                      <span className="page-link">
-                        {page} / {totalPages}
-                      </span>
+                      <span className="page-link">{page} / {totalPages}</span>
                     </li>
-                    <li className={`page-item ${page === totalPages ? "disabled" : ""}`}>
+                    <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
                       <button className="page-link" onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>&rsaquo;</button>
                     </li>
-                    <li className={`page-item ${page === totalPages ? "disabled" : ""}`}>
+                    <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
                       <button className="page-link" onClick={() => setPage(totalPages)}>&raquo;</button>
                     </li>
                   </ul>
@@ -476,8 +715,58 @@ export default function RegistroObtencionPermisosPage() {
             </div>
           </div>
         </div>
+      </div>
 
-      </div>      
+      {/* Gráficos adicionales de análisis */}
+      <div className="col-12 mt-4">
+        <div className="row">
+          {/* Análisis por valor de permiso */}
+          <div className="col-12 col-md-6">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-pie-chart" style={{ color: palette.success }}></i>
+                  Distribución por Rango de Valor
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: CHART_HEIGHT.md }}>
+                  {valorRangeChartData.datasets[0].data.some((val: number) => val > 0) ? (
+                    <Pie data={valorRangeChartData} options={sharedPieOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tendencia de emisiones por fecha */}
+          <div className="col-12 col-md-6">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-graph-up" style={{ color: palette.primary }}></i>
+                  Emisiones por día (últimos 10 días)
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: CHART_HEIGHT.md }}>
+                  {fechaEmisionChartData.datasets[0].data.length > 0 ? (
+                    <Line data={fechaEmisionChartData} options={buildLineOptions({ yTitle: 'Número de permisos' })} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
