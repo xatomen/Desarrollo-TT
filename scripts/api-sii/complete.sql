@@ -79,7 +79,7 @@ INSERT INTO TASACION_FISCAL (codigo_sii, tipo, anio, marca, modelo, version, com
 ('SD542364', 'Sedán', 2018, 'Hyundai', 'Elantra', 'GLS', 'Gasolina', 1600, 126, 6, 'Automática', '4x2', 4, 'Corea', 'Aire Acondicionado, ABS', 6900000, 2, 69000),
 -- Vehículos Luis Caro Morales (RUT 20595210-1)
 ('MT953234', 'Motocicleta', 2020, 'Yamaha', 'YZF-R3', 'Standard', 'Gasolina', 321, 42, 6, 'Manual', 'Trasera', 0, 'Japón', 'Frenos Disco', 2700000, 2, 18000),
-('CA623454', 'Camión', 2021, 'Volvo', 'FH16', 'Globetrotter', 'Diesel', 16000, 750, 12, 'Automática', '6x4', 2, 'Suecia', 'Frenos Aire, ABS', 42000000, 3, 260000)
+('CA623454', 'Camión', 2021, 'Volvo', 'FH16', 'Globetrotter', 'Diesel', 16000, 750, 12, 'Automática', '6x4', 2, 'Suecia', 'Frenos Aire, ABS', 42000000, 3, 260000);
 
 INSERT INTO FACTURA_COMPRA (
     num_factura, precio_neto, puertas, asientos, combustible, 

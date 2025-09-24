@@ -79,11 +79,11 @@ INSERT INTO PADRON (PPU, RUT, NOMBRE, TIPO_VEHICULO, MARCA, MODELO, ANIO, COLOR,
 
 -- Vehículos Jorge Gallardo Contreras (RUT 20961960-1)
 ('HFXX27', '20961960-1', 'Jorge Gallardo Contreras', 'Camioneta', 'Foton', 'Midi', 2025, 'Plateado', 1300, '4123523', 'CH1249123412d23', '2025-09-07'),
-('JH12345', '20961960-1', 'Jorge Gallardo Contreras', 'Sedán', 'Chevrolet', 'Cruze', 2020, 'Blanco', 1600, '5566778', '1G1BE5SM0J7123456', '2023-11-20'),
+('JH1234', '20961960-1', 'Jorge Gallardo Contreras', 'Sedán', 'Chevrolet', 'Cruze', 2020, 'Blanco', 1600, '5566778', '1G1BE5SM0J7123456', '2023-11-20'),
 ('BWFD87', '20961960-1', 'Jorge Gallardo Contreras', 'Sedán', 'Renault', 'Clio', 2019, 'Rojo', 1200, '998877', 'VF1BR0B0C12345678', '2022-06-15'),
 ('CBKS56', '20961960-1', 'Jorge Gallardo Contreras', 'Hatchback', 'Kia', 'Rio 3', 2021, 'Blanco', 200, '334455', 'VBKRD1100M1234567', '2023-03-10'),
 -- Vehículo Felipe Vera Andrade (RUT 20857826-K)
-('HRWY25', '20857826-K', 'Felipe Vera Andrade', 'Sedán', 'Hyundai', 'Elantra', 2018, 'Azul', 1600, '334455', 'KMHDH4AE0JU123456', '2021-08-30');
+('HRWY25', '20857826-K', 'Felipe Vera Andrade', 'Sedán', 'Hyundai', 'Elantra', 2018, 'Azul', 1600, '334455', 'KMHDH4AE0JU123456', '2021-08-30'),
 -- Vehículos Luis Caro Morales (RUT 20595210-1)
 ('WXY12', '20595210-1', 'Luis Caro Morales', 'Motocicleta', 'Yamaha', 'YZF-R3', 2020, 'Negro', 321, '123456', 'JYARJ23E0KA123456', '2025-05-15'),
 ('HWRY70', '20595210-1', 'Luis Caro Morales', 'Camión', 'Volvo', 'FH16', 2021, 'Blanco', 16000, '654321', 'YV2B4B4C5MA123456', '2025-06-20');
@@ -151,10 +151,10 @@ INSERT INTO MULTAS_TRANSITO (PPU, ROL_CAUSA, JPL) VALUES
 ('DYZS86', 2024069, 'JPL Santiago'), -- Iveco Daily Minibus - 2da multa
 ('DYZS86', 2024086, 'JPL Maipú'), -- Iveco Daily Minibus - 3ra multa
 ('DYZS86', 2024092, 'JPL Providencia'), -- Iveco Daily Minibus - 4ta multa
-('XKTP17', 2024034, 'JPL Santiago'); -- Ford Transit - 1 multa
+('XKTP17', 2024034, 'JPL Santiago'), -- Ford Transit - 1 multa
 
 -- ############################################################
 -- Multas para vehículos de demostración
 -- ############################################################
-('JH12345', 2025001, 'JPL Santiago'), -- Foton Midi - 1 multa
-('JH12345', 2024002, 'JPL Providencia'), -- Chevrolet Cruze - 1 multa
+('JH1234', 2025001, 'JPL Santiago'), -- Foton Midi - 1 multa
+('JH1234', 2024002, 'JPL Providencia'); -- Chevrolet Cruze - 1 multa

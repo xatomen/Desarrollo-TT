@@ -47,17 +47,17 @@ INSERT INTO SGD (rut, contrasena, nombre, email) VALUES
 ('18066062-3', 'Acceso680^', 'Javiera Magdalena Soto', 'javiera.soto@sgd.gov.cl'),
 ('23902784-9', 'Portal791!', 'Ignacio Andrés Herrera', 'ignacio.herrera@sgd.gov.cl'),
 ('21494931-8', 'Sistema902#', 'Daniela Fernanda Parra', 'daniela.parra@sgd.gov.cl'),
-('21092587-2', 'Login013*', 'Maximiliano José Reyes', 'maximiliano.reyes@sgd.gov.cl');
+('21092587-2', 'Login013*', 'Maximiliano José Reyes', 'maximiliano.reyes@sgd.gov.cl'),
 
 -- ############################################################
 -- Datos para la demostración
 -- ############################################################
 
 -- Tendrá 4 vehículos a su nombre, uno con permiso 2025 pagado, otro con permiso 2025 sin pagar, otro con multas de tránsito y con revisión rechazada, y otro con encargo por robo
-('20961960-1', '123456', 'Jorge Gallardo Contreras', 'jorge@mail.com');
+('20961960-1', '123456', 'Jorge Gallardo Contreras', 'jorge@mail.com'),
 -- Tendrá 1 vehículo a su nombre, con permiso 2024 pagado y al día pero con multas en RPI
-('20857826-K', '123456', 'Felipe Vera Andrade', 'felipe@mail.com');
+('20857826-K', '123456', 'Felipe Vera Andrade', 'felipe@mail.com'),
 -- Tendrá 1 moto y 1 camión a su nombre, ambos al día, ambos con permiso 2025 pagado
-('20595210-1', '123456', 'Luis Caro Morales', 'luis@mail.com');
+('20595210-1', '123456', 'Luis Caro Morales', 'luis@mail.com'),
 -- No tendrá vehículos a su nombre
 ('21239610-9', '123456', 'Bryan Ramírez Contreras', 'bryan@mail.com');

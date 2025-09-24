@@ -60,7 +60,7 @@ INSERT INTO MULTAS_RPI (rut, rol_causa, anio_causa, nombre_jpl, monto_multa) VAL
 ('7978316-1', '3468-1-2025', 2025, 'Juzgado de Policía Local de Estación Central', 46000),
 
 -- Francisco Torres Medina (1 multa)
-('22640435-K', '4579-9-2025', 2025, 'Juzgado de Policía Local de Puente Alto', 52000);
+('22640435-K', '4579-9-2025', 2025, 'Juzgado de Policía Local de Puente Alto', 52000),
 
 -- ############################################################
 -- Datos para la demostración

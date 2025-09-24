@@ -108,14 +108,14 @@ INSERT INTO permiso_circulacion (ppu, rut, nombre, fecha_emision, fecha_expiraci
 -- ###########################################################################
 
 -- Jorge Gallardo Contreras
-('JH12345', '20961960-1', 'Jorge Gallardo Contreras', '2023-11-20 00:00:00', '2024-11-20 00:00:00', 78000, '5566778', '1G1BE5SM0J7123456', 'Sedán', 'Blanco', 'Chevrolet', 'Cruze', 2020, 0, 'Verde', 'Gasolina', 1600, 'Automática', 4, 2, 'Bluetooth, ABS', 'SD634452', 7800000),
+('JH1234', '20961960-1', 'Jorge Gallardo Contreras', '2023-11-20 00:00:00', '2024-11-20 00:00:00', 78000, '5566778', '1G1BE5SM0J7123456', 'Sedán', 'Blanco', 'Chevrolet', 'Cruze', 2020, 0, 'Verde', 'Gasolina', 1600, 'Automática', 4, 2, 'Bluetooth, ABS', 'SD634452', 7800000),
 ('BWFD87', '20961960-1', 'Jorge Gallardo Contreras', '2022-06-15 00:00:00', '2023-06-15 00:00:00', 62000, '998877', 'VF1BR0B0C12345678', 'Sedán', 'Rojo', 'Renault', 'Clio', 2019, 0, 'Verde', 'Gasolina', 1200, 'Manual', 4, 2, 'Aire Acondicionado, Radio', 'SD635443', 6200000),
 ('CBKS56', '20961960-1', 'Jorge Gallardo Contreras', '2023-03-10 00:00:00', '2024-03-10 00:00:00', 35000, '334455', 'VBKRD1100M1234567', 'Hatchback', 'Blanco', 'Kia', 'Rio 3', 2021, 0, 'Verde', 'Gasolina', 1200, 'Manual', 5, 2, 'Bluetooth, Airbags', 'SD654233', 3500000),
 -- Felipe Vera Andrade
 ('HRWY25', '20857826-K', 'Felipe Vera Andrade', '2021-08-30 00:00:00', '2022-08-30 00:00:00', 69000, '334455', 'KMHDH4AE0JU123456', 'Sedán', 'Azul', 'Hyundai', 'Elantra', 2018, 0, 'Verde', 'Gasolina', 1600, 'Automática', 4, 2, 'Aire Acondicionado, ABS', 'SD542364', 6900000),
 -- Luis Caro Morales
 ('WXY12', '20595210-1', 'Luis Caro Morales', '2025-05-15 00:00:00', '2026-05-15 00:00:00', 18000, '123456', 'JYARJ23E0KA123456', 'Motocicleta', 'Negro', 'Yamaha', 'YZF-R3', 2020, 0, 'Verde', 'Gasolina', 321, 'Manual', 0, 2, 'Frenos Disco', 'MT953234', 2700000),
-('HWRY70', '20595210-1', 'Luis Caro Morales', '2025-06-20 00:00:00', '2026-06-20 00:00:00', 260000, '654321', 'YV2B4B4C5MA123456', 'Camión', 'Blanco', 'Volvo', 'FH16', 2021, 16000, 'Verde', 'Diesel', 16000, 'Automática', 2, 3, 'Frenos Aire, ABS', 'CA623454', 42000000);
+('HWRY70', '20595210-1', 'Luis Caro Morales', '2024-06-20 00:00:00', '2025-06-20 00:00:00', 260000, '654321', 'YV2B4B4C5MA123456', 'Camión', 'Blanco', 'Volvo', 'FH16', 2021, 16000, 'Verde', 'Diesel', 16000, 'Automática', 2, 3, 'Frenos Aire, ABS', 'CA623454', 42000000);
 
 INSERT INTO  tarjetas (numero_tarjeta, titular, rut, clave, fecha_vencimiento, tipo_tarjeta, banco, cvv, saldo) VALUES
 ('1234567890123456', 'Juan Pérez', '11111111-1', 'password123', '2025-12-01', 'Débito', 'Banco Estado', 123, 1000000.00),
@@ -142,7 +142,7 @@ INSERT INTO credenciales (rut, nombre, contrasena, rol) VALUES
 ('6047126-6', 'Claudia Moreno Vega', 'password123', 'usuario'),
 ('12711955-4', 'Miguel Vargas Díaz', 'password123', 'usuario'),
 ('7978316-1', 'Carmen Reyes Fernández', 'password123', 'usuario'),
-('22640435-K', 'Francisco Torres Medina', 'password123', 'usuario');
+('22640435-K', 'Francisco Torres Medina', 'password123', 'usuario'),
 
 -- ###########################################################################
 -- Datos de prueba para los usuarios
