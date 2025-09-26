@@ -24,7 +24,7 @@ export default function Home() {
           }}
         >
           <div style={{ position: 'relative', width: '100%', height: '320px', background: '#e0e7ff' }}>
-            <img
+            {/* <img
               src="https://media.discordapp.net/attachments/1115361530251325569/1419803946955833465/pcirculacionmuni.jpg?ex=68d316f7&is=68d1c577&hm=2b5e8538e21d5b3666a14467bef439e718660eb43d6b137390a9d370ce73b40e&=&format=webp&width=791&height=791"
               alt="Hero"
               style={{
@@ -34,7 +34,7 @@ export default function Home() {
                 opacity: 0.85,
                 filter: 'brightness(0.97) blur(0.5px)',
               }}
-            />
+            /> */}
             <div
               style={{
                 position: 'absolute',
