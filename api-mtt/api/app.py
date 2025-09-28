@@ -1,7 +1,9 @@
 from datetime import date, datetime
 from sqlite3 import Date
 from xmlrpc.client import Boolean
-from fastapi import FastAPI, HTTPException, Query
+
+from requests import Session
+from fastapi import FastAPI, HTTPException, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean as SQLBoolean  # ✅ Agregado DateTime y Boolean
@@ -109,15 +111,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-db = SessionLocal()
-
+# Configuramos la sesión de la base de datos
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 @app.get("/")
 def home():
     return {"message": "API MTT - Registro de Pasajeros Infractores"}
 
 @app.get("/multas_pasajero/", response_model=list[MultaRPIResponse])
-def consultar_multas_pasajero(rut: str = Query(..., description="RUT del propietario")):
+def consultar_multas_pasajero(rut: str = Query(..., description="RUT del propietario"), db: Session = Depends(get_db)):
     if not rut:
         raise HTTPException(status_code=400, detail="Debe ingresar un RUT.")
     if not validar_rut(rut):
@@ -138,7 +145,7 @@ def consultar_multas_pasajero(rut: str = Query(..., description="RUT del propiet
         db.close()
 
 @app.get("/registro_transporte/", response_model=RegistroTransporteResponse)
-def consultar_registro_transporte(ppu: str = Query(..., description="PPU del vehículo")):
+def consultar_registro_transporte(ppu: str = Query(..., description="PPU del vehículo"), db: Session = Depends(get_db)):
     if not ppu:
         raise HTTPException(status_code=400, detail="Debe ingresar un PPU.")
     # Validar formato PPU

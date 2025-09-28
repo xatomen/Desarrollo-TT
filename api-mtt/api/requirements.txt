@@ -6,3 +6,4 @@ dotenv
 pymysql
 mysql-connector-python
 patentes-vehiculares-chile
+requests
