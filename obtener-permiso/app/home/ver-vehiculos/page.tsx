@@ -8,13 +8,14 @@ import { useAuth, getRutFromCookies } from '@/contexts/AuthContext';
 import API_CONFIG from '@/config/api';
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { FaTrashAlt } from 'react-icons/fa';
+import { FaTrashAlt, FaCheckCircle, FaTimesCircle, FaExclamationCircle } from 'react-icons/fa';
 import { BiEdit } from 'react-icons/bi';
 
 type Estado = 'PAGADO' | 'HABILITADO' | 'VENCIDO';
 type Vehiculo = { 
   id?: number; 
   name?: string;
+  rut_propietario?: string;
   plate?: string; 
   ppu?: string; // <-- Agregado para evitar error de propiedad inexistente
   brand?: string; 
@@ -68,113 +69,99 @@ function EstadoVehiculoTag({ estado }: { estado: string }) {
 // Tooltip personalizado para mostrar detalles del estado del vehículo
 function EstadoVehiculoTooltip({ detalle }: { detalle: EstadoVehiculoDetalle }) {
   const getStatusColor = (status: string) => {
-    // Estados que se consideran "buenos" (verde)
     const goodStatuses = [
       'Vigente',
-      'No posee multas', 
+      'No posee multas',
       'Primera obtención',
       'No tiene encargo por robo',
       'Sin multas'
     ];
-    
-    return goodStatuses.includes(status) ? '#28a745' : '#dc3545'; // Verde o rojo
+    return goodStatuses.includes(status) ? '#28a745' : '#dc3545';
   };
+
+  const getStatusIcon = (status: string) => {
+    const goodStatuses = [
+      'Vigente',
+      'No posee multas',
+      'Primera obtención',
+      'No tiene encargo por robo',
+      'Sin multas'
+    ];
+    if (goodStatuses.includes(status)) {
+      return <FaCheckCircle style={{ color: '#28a745', marginRight: 6, fontSize: '1.1em' }} />;
+    }
+    if (status === 'No vigente' || status === 'Posee multas' || status === 'Posee encargo por robo' || status === 'Con multas') {
+      return <FaTimesCircle style={{ color: '#dc3545', marginRight: 6, fontSize: '1.1em' }} />;
+    }
+    return <FaExclamationCircle style={{ color: '#ffc107', marginRight: 6, fontSize: '1.1em' }} />;
+  };
+
+  const rows = [
+    { label: 'Revisión Técnica', value: detalle.revision },
+    { label: 'SOAP', value: detalle.soap },
+    { label: 'Multas', value: detalle.multas },
+    { label: 'Permiso de Circulación', value: detalle.permiso },
+    { label: 'Encargo por Robo', value: detalle.encargo },
+    { label: 'Estado en RPI', value: detalle.rpi },
+    detalle.fechaVencimientoPermiso && {
+      label: 'Fecha Vencimiento Permiso',
+      value: formatearFechaLarga(detalle.fechaVencimientoPermiso)
+    }
+  ].filter(Boolean);
 
   return (
     <div
       className="custom-tooltip"
       style={{
-        minWidth: 260,
-        background: '#fff',
-        border: '1px solid #ccc',
-        borderRadius: 8,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-        padding: 12,
-        fontSize: '0.95em',
+        minWidth: 290,
+        background: 'linear-gradient(120deg, #f8fafc 60%, #e0e7ff 100%)',
+        border: '1.5px solid #bdbdfc',
+        borderRadius: 14,
+        boxShadow: '0 4px 18px #0002',
+        padding: 18,
+        fontSize: '1em',
         zIndex: 9999,
+        color: '#222',
+        fontFamily: '"Dosis", "Roboto", Arial, sans-serif',
       }}
     >
-      <b className="text-center">Detalle del Estado del Vehículo</b>
-      <hr className="my-2" />
-      <ul className="list-unstyled mb-0 mt-2">
-        <li>
-          <b>Revisión Técnica:</b>{' '}
-          <span 
-            className="badge rounded-pill"
-            style={{ 
-              backgroundColor: getStatusColor(detalle.revision),
-              color: 'white',
-              fontSize: '0.8em'
+      <div className="d-flex" style={{ textAlign: 'center', fontWeight: 700, color: '#6D2077', fontSize: '1.1em', marginBottom: 8 }}>
+        <FaExclamationCircle style={{ color: '#6D2077', marginRight: 6, fontSize: '1.2em', verticalAlign: 'middle' }} />
+        Detalle del Estado del Vehículo
+      </div>
+      <hr style={{ margin: '10px 0', borderColor: '#e0e7ff' }} />
+      <ul className="list-unstyled mb-0 mt-2" style={{ padding: 0 }}>
+        {rows.map((row, idx) => (
+          <li
+            key={row.label}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: idx === rows.length - 1 ? 0 : 10,
+              padding: '4px 0',
+              borderBottom: idx === rows.length - 1 ? 'none' : '1px solid #f3e6f0'
             }}
           >
-            {detalle.revision}
-          </span>
-        </li>
-        <li>
-          <b>SOAP:</b>{' '}
-          <span 
-            className="badge rounded-pill"
-            style={{ 
-              backgroundColor: getStatusColor(detalle.soap),
-              color: 'white',
-              fontSize: '0.8em'
-            }}
-          >
-            {detalle.soap}
-          </span>
-        </li>
-        <li>
-          <b>Multas:</b>{' '}
-          <span 
-            className="badge rounded-pill"
-            style={{ 
-              backgroundColor: getStatusColor(detalle.multas),
-              color: 'white',
-              fontSize: '0.8em'
-            }}
-          >
-            {detalle.multas}
-          </span>
-        </li>
-        <li>
-          <b>Permiso de Circulación:</b>{' '}
-          <span 
-            className="badge rounded-pill"
-            style={{ 
-              backgroundColor: getStatusColor(detalle.permiso),
-              color: 'white',
-              fontSize: '0.8em'
-            }}
-          >
-            {detalle.permiso}
-          </span>
-        </li>
-        <li>
-          <b>Encargo por Robo:</b>{' '}
-          <span 
-            className="badge rounded-pill"
-            style={{ 
-              backgroundColor: getStatusColor(detalle.encargo),
-              color: 'white',
-              fontSize: '0.8em'
-            }}
-          >
-            {detalle.encargo}
-          </span>
-        </li>
-        <li>
-          <b>Estado en RPI:</b>{' '}
-          <span 
-            className="badge rounded-pill"
-            style={{ 
-              backgroundColor: getStatusColor(detalle.rpi),
-              color: 'white',
-              fontSize: '0.8em'
-            }}
-          >
-            {detalle.rpi}
-          </span>
-        </li>
+            <span style={{ flex: 1, fontWeight: 500 }}>{row.label}:</span>
+            <span
+              className="badge rounded-pill d-flex align-items-center"
+              style={{
+                backgroundColor: getStatusColor(row.value),
+                color: 'white',
+                fontSize: '0.95em',
+                // minWidth: 120,
+                justifyContent: 'flex-start',
+                padding: '6px 12px',
+                marginLeft: 10,
+                fontWeight: 500,
+                boxShadow: '0 1px 4px #0001',
+              }}
+            >
+              {/* {getStatusIcon(row.value)} */}
+              {row.value}
+            </span>
+          </li>
+        ))}
       </ul>
     </div>
   );
@@ -276,6 +263,7 @@ export default function VerVehiculos() {
         data.map(async (vehicle: any) => {
           let brand = 'N/A';
           let model = 'N/A';
+          let rut_propietario = 'N/A';
           let estadoVehiculo = undefined;
           try {
             // Marca y modelo
@@ -284,13 +272,14 @@ export default function VerVehiculos() {
               const patenteData = await patenteResponse.json();
               brand = patenteData.marca || 'N/A';
               model = patenteData.modelo || 'N/A';
+              rut_propietario = patenteData.rut || 'N/A';
             }
           } catch (error) {
             // Si falla, deja N/A
           }
           try {
             // Estado del vehículo
-            estadoVehiculo = await getVehicleStatus(vehicle.ppu, rut);
+            estadoVehiculo = await getVehicleStatus(vehicle.ppu, rut_propietario);
           } catch (error) {
             // Si falla, deja indefinido
           }
@@ -387,7 +376,7 @@ export default function VerVehiculos() {
 
       // Encargo por robo
       let estadoEncargo = null;
-      const encargoResponse = await fetch(`${API_CONFIG.BACKEND}consultar_encargo_robo/${plate}`);
+      const encargoResponse = await fetch(`${API_CONFIG.BACKEND}consultar_encargo/${plate}`);
       if (!encargoResponse.ok) {
         estadoEncargo = "No tiene encargo por robo";
       } else {
@@ -1038,7 +1027,7 @@ export default function VerVehiculos() {
                                     </span>
                                   )
                                   : (
-                                    <span className="text-muted">No disponible</span>
+                                    <span className="text-muted">Vehículo nuevo</span>
                                   )
                                 }
                               </td>
