@@ -310,34 +310,46 @@ export default function HomePage() {
 
       {/* Tarjetas mejoradas */}
       <div className="row g-4">
-        {/* Consultas */}
+        {/* Permisos */}
         <div className="col-12 col-md-6 col-xl-4">
           <div className="card h-100 shadow-sm border-0">
             <div className="card-body">
               <div className="d-flex align-items-start justify-content-between mb-3">
                 <div className="d-flex align-items-center">
-                  <div className="bg-primary bg-opacity-10 rounded-3 p-2 me-3">
-                    <i className="bi bi-eye text-primary fs-4"></i>
+                  <div className="bg-info bg-opacity-10 rounded-3 p-2 me-3">
+                    <i className="bi bi-file-earmark-text text-info fs-4"></i>
                   </div>
                   <div>
                     <h5 className="card-title mb-0" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
-                      Consultas
+                      Permisos
                     </h5>
-                    <small className="text-muted">Propietarios</small>
+                    <small className="text-muted">Emisión</small>
                   </div>
                 </div>
-                {drasticBadge(consultasChange, "consultas")}
+                {drasticBadge(permisosChange, "emisiones")}
               </div>
               
               <div className="mb-3">
-                <div className="display-6 fw-bold text-primary">
-                  {(consultas?.kpi.total_consultas ?? 0).toLocaleString('es-CL')}
+                <div className="display-6 fw-bold text-info">
+                  {permisosTotal.toLocaleString('es-CL')}
                 </div>
-                <div className="d-flex align-items-center mt-2">
-                  <i className="bi bi-people me-1 text-muted"></i>
-                  <small className="text-muted">
-                    Usuarios únicos: <strong>{(consultas?.kpi.usuarios_unicos_acumulados ?? 0).toLocaleString('es-CL')}</strong>
-                  </small>
+                <div className="mt-2">
+                  <div className="d-flex align-items-center">
+                    <i className="bi bi-currency-dollar me-1 text-success"></i>
+                    <small className="text-muted">
+                      Recaudación: <strong>
+                        ${Math.round(permisos?.kpi.recaudacion_total_clp ?? 0).toLocaleString("es-CL")}
+                      </strong>
+                    </small>
+                  </div>
+                  <div className="d-flex align-items-center mt-1">
+                    <i className="bi bi-calculator me-1 text-muted"></i>
+                    <small className="text-muted">
+                      Promedio: <strong>
+                        ${Math.round(permisos?.kpi.valor_promedio_clp ?? 0).toLocaleString("es-CL")}
+                      </strong>
+                    </small>
+                  </div>
                 </div>
               </div>
             </div>
@@ -346,18 +358,18 @@ export default function HomePage() {
               <div className="d-flex justify-content-between align-items-center">
                 <small className="text-muted">
                   <i className="bi bi-clock me-1"></i>
-                  {lastReports.consultas}
+                  {lastReports.permisos}
                 </small>
                 <div>
                   <button 
                     className="btn btn-sm btn-outline-secondary me-2 m-2 p-3" 
-                    onClick={() => setLast("consultas")}
+                    onClick={() => setLast("permisos")}
                     title="Marcar como generado"
                   >
                     {/* <i className="bi bi-check-circle me-1"></i> */}
                     Marcar
                   </button>
-                  <Link href="/home/Registro_de_consultas_propietarios" className="btn btn-sm btn-primary m-2 p-3">
+                  <Link href="/home/Registro_de_obtencion_de_permisos" className="btn btn-sm btn-info m-2 p-3">
                     {/* <i className="bi bi-arrow-right me-1"></i> */}
                     Ver detalle
                   </Link>
@@ -429,46 +441,34 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Permisos */}
+        {/* Consultas */}
         <div className="col-12 col-md-6 col-xl-4">
           <div className="card h-100 shadow-sm border-0">
             <div className="card-body">
               <div className="d-flex align-items-start justify-content-between mb-3">
                 <div className="d-flex align-items-center">
-                  <div className="bg-info bg-opacity-10 rounded-3 p-2 me-3">
-                    <i className="bi bi-file-earmark-text text-info fs-4"></i>
+                  <div className="bg-primary bg-opacity-10 rounded-3 p-2 me-3">
+                    <i className="bi bi-eye text-primary fs-4"></i>
                   </div>
                   <div>
                     <h5 className="card-title mb-0" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
-                      Permisos
+                      Consultas
                     </h5>
-                    <small className="text-muted">Emisión</small>
+                    <small className="text-muted">Propietarios</small>
                   </div>
                 </div>
-                {drasticBadge(permisosChange, "emisiones")}
+                {drasticBadge(consultasChange, "consultas")}
               </div>
               
               <div className="mb-3">
-                <div className="display-6 fw-bold text-info">
-                  {permisosTotal.toLocaleString('es-CL')}
+                <div className="display-6 fw-bold text-primary">
+                  {(consultas?.kpi.total_consultas ?? 0).toLocaleString('es-CL')}
                 </div>
-                <div className="mt-2">
-                  <div className="d-flex align-items-center">
-                    <i className="bi bi-currency-dollar me-1 text-success"></i>
-                    <small className="text-muted">
-                      Recaudación: <strong>
-                        ${Math.round(permisos?.kpi.recaudacion_total_clp ?? 0).toLocaleString("es-CL")}
-                      </strong>
-                    </small>
-                  </div>
-                  <div className="d-flex align-items-center mt-1">
-                    <i className="bi bi-calculator me-1 text-muted"></i>
-                    <small className="text-muted">
-                      Promedio: <strong>
-                        ${Math.round(permisos?.kpi.valor_promedio_clp ?? 0).toLocaleString("es-CL")}
-                      </strong>
-                    </small>
-                  </div>
+                <div className="d-flex align-items-center mt-2">
+                  <i className="bi bi-people me-1 text-muted"></i>
+                  <small className="text-muted">
+                    Usuarios únicos: <strong>{(consultas?.kpi.usuarios_unicos_acumulados ?? 0).toLocaleString('es-CL')}</strong>
+                  </small>
                 </div>
               </div>
             </div>
@@ -477,18 +477,18 @@ export default function HomePage() {
               <div className="d-flex justify-content-between align-items-center">
                 <small className="text-muted">
                   <i className="bi bi-clock me-1"></i>
-                  {lastReports.permisos}
+                  {lastReports.consultas}
                 </small>
                 <div>
                   <button 
                     className="btn btn-sm btn-outline-secondary me-2 m-2 p-3" 
-                    onClick={() => setLast("permisos")}
+                    onClick={() => setLast("consultas")}
                     title="Marcar como generado"
                   >
                     {/* <i className="bi bi-check-circle me-1"></i> */}
                     Marcar
                   </button>
-                  <Link href="/home/Registro_de_obtencion_de_permisos" className="btn btn-sm btn-info m-2 p-3">
+                  <Link href="/home/Registro_de_consultas_propietarios" className="btn btn-sm btn-primary m-2 p-3">
                     {/* <i className="bi bi-arrow-right me-1"></i> */}
                     Ver detalle
                   </Link>
@@ -499,8 +499,8 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Nota informativa
-      <div className="card mt-4 border-0 bg-light">
+      {/* Nota informativa */}
+      {/* <div className="card mt-4 border-0 bg-light">
         <div className="card-body">
           <div className="row align-items-center">
             <div className="col-12 col-md-8">

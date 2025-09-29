@@ -13,16 +13,16 @@ export default function Navbar() {
   const links = [
     { href: "/home", label: "Inicio" },
     {
-      href: "/home/Registro_de_consultas_propietarios",
-      label: "Consultas Propietarios",
+      href: "/home/Registro_de_obtencion_de_permisos",
+      label: "Obtención de Permisos",
     },
     {
       href: "/home/Registro_de_fiscalizacion",
       label: "Fiscalización",
     },
     {
-      href: "/home/Registro_de_obtencion_de_permisos",
-      label: "Obtención de Permisos",
+      href: "/home/Registro_de_consultas_propietarios",
+      label: "Consultas Propietarios",
     },
   ];
 
