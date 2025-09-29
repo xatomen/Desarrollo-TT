@@ -112,28 +112,35 @@ export default function HomePage() {
         </div>
         {/* Tres secciones */}
         <div className="row mx-2">
-
-          
-          {/* <div className="col mb-4 card-like p-3 m-3 shadow">
-            <h4 className="text-center" style={{ fontFamily: 'Roboto', fontWeight: 'bold', fontSize: '1.25rem', color: '#222' }}>Ver Documentos Vehiculares</h4> */}
+          <div className="col mb-4 card-like p-3 m-3 shadow">
+            <h4 className="text-center" style={{ fontFamily: 'Roboto', fontWeight: 'bold', fontSize: '1.25rem', color: '#222' }}>
+              Ver Documentos Vehiculares
+            </h4>
             {/* Ícono */}
-            {/* <div className="text-center">
+            <div className="text-center">
               <i className="bi bi-file-earmark-text" style={{ fontSize: '3rem', color: '#092039' }}></i>
             </div>
             <hr />
-            <p>En esta sección puedes revisar los documentos de tu vehículo.</p>
-            <ol className="mb-3" style={{ paddingLeft: '20px', listStyleType: 'disc' }}>
-              <li>Permiso de Circulación</li>
-              <li>Revisión Técnica</li>
-              <li>Seguro Obligatorio</li>
-              <li>Multas Asociadas</li>
-              <li>Información del Vehículo</li>
-            </ol> */}
-            {/* Botón */}
-            {/* <div className="text-center mt-3">
-              <button className="btn btn-primary">Ir a Ver Documentos</button>
+            <div className="py-2 px-3">
+              <p>
+                Accede de manera centralizada y segura a todos los documentos importantes de tus vehículos. Consulta, descarga y verifica la vigencia de cada documento en cualquier momento.
+              </p>
+              <ul className="mb-3" style={{ paddingLeft: '20px', listStyleType: 'disc' }}>
+                <li>Permiso de Circulación vigente y anteriores</li>
+                <li>Revisión Técnica y fecha de vencimiento</li>
+                <li>Seguro Obligatorio (SOAP)</li>
+                <li>Multas asociadas y su estado</li>
+                <li>Información técnica y legal del vehículo</li>
+              </ul>
+              <p>
+                Mantén tus papeles al día y evita sorpresas. Toda la información está disponible en un solo lugar, lista para ser consultada o descargada cuando la necesites.
+              </p>
             </div>
-          </div> */}
+            {/* Botón */}
+            <div className="text-center mt-3">
+              <button className="btn btn-primary" onClick={() => router.push('/home/ver-documentos')}>Ir a Ver Documentos</button>
+            </div>
+          </div>
 
           <div className="col mb-4 card-like p-3 m-3 shadow">
             <h4 className="text-center" style={{ fontFamily: 'Roboto', fontWeight: 'bold', fontSize: '1.25rem', color: '#222' }}>Pagar Mis Permisos de Circulación</h4>
