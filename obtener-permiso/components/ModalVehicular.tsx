@@ -14,6 +14,8 @@ export default function ModalVehicular({ show, onClose, title, data }: {
     if (e.target === e.currentTarget) onClose();
   };
 
+  const { padron, permiso, revision, soap } = data;
+
   return (
     <div
       style={{
@@ -24,6 +26,8 @@ export default function ModalVehicular({ show, onClose, title, data }: {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        overflowY: 'auto', // Permite scroll si el contenido es muy alto
+        padding: 24, // Espacio para que la modal no quede pegada al borde
       }}
       onClick={handleOverlayClick}
     >
@@ -32,12 +36,23 @@ export default function ModalVehicular({ show, onClose, title, data }: {
           background: '#fff',
           borderRadius: 14,
           minWidth: 340,
-        //   maxWidth: 820,
-          width: title.toLowerCase() === 'padron' ? '1200px' : 500,
+          width:
+            title.toLowerCase() === 'padron'
+              ? '1200px'
+              : title.toLowerCase() === 'permiso'
+              ? 'auto'
+              : title.toLowerCase() === 'soap'
+              ? '1200px'
+              : 500,
+          maxWidth: '95vw',
+          maxHeight: '95vh',
           boxShadow: '0 8px 32px #0003',
           padding: 0,
           position: 'relative',
           animation: 'modalIn 0.2s',
+          overflow: 'visible', // Permite que el contenido se expanda
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         {/* Header */}
@@ -47,6 +62,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexShrink: 0,
         }}>
           <h5 style={{ margin: 0, fontWeight: 700, fontSize: '1.2rem', color: '#6D2077' }}>
             {title} - Detalle
@@ -68,8 +84,8 @@ export default function ModalVehicular({ show, onClose, title, data }: {
         {/* Body */}
         <div style={{
           padding: '24px 28px',
-          maxHeight: 480,
-          overflowY: 'auto',
+          overflow: 'visible', // Permite que el contenido crezca
+          flexGrow: 1,
         }}>
           {data ? (
             title.toLowerCase() === 'padron' ? (
@@ -93,11 +109,11 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                         <tbody>
                             <tr>
                                 <td>PROPIETARIO</td>
-                                <td>: {data.propietario || data.nombre || '-'}</td>
+                                <td>: {padron.nombre || '-'}</td>
                             </tr>
                             <tr>
                                 <td>DOMICILIO</td>
-                                <td>: {data.domicilio || '-'}</td>
+                                <td>: {padron.domicilio || '-'}</td>
                             </tr>
                             <tr>
                                 <td><br /></td>
@@ -105,39 +121,39 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                             </tr>
                             <tr>
                                 <td>TIPO VEHICULO</td>
-                                <td>: {data.tipo_vehiculo || '-'}</td>
+                                <td>: {padron.tipo_vehiculo || '-'}</td>
                             </tr>
                             <tr>
                                 <td>AÑO</td>
-                                <td>: {data.anio || '-'}</td>
+                                <td>: {padron.anio || '-'}</td>
                             </tr>
                             <tr>
                                 <td>MARCA</td>
-                                <td>: {data.marca || '-'}</td>
+                                <td>: {padron.marca || '-'}</td>
                             </tr>
                             <tr>
                                 <td>MODELO</td>
-                                <td>: {data.modelo || '-'}</td>
+                                <td>: {padron.modelo || '-'}</td>
                             </tr>
                             <tr>
                                 <td>Nro. MOTOR</td>
-                                <td>: {data.num_motor || '-'}</td>
+                                <td>: {padron.num_motor || '-'}</td>
                             </tr>
                             <tr>
                                 <td>Nro. CHASIS</td>
-                                <td>: {data.num_chasis || '-'}</td>
+                                <td>: {padron.num_chasis || '-'}</td>
                             </tr>
                             <tr>
                                 <td>Nro. SERIE</td>
-                                <td>: {data.serie || '-'}</td>
+                                <td>: {padron.serie || '-'}</td>
                             </tr>
                             <tr>
                                 <td>Nro. VIN</td>
-                                <td>: {data.num_vin || '-'}</td>
+                                <td>: {padron.num_vin || '-'}</td>
                             </tr>
                             <tr>
                                 <td>COLOR</td>
-                                <td>: {data.color || '-'}</td>
+                                <td>: {padron.color || '-'}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -152,19 +168,19 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                                     <tbody>
                                         <tr>
                                             <td style={{ fontWeight: 'bold' }}>INSC. PPU</td>
-                                            <td style={{ fontWeight: 'bold' }}>: {data.ppu || '-'}</td>
+                                            <td style={{ fontWeight: 'bold' }}>: {padron.ppu || '-'}</td>
                                         </tr>
                                         <tr>
                                             <td style={{ fontWeight: 'bold' }}>RUN o RUT</td>
-                                            <td style={{ fontWeight: 'bold' }}>: {data.rut || '-'}</td>
+                                            <td style={{ fontWeight: 'bold' }}>: {padron.rut || '-'}</td>
                                         </tr>
                                         <tr>
                                             <td>ADQUISICIÓN</td>
-                                            <td>: {data.fecha_inscripcion || '-'}</td>
+                                            <td>: {padron.fecha_inscripcion || '-'}</td>
                                         </tr>
                                         <tr>
                                             <td>INSCRIPCIÓN</td>
-                                            <td>: {data.fecha_inscripcion || '-'}</td>
+                                            <td>: {padron.fecha_inscripcion || '-'}</td>
                                         </tr>
                                         <tr>
                                             <td>EMISIÓN</td>
@@ -210,11 +226,247 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                 </div>
                 
               </div>
+            ) : title.toLowerCase() === 'permiso' ? (
+              // FORMATO PERSONALIZADO PARA PERMISO
+              <div
+                style={{
+                  width: '1400px',
+                  maxWidth: '100vw',
+                  background: 'linear-gradient(135deg, #cfe8fdff, #e5d8ffff)',
+                  padding: '20px',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  margin: '0 auto'
+                }}
+              >
+                <div style={{ paddingBottom: 12 }}>
+                  <img src="/img/tupermiso/logo-texto-permiso.png" style={{ height: 25 }} alt="Logo Permiso" />
+                </div>
+                <div
+                  style={{
+                    background: 'center/15% url(/img/tupermiso/marca-agua-simple.png)',
+                  }}
+                >
+                  <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)', padding: 10, borderRadius: 8 }}>
+                    {/* Información Contribuyente */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: 24,
+                        border: '2px dashed #dee2e6',
+                        padding: 12,
+                        fontFamily: 'Dosis, sans-serif'
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, minWidth: 180 }}>Información Contribuyente</div>
+                      <div><b>Nombre:</b> {permiso?.nombre}</div>
+                      <div><b>RUT:</b> {permiso?.rut?.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 16 }}>
+                      {/* Información Vehículo */}
+                      <div
+                        style={{
+                          flex: 2,
+                          border: '2px dashed #dee2e6',
+                          marginRight: 8,
+                          padding: 12,
+                          fontFamily: 'Dosis, sans-serif'
+                        }}
+                      >
+                        <div style={{ fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>Información Vehículo</div>
+                        <div style={{ display: 'flex', gap: 32 }}>
+                          <div>
+                            <div><b>PPU:</b> {permiso?.ppu}</div>
+                            <div><b>Marca:</b> {permiso?.marca}</div>
+                            <div><b>Modelo:</b> {permiso?.modelo}</div>
+                            <div><b>Año:</b> {permiso?.anio}</div>
+                            <div><b>Color:</b> {permiso?.color}</div>
+                            <div><b>Tipo de Vehículo:</b> {permiso?.tipo_vehiculo}</div>
+                            <div><b>Número Motor:</b> {permiso?.motor}</div>
+                            <div><b>Número Chasis:</b> {permiso?.chasis}</div>
+                          </div>
+                          <div>
+                            <div><b>Puertas:</b> {permiso?.pts}</div>
+                            <div><b>Asientos:</b> {permiso?.ast}</div>
+                            <div><b>Cilindrada:</b> {permiso?.cilindrada}</div>
+                            <div><b>Capacidad Carga:</b> {permiso?.carga}</div>
+                            <div><b>Tipo Combustible:</b> {permiso?.combustible}</div>
+                            <div><b>Tipo Sello:</b> {permiso?.tipo_sello}</div>
+                            <div><b>Transmisión:</b> {permiso?.transmision}</div>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Información Pago */}
+                      <div
+                        className="col"
+                        style={{
+                          flex: 1,
+                          border: '2px dashed #dee2e6',
+                          padding: 12,
+                          fontFamily: 'Dosis, sans-serif'
+                        }}
+                      >
+                        <div style={{ fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>Información Pago</div>
+                        <div className="row">
+                          <div className="col">
+                            <div><b>Número Comprobante:</b> {data?.id}</div>
+                            <div><b>Tasación:</b> ${data?.tasacion?.toLocaleString('es-CL')}</div>
+                            <div><b>Código SII:</b> {data?.codigo_sii || 'No disponible'}</div>
+                            <div><b>Valor Permiso:</b> ${data?.valor_permiso?.toLocaleString('es-CL')}</div>
+                            <div><b>Fecha Pago:</b> {data?.fecha_emision}</div>
+                            <div><b>Fecha Vencimiento:</b> {data?.fecha_expiracion}</div>
+                          </div>
+                          <div className="col" style={{ textAlign: 'center', marginTop: 16 }}>
+                            <img src="/img/tupermiso/logo-cert.png" style={{ width: '75%', height: 'auto' }} alt="Certificado" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : title.toLowerCase() === 'soap' ? (
+              <div
+                className="row"
+                style={{
+                  background: '#fff',
+                  border: '2px solid #222',
+                  fontFamily: 'serif',
+                  fontSize: '0.8rem',
+                  maxWidth: '100vw',
+                }}
+              >
+                <div className="col">
+                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                    
+                    <div className="col-5" style={{ borderRight: '2px solid #222' }}>
+                      <div className="row">
+                        <div className="col"><b>ORIGINAL: ASEGURADO</b></div>
+                        <div className="col"><b>N° Folio {soap.folio || '-'}</b></div>
+                      </div>
+                      <div style={{ fontStyle: 'italic', textAlign: 'justify', fontSize: '0.9rem' }}>
+                        Este certificado acredita que el vehículo aquí individualizado está
+                        asegurado contra el riesgo de Accidentes Personales de acuerdo a la Ley
+                        Nº 18.490 y la Póliza del Seguro Obligatorio de Accidentes Personales
+                        causados por Vehículos Motorizados, incorporada en el Depósito de
+                        Pólizas de la Comisión para el Mercado Financiero bajo el código POL
+                        320130487.
+                      </div>
+                    </div>
+                    
+                    <div className="col-7">
+                      <div className="row text-center">
+                        <div className="col"><b>Seguros {soap.compania || '-'} S.A.</b></div>
+                        <div className="col">
+                          <b>Póliza N° {soap.num_poliza || '-'}</b>
+                          <br />
+                          <div style={{ fontSize: '0.8rem', textAlign: 'justify' }}>
+                            Consulta sobre la vigencia de este seguro en www.seguros{soap.compania.toLowerCase() || '-'}.cl o en el fono 600 411 1000
+                          </div>
+                        </div>
+                      </div>
+                      <div className="row text-center">
+                        <div className="col"><b>CERTIFICADO SEGURO OBLIGATORIO ACCIDENTES PERSONALES ELECTRONICO LEY 18.490</b></div>
+                        <div className="col" style={{ alignContent: 'center', justifyContent: 'center', display: 'flex' }}>
+                          <img src={`/img/aseguradoras/${soap.compania}.png`} alt="" style={{ height: '60px', objectFit: 'contain' }} />
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                    <div className="col-5" style={{ borderRight: '2px solid #222' }}>
+                      <b>Inscripción R.V.M</b>
+                      <br />
+                      {soap.ppu || '-'}
+                    </div>
+                    <div className="col-7 d-flex align-self-center">
+                      <b>Propietario</b>
+                    </div>
+                  </div>
+
+                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                    <div className="col-5" style={{ borderRight: '2px solid #222' }}>
+                      <b>Tipo Vehículo</b>
+                      <br />
+                      {padron.tipo_vehiculo || '-'}
+                    </div>
+                    <div className="col-7">
+                      {padron.rut || '-'}
+                    </div>
+                  </div>
+
+                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                    <div className="col-5" style={{ borderRight: '2px solid #222' }}>
+                      <b>Marca</b>
+                      <br />
+                      {padron.marca || '-'}
+                    </div>
+                    <div className="col-7">
+                      <div className="row" style={{ height: '100' }}>
+                        <div className="col" style={{ borderRight: '2px solid #222' }}><br /><b>Rut</b></div>
+                        <div className="col" style={{ borderRight: '2px solid #222' }}><br /><b>Rige Desde</b></div>
+                        <div className="col"><br /><b>Rige Hasta</b></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                    <div className="col-5" style={{ borderRight: '2px solid #222' }}>
+                      <div className="row">
+                        <div className="col">
+                          <b>Modelo</b>
+                          <br />
+                          {padron.modelo || '-'}
+                        </div>
+                        <div className="col">
+                          <b>Año</b>
+                          <br />
+                          {padron.anio || '-'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-7">
+                      <div className="row">
+                        <div className="col" style={{ borderRight: '2px solid #222' }}><br />{padron.rut || '-'}</div>
+                        <div className="col" style={{ borderRight: '2px solid #222' }}><br />{soap.rige_desde || '-'}</div>
+                        <div className="col"><br />{soap.rige_hasta || '-'}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-5" style={{ borderRight: '2px solid #222' }}>
+                      <b>N° Motor</b>
+                      <br />
+                      {padron.num_motor || '-'}
+                    </div>
+                    <div className="col-7">
+                      <div className="row">
+                        <div className="col" style={{ borderRight: '2px solid #222' }}>
+                          <b>Prima</b>
+                          <br />
+                          {soap.prima ? `$${soap.prima.toLocaleString('es-CL')}` : '-'}
+                        </div>
+                        <div className="col-8">
+                          <div className="row">
+                            <img src="/img/aseguradoras/timbre.png" alt="" style={{ height: '50px', objectFit: 'contain', flex: 1 }} />
+                          </div>
+                          <div className="row">
+                            <div className="col text-center" style={{ borderTop: '2px solid #222', margin: '0px 50px 0px 50px' }}><b>Firma apoderado compañía</b></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
             ) : (
               // FORMATO TABLA PARA OTROS DOCUMENTOS
               <table style={{ width: '100%', fontSize: '1rem', borderCollapse: 'collapse' }}>
                 <tbody>
-                  {Object.entries(data).map(([key, value]) => (
+                  {Object.entries(revision).map(([key, value]) => (
                     <tr key={key}>
                       <td style={{ fontWeight: 500, padding: '6px 10px', borderBottom: '1px solid #eee', width: 180 }}>{key}</td>
                       <td style={{ padding: '6px 10px', borderBottom: '1px solid #eee' }}>{String(value)}</td>
@@ -232,6 +484,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
           borderTop: '1px solid #eee',
           padding: '14px 28px',
           textAlign: 'right',
+          flexShrink: 0,
         }}>
           <button
             onClick={onClose}

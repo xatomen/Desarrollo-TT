@@ -91,6 +91,9 @@ export default function VerDocumentosPage() {
 
   const fetchVehicleDocs = async (ppu: string) => {
     try {
+      // Busca el vehículo actual
+      const vehiculo = vehicles.find(v => v.ppu === ppu);
+
       const [padronRes, permisoRes, soapRes, revisionRes] = await Promise.all([
         fetch(`${API_CONFIG.BACKEND}consultar_patente/${ppu}`),
         fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${ppu}`),
@@ -103,12 +106,15 @@ export default function VerDocumentosPage() {
         soapRes.json(),
         revisionRes.json(),
       ]);
+
+      // Fusiona los datos del vehículo con los del SOAP
+      const soapConVehiculo = { ...soap, ...vehiculo };
+
       setVehicleDocs((prev) => ({
         ...prev,
         [ppu]: { padron, permiso, soap, revision },
       }));
     } catch (error) {
-      // Manejo de error
       setVehicleDocs((prev) => ({
         ...prev,
         [ppu]: { padron: null, permiso: null, soap: null, revision: null, error: true },
@@ -119,7 +125,12 @@ export default function VerDocumentosPage() {
   function mostrarDocumento(tipo: string, ppu: string) {
     const doc = vehicleDocs[ppu]?.[tipo];
     setModalTitle(tipo.charAt(0).toUpperCase() + tipo.slice(1));
-    setModalData(doc);
+    setModalData({
+      padron: vehicleDocs[ppu].padron,
+      permiso: vehicleDocs[ppu].permiso,
+      revision: vehicleDocs[ppu].revision,
+      soap: vehicleDocs[ppu].soap,
+    });
     setShowModal(true);
   }
 
