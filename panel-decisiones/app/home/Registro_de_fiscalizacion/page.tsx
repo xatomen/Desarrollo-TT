@@ -591,7 +591,7 @@ export default function RegistroFiscalizacionPage() {
       <div className="col-12 mt-4">
         <div className="row">
           {/* Estado Permiso */}
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <div className="card shadow-sm mb-3">
               <div className="card-header bg-light">
                 <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
@@ -623,7 +623,7 @@ export default function RegistroFiscalizacionPage() {
           </div>
 
           {/* Estado Revisión */}
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <div className="card shadow-sm mb-3">
               <div className="card-header bg-light">
                 <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
@@ -655,7 +655,7 @@ export default function RegistroFiscalizacionPage() {
           </div>
 
           {/* Estado SOAP */}
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-3">
             <div className="card shadow-sm mb-3">
               <div className="card-header bg-light">
                 <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
@@ -679,6 +679,38 @@ export default function RegistroFiscalizacionPage() {
                       <span><strong>Total:</strong> {documentStatusCharts.soap.datasets[0].data[0] + documentStatusCharts.soap.datasets[0].data[1]}</span>
                       <span><strong>Vigente:</strong> {documentStatusCharts.soap.datasets[0].data[0]}</span>
                       <span><strong>No vigente:</strong> {documentStatusCharts.soap.datasets[0].data[1]}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Distribución Encargo/Robo */}
+          <div className="col-12 col-md-3">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-pie-chart" style={{ color: palette.danger }}></i>
+                  Distribución Encargo/Robo
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: CHART_HEIGHT.sm }}>
+                  {encargoChartData.datasets[0].data.some((val: number) => val > 0) ? (
+                    <Pie data={encargoChartData} options={sharedPieOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+                {encargoChartData.datasets[0].data.some((val: number) => val > 0) && (
+                  <div className="text-center mt-3">
+                    <div className="d-inline-flex gap-3 flex-wrap" style={{ fontSize: '0.9rem' }}>
+                      <span><strong>Total:</strong> {encargoChartData.datasets[0].data[0] + encargoChartData.datasets[0].data[1]}</span>
+                      <span><strong>Sin encargo:</strong> {encargoChartData.datasets[0].data[0]}</span>
+                      <span><strong>Con encargo:</strong> {encargoChartData.datasets[0].data[1]}</span>
                     </div>
                   </div>
                 )}
@@ -832,78 +864,6 @@ export default function RegistroFiscalizacionPage() {
                     </li>
                   </ul>
                 </nav>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Gráficos finales: Distribución y Matrículas */}
-      <div className="col-12 mt-4">
-        <div className="row">
-          {/* Distribución Encargo/Robo - Mitad izquierda */}
-          <div className="col-12 col-md-6">
-            <div className="card shadow-sm mb-3">
-              <div className="card-header bg-light">
-                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
-                  <i className="bi bi-pie-chart" style={{ color: palette.danger }}></i>
-                  Distribución Encargo/Robo
-                </h6>
-              </div>
-              <div className="card-body">
-                <div style={{ height: CHART_HEIGHT.md }}>
-                  {encargoChartData.datasets[0].data.some((val: number) => val > 0) ? (
-                    <Pie data={encargoChartData} options={sharedPieOptions} />
-                  ) : (
-                    <div className="d-flex align-items-center justify-content-center h-100">
-                      <span className="text-muted">Sin datos disponibles</span>
-                    </div>
-                  )}
-                </div>
-                {encargoChartData.datasets[0].data.some((val: number) => val > 0) && (
-                  <div className="text-center mt-3">
-                    <div className="d-inline-flex gap-3 flex-wrap" style={{ fontSize: '0.9rem' }}>
-                      <span><strong>Total:</strong> {encargoChartData.datasets[0].data[0] + encargoChartData.datasets[0].data[1]}</span>
-                      <span><strong>Sin encargo:</strong> {encargoChartData.datasets[0].data[0]}</span>
-                      <span><strong>Con encargo:</strong> {encargoChartData.datasets[0].data[1]}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Matrículas - Mitad derecha */}
-          <div className="col-12 col-md-6">
-            <div className="card shadow-sm mb-3">
-              <div className="card-header bg-light">
-                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
-                  <i className="bi bi-database" style={{ color: palette.info }}></i>
-                  Matrículas {new Date().getFullYear()}
-                  {srceiLoading && <div className="spinner-border spinner-border-sm ms-2" role="status"></div>}
-                </h6>
-              </div>
-              <div className="card-body">
-                <div style={{ height: CHART_HEIGHT.md }}>
-                  {srceiData ? (
-                    <Pie data={srceiChartData} options={sharedPieOptions} />
-                  ) : (
-                    <div className="d-flex align-items-center justify-content-center h-100">
-                      <span className="text-muted">
-                        {srceiLoading ? 'Cargando datos SRCEI...' : 'Sin datos disponibles'}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                {srceiData && (
-                  <div className="text-center mt-3">
-                    <div className="d-inline-flex gap-3 flex-wrap" style={{ fontSize: '0.9rem' }}>
-                      <span><strong>Total:</strong> {srceiData.total_matriculas}</span>
-                      <span><strong>Al día:</strong> {srceiData.vehiculos_pagados}</span>
-                      <span><strong>Con multas:</strong> {srceiData.total_matriculas - srceiData.vehiculos_pagados}</span>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
