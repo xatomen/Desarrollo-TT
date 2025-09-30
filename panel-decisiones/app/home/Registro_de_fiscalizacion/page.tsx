@@ -17,6 +17,7 @@ import {
 import { Bar, Line, Pie } from 'react-chartjs-2';
 import { applyChartTheme, palette, CHART_HEIGHT, buildBarOptions, buildLineOptions, pieOptions as sharedPieOptions } from "@/app/components/charts/theme";
 import API_CONFIG from "@/config/api";
+import { generatePDFFromElement, generateStructuredPDFFromElement } from "@/app/utils/pdfGenerator";
 
 // Registrar componentes de Chart.js
 ChartJS.register(
@@ -93,6 +94,9 @@ type Row = {
 };
 
 export default function RegistroFiscalizacionPage() {
+  // Estados para generación de PDF
+  const [generatingPDF, setGeneratingPDF] = useState(false);
+  
   // Estados para datos de la API
   const [apiData, setApiData] = useState<ApiResponse['data'] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -453,16 +457,41 @@ export default function RegistroFiscalizacionPage() {
   };
 
   // Actualizar localStorage cuando se genere PDF
-  function handleGeneratePDF() {
-    if (typeof window !== 'undefined') {
-      const timestamp = new Date().toLocaleString();
-      localStorage.setItem('lastReport:fiscalizacion', timestamp);
+  async function handleGeneratePDF() {
+    if (generatingPDF) return;
+    
+    setGeneratingPDF(true);
+    
+    try {
+      // Preparar información para el PDF
+      const currentDate = new Date().toLocaleDateString('es-CL');
+      const subtitle = `Período: ${desde} al ${hasta} | Generado: ${currentDate}`;
+      const filename = `Registro_Fiscalizacion_${desde}_${hasta}.pdf`;
+      
+      // Generar el PDF usando el método estructurado
+      await generateStructuredPDFFromElement(
+        'pdf-content',
+        'Registro de Fiscalización',
+        subtitle,
+        filename
+      );
+      
+      // Actualizar localStorage
+      if (typeof window !== 'undefined') {
+        const timestamp = new Date().toLocaleString();
+        localStorage.setItem('lastReport:fiscalizacion', timestamp);
+      }
+      
+    } catch (error) {
+      console.error('Error al generar PDF:', error);
+      alert('Error al generar el PDF. Por favor, inténtalo de nuevo.');
+    } finally {
+      setGeneratingPDF(false);
     }
-    alert("Generar PDF (por implementar)");
   }
 
   return (
-    <div className="my-4">
+    <div className="my-4" id="pdf-content">
       <header className="mb-4">
         <h2 className="h3 d-flex align-items-center gap-2">
           <span role="img" aria-label="shield">🛡️</span>
@@ -520,14 +549,28 @@ export default function RegistroFiscalizacionPage() {
           </div>
 
           <div className="col-12 col-md-2 d-grid">
-            <button type="submit" className="btn btn-success w-100" disabled={loading}>
+            <button type="submit" className="btn btn-success w-100 pdf-hide-buttons" disabled={loading}>
               {loading ? 'Filtrando...' : 'Filtrar'}
             </button>
           </div>
 
           <div className="col-12 col-md-2 d-grid">
-            <button type="button" className="btn btn-primary w-100" onClick={handleGeneratePDF}>
-              Generar Informe
+            <button
+              type="button"
+              className="btn btn-primary w-100 pdf-hide-buttons"
+              onClick={handleGeneratePDF}
+              disabled={generatingPDF}
+            >
+              {generatingPDF ? (
+                <>
+                  <div className="spinner-border spinner-border-sm me-2" role="status">
+                    <span className="visually-hidden">Generando...</span>
+                  </div>
+                  Generando...
+                </>
+              ) : (
+                'Generar Informe'
+              )}
             </button>
           </div>
 
