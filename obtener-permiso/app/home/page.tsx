@@ -137,7 +137,7 @@ export default function HomePage() {
               </p>
             </div>
             {/* Botón */}
-            <div className="text-center mt-3">
+            <div className="text-center mt-3" >
               <button className="btn btn-primary" onClick={() => router.push('/home/ver-documentos')}>Ir a Ver Documentos</button>
             </div>
           </div>
@@ -159,7 +159,7 @@ export default function HomePage() {
               <p>No necesitas ingresar ningún documento o información adicional, solo selecciona el vehículo, selecciona tu medio de pago y confirma la transacción!</p>
             </div>
             {/* Botón */}
-            <div className="text-center mt-3">
+            <div className="text-center mt-3" style={{ position: 'absolute', bottom: 0, width: '100%', left: 0, paddingBottom: '16px'}}>
               <button className="btn btn-primary" onClick={() => router.push('/home/ver-vehiculos')}>Ir a Pagar Permisos</button>
             </div>
           </div>
@@ -181,7 +181,7 @@ export default function HomePage() {
               <p>Revisa fácilmente los permisos que has pagado, descarga tus comprobantes y mantén un registro actualizado de tus trámites.</p>
             </div>
             {/* Botón */}
-            <div className="text-center mt-3">
+            <div className="text-center mt-3" style={{ position: 'absolute', bottom: 0, width: '100%', left: 0, paddingBottom: '16px' }}>
               <button className="btn btn-primary" onClick={() => router.push('/home/historial-permisos')}>Ir a Historial de Permisos</button>
             </div>
           </div>

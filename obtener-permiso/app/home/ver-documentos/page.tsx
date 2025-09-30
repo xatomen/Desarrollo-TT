@@ -8,6 +8,7 @@ import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import ModalVehicular from '@/components/ModalVehicular';
+import React from 'react';
 
 export default function VerDocumentosPage() {
   const searchParams = useSearchParams();
@@ -134,6 +135,37 @@ export default function VerDocumentosPage() {
     setShowModal(true);
   }
 
+  // Barra de búsqueda y paginación
+  const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Filtrado de vehículos
+  const filteredVehicles = vehicles.filter((vehiculo) => {
+    const patente = (vehiculo.ppu || '').toLowerCase();
+    const marca = (vehiculo.marca || '').toLowerCase();
+    const modelo = (vehiculo.modelo || '').toLowerCase();
+    const q = search.toLowerCase();
+    return patente.includes(q) || marca.includes(q) || modelo.includes(q);
+  });
+
+  // Paginación
+  const totalPages = Math.max(1, Math.ceil(filteredVehicles.length / itemsPerPage));
+  const paginatedVehicles = filteredVehicles.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Cambiar página
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  };
+
+  // Resetear página al buscar
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
   return (
     <ProtectedRoute>
       <div style={{ fontFamily: '"Roboto", Arial, sans-serif', minHeight: 'max-content', width: '100%' }}>
@@ -154,77 +186,154 @@ export default function VerDocumentosPage() {
         </div>
 
         <div className="row" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div className="card-like shadow col p-3 m-3">
-            <h1>Ver Documentos</h1>
-          </div>
-        </div>
-
-        {/* Lista de vehículos */}
-        <div className="row">
-          {vehicles.length === 0 && (
-            <div className="col-12 text-center py-4 text-muted">
-              No tienes vehículos registrados.
+          <div className="card-like shadow col p-3 m-3 text-center">
+            <h1 style={{
+              fontWeight: 700,
+              fontSize: '2rem',
+              marginBottom: '0.5rem',
+              letterSpacing: '1px',
+              fontFamily: 'Roboto',
+              color: '#0d6efd'
+            }}>
+              Documentos de tus vehículos
+            </h1>
+            <div className="col" style={{
+              background: 'linear-gradient(90deg, #fbeaf6 0%, #e0e7ff 100%)',
+              borderRadius: '14px',
+              boxShadow: '0 2px 8px #0001',
+              padding: '1.2rem 1rem',
+              marginBottom: '1.5rem',
+              alignContent: 'center',
+              justifyContent: 'center',
+              flex: 1,
+              width: '50%',
+              margin: '0 auto 1.5rem auto',
+              // minHeight: 80,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              fontFamily: 'Dosis, Roboto, Arial, sans-serif',
+              // height: '100%'
+            }}>
+              <span style={{
+                display: 'inline-block',
+                width: 18,
+                height: 18,
+                borderRadius: '50%',
+                background: '#6D2077',
+                marginBottom: 10,
+                fontFamily: 'Dosis, Roboto, Arial, sans-serif'
+              }} />
+              <b>¿Qué puedes hacer aquí?</b>
+              <span style={{ fontSize: '1rem', fontWeight: 400 }}>
+                Visualiza y descarga los documentos de tus vehículos. Haz clic en los botones de cada fila para acceder al documento correspondiente.
+              </span>
             </div>
-          )}
-          {vehicles.map((vehiculo) => (
-            <div
-              key={vehiculo.ppu}
-              className="col-12 col-md-6 col-lg-4 mb-4"
-              style={{ display: 'flex', alignItems: 'stretch' }}
-            >
-              <div
-                className="card-like shadow p-3 d-flex flex-column w-100"
-                style={{
-                  borderRadius: 16,
-                  border: `1.5px solid #e0e7ff`,
-                  background: '#fff',
-                  minHeight: 210,
-                  justifyContent: 'space-between',
-                }}
-              >
-                <div>
-                  <div className="d-flex align-items-center mb-2">
-                    <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#0d6efd' }}>
-                      {vehiculo.marca} {vehiculo.modelo}
-                    </span>
-                  </div>
-                  <div className="text-muted" style={{ fontSize: '1rem', marginBottom: 8 }}>
-                    Patente: <span style={{ fontWeight: 600 }}>{vehiculo.ppu}</span>
-                  </div>
-                </div>
-                <div className="mt-auto d-flex flex-wrap gap-2 justify-content-between">
-                  <button
-                    className="btn btn-outline-primary flex-fill"
-                    onClick={() => mostrarDocumento('padron', vehiculo.ppu)}
-                    disabled={!vehicleDocs[vehiculo.ppu]}
-                  >
-                    Padrón
-                  </button>
-                  <button
-                    className="btn btn-outline-success flex-fill"
-                    onClick={() => mostrarDocumento('permiso', vehiculo.ppu)}
-                    disabled={!vehicleDocs[vehiculo.ppu]}
-                  >
-                    Permiso
-                  </button>
-                  <button
-                    className="btn btn-outline-warning flex-fill"
-                    onClick={() => mostrarDocumento('soap', vehiculo.ppu)}
-                    disabled={!vehicleDocs[vehiculo.ppu]}
-                  >
-                    SOAP
-                  </button>
-                  <button
-                    className="btn btn-outline-info flex-fill"
-                    onClick={() => mostrarDocumento('revision', vehiculo.ppu)}
-                    disabled={!vehicleDocs[vehiculo.ppu]}
-                  >
-                    Revisión
-                  </button>
-                </div>
+
+            {/* Barra de búsqueda */}
+            <div className="row mb-3">
+              <div className="col-12 col-md-6 mx-auto">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Buscar por patente, marca o modelo..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  style={{ borderRadius: 8, fontSize: '1rem' }}
+                />
               </div>
             </div>
-          ))}
+
+            {/* Lista de vehículos en formato tabla */}
+            <div className="row">
+              <div className="col">
+                <table className="table" style={{ background: "#fff", width: '75%', flex: 1, margin: '0 auto', borderRadius: 8, boxShadow: '0 2px 8px #0001' }}>
+                  <thead style={{ backgroundColor: "#0d6efd", color: "#fff" }}>
+                    <tr>
+                      <th>Patente</th>
+                      <th>Marca</th>
+                      <th>Modelo</th>
+                      <th style={{ minWidth: 320 }}>Documentos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedVehicles.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="text-center text-muted py-4">
+                          No tienes vehículos registrados o no hay resultados para tu búsqueda.
+                        </td>
+                      </tr>
+                    )}
+                    {paginatedVehicles.map((vehiculo) => (
+                      <tr key={vehiculo.ppu}>
+                        <td style={{ fontWeight: 600 }}>{vehiculo.ppu}</td>
+                        <td>{vehiculo.marca}</td>
+                        <td>{vehiculo.modelo}</td>
+                        <td>
+                          <div className="d-flex flex-wrap gap-2">
+                            <button
+                              className="btn btn-outline-primary btn-sm"
+                              onClick={() => mostrarDocumento('padron', vehiculo.ppu)}
+                              disabled={!vehicleDocs[vehiculo.ppu]}
+                            >
+                              Padrón
+                            </button>
+                            <button
+                              className="btn btn-outline-success btn-sm"
+                              onClick={() => mostrarDocumento('permiso', vehiculo.ppu)}
+                              disabled={!vehicleDocs[vehiculo.ppu]}
+                            >
+                              Permiso
+                            </button>
+                            <button
+                              className="btn btn-outline-warning btn-sm"
+                              onClick={() => mostrarDocumento('soap', vehiculo.ppu)}
+                              disabled={!vehicleDocs[vehiculo.ppu]}
+                            >
+                              SOAP
+                            </button>
+                            <button
+                              className="btn btn-outline-info btn-sm"
+                              onClick={() => mostrarDocumento('revision', vehiculo.ppu)}
+                              disabled={!vehicleDocs[vehiculo.ppu]}
+                            >
+                              Revisión
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Paginación */}
+                <nav className="d-flex justify-content-center align-items-center mt-3">
+                  <ul className="pagination mb-0">
+                    <li className={`page-item${currentPage === 1 ? ' disabled' : ''}`}>
+                      <button className="page-link" onClick={() => goToPage(currentPage - 1)}>
+                        &laquo;
+                      </button>
+                    </li>
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <li key={i + 1} className={`page-item${currentPage === i + 1 ? ' active' : ''}`}>
+                        <button className="page-link" onClick={() => goToPage(i + 1)}>
+                          {i + 1}
+                        </button>
+                      </li>
+                    ))}
+                    <li className={`page-item${currentPage === totalPages ? ' disabled' : ''}`}>
+                      <button className="page-link" onClick={() => goToPage(currentPage + 1)}>
+                        &raquo;
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+
+
+          </div>
         </div>
 
         <ModalVehicular
