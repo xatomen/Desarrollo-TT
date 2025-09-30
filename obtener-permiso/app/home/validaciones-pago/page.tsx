@@ -795,87 +795,110 @@ function ValidacionesPagoContent() {
             </div>
           )}
 
-          {/* Botón proceder al pago */}
-          <div className="d-grid text-center">
-            <button 
-              className="btn btn-lg py-3 text-white fw-bold" 
-              disabled={!todosDocumentosValidos || permisoAnioActualPagado !== ''}
-              style={{ 
-                backgroundColor: todosDocumentosValidos && permisoAnioActualPagado === '' ? '#0d6efd' : '#6c757d', 
-                border: 'none',
-                fontFamily: '"Roboto", sans-serif',
-                fontWeight: '600',
-                cursor: todosDocumentosValidos && permisoAnioActualPagado === '' ? 'pointer' : 'not-allowed',
-                opacity: todosDocumentosValidos && permisoAnioActualPagado === '' ? 1 : 0.7
-              }}
-              onClick={() => {
-                if (todosDocumentosValidos && permisoAnioActualPagado === '') {
-                  // ✅ Crear objeto con todos los datos
-                  const datosVehiculo: DatosVehiculo = {
-                    // Datos básicos
-                    ppu: ppu || '',
-                    rut: rutPropietario || '',
-                    nombre: nombrePropietario || '',
-                    valorPermiso: valorPermiso || 0,
-                    
-                    // Información del vehículo
-                    marca,
-                    modelo,
-                    anio,
-                    color,
-                    tipoVehiculo,
-                    
-                    // Fechas importantes
-                    fechaExpiracionSoap,
-                    fechaExpiracionRevision,
-                    fechaInscripcion,
-                    
-                    // Identificadores
-                    numMotor,
-                    numChasis,
-                    codigoSii,
-                    
-                    // Características técnicas
-                    capacidadCarga,
-                    tipoSello,
-                    tipoCombustible,
-                    cilindrada,
-                    tasacion,
-                    peso,
-                    asientos,
-                    puertas,
-                    transmision,
-                    equipamiento,
-                    
-                    // Estados de validación
-                    revisionTecnica,
-                    soap,
-                    encargoRobo,
-                    multasTransito,
-                    multasRPI,
-                    
-                    // Metadatos
-                    fechaConsulta: new Date().toISOString(),
-                    todosDocumentosValidos
-                  };
-                  
-                  // ✅ Guardar en sessionStorage
-                  try {
-                    sessionStorage.setItem('datos_vehiculo_permiso', JSON.stringify(datosVehiculo));
-                    console.log('Datos guardados en sessionStorage:', datosVehiculo);
-                    
-                    // ✅ Redirigir sin parámetros en la URL
-                    window.location.href = '/home/formulario-pago';
-                  } catch (error) {
-                    console.error('Error guardando datos en sessionStorage:', error);
-                    alert('Error al preparar los datos. Intente nuevamente.');
-                  }
-                }
-              }}
-            >
-              Proceder al Pago
-              <span className="ms-2">→</span>
-            </button>
+          <div className="card-like shadow p-4 mb-4">
+            <h5 className="mb-3 fw-bold text-dark text-center" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '600', fontSize: '1.125rem' }}>
+              Seleccionar cantidad de cuotas y proceder al pago
+            </h5>
+            <hr />
+
+            <div className="row">
+
+              <div className="col d-flex justify-content-center align-items-center gap-3">
+                Selecciona la cantidad de cuotas: 
+                <select
+                  className="form-select form-select-lg"
+                  style={{ width: '200px', height: '100%', fontFamily: '"Roboto", sans-serif', fontWeight: '500', border: '1px solid #ced4da', padding: '10px', borderRadius: '8px' }}
+                >
+                  <option value={1}>Pago único</option>
+                  <option value={2}>2 cuotas (Paga en marzo y en agosto)</option>
+                </select>
+              </div>
+
+              {/* Botón proceder al pago */}
+              <div className="col text-center">
+                <button 
+                  className="btn btn-lg py-3 text-white fw-bold" 
+                  disabled={!todosDocumentosValidos || permisoAnioActualPagado !== ''}
+                  style={{ 
+                    backgroundColor: todosDocumentosValidos && permisoAnioActualPagado === '' ? '#0d6efd' : '#6c757d', 
+                    border: 'none',
+                    fontFamily: '"Roboto", sans-serif',
+                    fontWeight: '600',
+                    cursor: todosDocumentosValidos && permisoAnioActualPagado === '' ? 'pointer' : 'not-allowed',
+                    opacity: todosDocumentosValidos && permisoAnioActualPagado === '' ? 1 : 0.7
+                  }}
+                  onClick={() => {
+                    if (todosDocumentosValidos && permisoAnioActualPagado === '') {
+                      // ✅ Crear objeto con todos los datos
+                      const datosVehiculo: DatosVehiculo = {
+                        // Datos básicos
+                        ppu: ppu || '',
+                        rut: rutPropietario || '',
+                        nombre: nombrePropietario || '',
+                        valorPermiso: valorPermiso || 0,
+                        
+                        // Información del vehículo
+                        marca,
+                        modelo,
+                        anio,
+                        color,
+                        tipoVehiculo,
+                        
+                        // Fechas importantes
+                        fechaExpiracionSoap,
+                        fechaExpiracionRevision,
+                        fechaInscripcion,
+                        
+                        // Identificadores
+                        numMotor,
+                        numChasis,
+                        codigoSii,
+                        
+                        // Características técnicas
+                        capacidadCarga,
+                        tipoSello,
+                        tipoCombustible,
+                        cilindrada,
+                        tasacion,
+                        peso,
+                        asientos,
+                        puertas,
+                        transmision,
+                        equipamiento,
+                        
+                        // Estados de validación
+                        revisionTecnica,
+                        soap,
+                        encargoRobo,
+                        multasTransito,
+                        multasRPI,
+                        
+                        // Metadatos
+                        fechaConsulta: new Date().toISOString(),
+                        todosDocumentosValidos
+                      };
+                      
+                      // ✅ Guardar en sessionStorage
+                      try {
+                        sessionStorage.setItem('datos_vehiculo_permiso', JSON.stringify(datosVehiculo));
+                        console.log('Datos guardados en sessionStorage:', datosVehiculo);
+                        
+                        // ✅ Redirigir sin parámetros en la URL
+                        window.location.href = '/home/formulario-pago';
+                      } catch (error) {
+                        console.error('Error guardando datos en sessionStorage:', error);
+                        alert('Error al preparar los datos. Intente nuevamente.');
+                      }
+                    }
+                  }}
+                >
+                  Proceder al Pago
+                  <span className="ms-2">→</span>
+                </button>
+              </div>
+
+            </div>
+
           </div>
         </div>
       </div>
