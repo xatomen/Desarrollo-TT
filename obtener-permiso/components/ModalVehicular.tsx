@@ -43,7 +43,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
               ? 'auto'
               : title.toLowerCase() === 'soap'
               ? '1200px'
-              : 500,
+              : 'auto',
           maxWidth: '95vw',
           maxHeight: '95vh',
           boxShadow: '0 8px 32px #0003',
@@ -463,17 +463,137 @@ export default function ModalVehicular({ show, onClose, title, data }: {
 
               </div>
             ) : (
-              // FORMATO TABLA PARA OTROS DOCUMENTOS
-              <table style={{ width: '100%', fontSize: '1rem', borderCollapse: 'collapse' }}>
-                <tbody>
-                  {Object.entries(revision).map(([key, value]) => (
-                    <tr key={key}>
-                      <td style={{ fontWeight: 500, padding: '6px 10px', borderBottom: '1px solid #eee', width: 180 }}>{key}</td>
-                      <td style={{ padding: '6px 10px', borderBottom: '1px solid #eee' }}>{String(value)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div
+                className="row"
+                style={{
+                  background: '#fff',
+                  fontFamily: 'serif',
+                  fontSize: '0.8rem',
+                  width: 'auto',           // Cambiado de '1200px' a 'auto'
+                  maxWidth: '100%',        // Para que no se pase del contenedor
+                  minWidth: 1200,           // Opcional: mínimo igual que el modal
+                  margin: '0 auto',        // Centrado
+                  boxSizing: 'border-box', // Asegura que padding/border no desborden
+                }}
+              >
+
+                <div className="col" style={{ border: '2px solid #222', marginRight: 16, fontFamily: 'Roboto' }}>
+                  <div className="row">
+                    <div className="col text-center" style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>CERTIFICADO DE REVISIÓN TÉCNICA</div>
+                  </div>
+                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                    <div className="col">FECHA REVISIÓN: {revision.fecha || '-'}</div>
+                    <div className="col">N°: {revision.nom_certificado || '-'}</div>
+                  </div>
+                  <div className="row">
+                    <div className="col-8" style={{ borderRight: '2px solid #222' }}>
+                      <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                        <div className="col">
+                          {revision.planta || '-'}
+                          <br />
+                          Santiago, Chile
+                          <br />
+                          PLANTA: {revision.codigo_planta || '-'} / FONO: 225826218
+                        </div>
+                      </div>
+                      <div className="row text-center" style={{ borderBottom: '2px solid #222' }}>
+                        <div className="col" style={{ borderRight: '2px solid #222', fontSize: '1rem' }}>PLACA PATENTE<br /><b>{revision.ppu || '-'}</b></div>
+                        <div className="col" style={{ background: 'url(/img/aseguradoras/timbre.png) no-repeat center center', backgroundSize: 'contain', height: '75px', alignSelf: 'center', textAlign: 'center', justifyItems: 'center', alignItems: 'center', fontWeight: 'bold', color: 'black', fontSize: '1.5rem' }}>
+                          <br />
+                          APROBADO
+                        </div>
+                      </div>
+                      <div className="row">
+                        <div className="col">
+                          FIRMA ELECTRONICA AVANZADA
+                          <br />
+                          {revision.fecha || '-'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-4">
+                      <div className="row" style={{ borderBottom: '2px solid #222', textAlign: 'center' }}>
+                        <div className="col">
+                          <img src="/img/qrcode.png" alt="" style={{ height: '200px', objectFit: 'contain' }} />
+                        </div>
+                      </div>
+                      <div className="row">
+                        <div className="col">
+                          VÁLIDO HASTA
+                          <br />
+                          {revision.fecha_vencimiento || '-'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col" style={{ border: '2px solid #222', marginLeft: 16 }}>
+                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                    <div className="col-8" style={{ borderRight: '2px solid #222' }}>
+                      NOMBRE DEL PROPIETARIO
+                      <br />
+                      {padron.nombre || '-'}
+                    </div>
+                    <div className="col-4">
+                      RUT
+                      <br />
+                      {padron.rut || '-'}
+                    </div>
+                  </div>
+                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                    <div className="col-8" style={{ borderRight: '2px solid #222' }}>
+                      TIPO DE VEHICULO
+                      <br />
+                      {padron.tipo_vehiculo || '-'}
+                    </div>
+                    <div className="col-4">
+                      AÑO
+                      <br />
+                      {padron.anio || '-'}
+                    </div>
+                  </div>
+                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                    <div className="col-8" style={{ borderRight: '2px solid #222' }}>
+                      MARCA
+                      <br />
+                      {padron.marca || '-'}
+                    </div>
+                    <div className="col-4">
+                      COLOR
+                      <br />
+                      {padron.color || '-'}
+                    </div>
+                  </div>
+                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                    <div className="col-8" style={{ borderRight: '2px solid #222' }}>
+                      MODELO
+                      <br />
+                      {padron.modelo || '-'}
+                    </div>
+                    <div className="col-4">
+                      SELLO
+                      <br />
+                      {permiso.tipo_sello || '-'}
+                    </div>
+                  </div>
+                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                    <div className="col">
+                      N° CHASIS/N° VIN
+                      <br />
+                      {padron.num_chasis || '-'} / {padron.num_vin || '-'}
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="col">
+                      N° MOTOR
+                      <br />
+                      {padron.num_motor || '-'}
+                    </div>
+                  </div>
+                </div>
+              
+              </div>
             )
           ) : (
             <div style={{ textAlign: 'center', color: '#888' }}>No hay datos disponibles.</div>
