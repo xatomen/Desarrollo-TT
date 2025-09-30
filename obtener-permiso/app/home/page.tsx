@@ -103,7 +103,7 @@ export default function HomePage() {
                 <b>Email:</b> {user.email || 'No disponible'}
               </span>
             </div>
-            <hr style={{ margin: '1.5rem 0', borderColor: '#e0e7ff' }} />
+            <hr style={{ margin: '1.5rem 0', borderColor: '#6D2077' }} />
             <div style={{ fontSize: '1.08rem', color: '#333', fontWeight: 500 }}>
               <i className="bi bi-info-circle" style={{ color: '#00C7B1', marginRight: 6 }}></i>
               Desde aquí puedes pagar tus permisos, revisar tu historial y acceder a todos los documentos de tus vehículos de forma rápida y segura.
