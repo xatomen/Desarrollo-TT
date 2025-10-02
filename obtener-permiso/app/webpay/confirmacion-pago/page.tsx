@@ -91,12 +91,13 @@ export default function ConfirmacionPagoLayout({ children }: { children: React.R
 
   // Recuperar datos desde el sessión storage
   useEffect(() => {
-    const userInfo = sessionStorage.getItem('user_info');
+    const userInfo = sessionStorage.getItem('user_info')
+    const formatoPago = sessionStorage.getItem('formato_pago');
     if (userInfo) {
       const datos = JSON.parse(userInfo);
       setNumTarjeta(datos.numero_tarjeta);
       setTipoTarjeta(datos.tipo_tarjeta);
-      // setMontoPago(Number(datos.monto_pago).toLocaleString());
+      setMontoPago(formatoPago ? Number(JSON.parse(formatoPago).monto_pago) : 0);
     }
   }, []);
 

@@ -161,6 +161,9 @@ class Tarjetas(Base):
     cvv = Column(Integer, nullable=False)
     saldo = Column(Integer, nullable=False)
 
+class UpdateFechaRequest(BaseModel):
+    id: int
+    fecha_expiracion: date  # Nueva fecha de expiración en formato ISO 8601
 
 #########################################################
 # Crear las tablas en la base de datos
@@ -567,3 +570,17 @@ def get_permiso_count(anio: int, db: Session = Depends(get_db)):
         )
     ).count()
     return {"anio": anio, "count": count}
+
+# Endpoint para actualizar fecha de expiración usando id del permiso
+@app.patch("/update_fecha_permiso/")
+def update_fecha_permiso(request: UpdateFechaRequest, db: Session = Depends(get_db)):
+    # Validar que la nueva fecha de expiración sea mayor a la fecha actual
+    if request.fecha_expiracion <= date.today():
+        raise HTTPException(status_code=400, detail="La nueva fecha de expiración debe ser mayor a la fecha actual")
+    permiso = db.query(PermisoCirculacion).filter(PermisoCirculacion.id == request.id).first()
+    if not permiso:
+        raise HTTPException(status_code=404, detail="Permiso de circulación no encontrado")
+    permiso.fecha_expiracion = request.fecha_expiracion
+    db.commit()
+    db.refresh(permiso)
+    return {"message": "Fecha de expiración actualizada correctamente", "id": permiso.id, "nueva_fecha_expiracion": permiso.fecha_expiracion}

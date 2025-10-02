@@ -133,7 +133,7 @@ export default function PagoBancoPage() {
         cvv: cvv
       });
     }
-    const monto = sessionStorage.getItem('monto_pago');
+    const monto = sessionStorage.getItem('formato_pago') ? JSON.parse(sessionStorage.getItem('formato_pago') || '{}').monto_pago : null;
     if (monto) {
       setMontoPago(Number(monto));
     }

@@ -190,6 +190,7 @@ export default function HistorialPermisosPage() {
                     <th scope="col">Fecha de Emisión</th>
                     <th scope="col">Tarjeta</th>
                     <th scope="col">Valor Permiso</th>
+                    <th scope="col">Cuota</th>
                     <th scope="col">Acción</th>
                   </tr>
                 </thead>
@@ -202,9 +203,10 @@ export default function HistorialPermisosPage() {
                     permisosPagina.map((permiso) => (
                       <tr key={permiso.id}>
                         <td style={{ fontWeight: 600 }}>{permiso.ppu}</td>
-                        <td>{new Date(permiso.fecha_emision).toLocaleDateString()}</td>
-                        <td>{"**** **** **** " + permiso.tarjeta}</td>
-                        <td>${permiso.valor_permiso?.toLocaleString('es-CL')}</td>
+                        <td>{new Date(permiso.fecha_pago).toLocaleDateString()}</td>
+                        <td>{"**** **** **** " + permiso.tarjeta.slice(-4)}</td>
+                        <td>${permiso.monto_pago?.toLocaleString('es-CL')}</td>
+                        <td>{permiso.cuota_pagada}/{permiso.cuotas}</td>
                         <td>
                           <button
                             className="btn btn-primary"

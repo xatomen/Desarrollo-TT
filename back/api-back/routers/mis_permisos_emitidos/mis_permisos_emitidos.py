@@ -98,7 +98,7 @@ def obtener_permisos_emitidos(rut: str, db: Session = Depends(get_db)):
 # Endpoint para obtener todos los pagos de un permiso a través de su id
 @router.get("/mis_permisos_emitidos/pagos/{id}", response_model=List[MisPermisosEmitidosModel])
 def obtener_pago_por_id(id: int, db: Session = Depends(get_db)):
-    permisos = db.query(MisPermisosEmitidos).filter(MisPermisosEmitidos.id == id).all()
+    permisos = db.query(MisPermisosEmitidos).filter(MisPermisosEmitidos.id_permiso == id).all()
     if not permisos:
         raise HTTPException(status_code=404, detail="Permiso no encontrado")
     return permisos

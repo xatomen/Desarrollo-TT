@@ -101,6 +101,8 @@ function ValidacionesPagoContent() {
     setRut(storedRut);
   }, []);
   
+  const [numCuotas, setNumCuotas] = useState<number>(1);
+
   // Valor permiso
   const [valorPermiso, setValorPermiso] = useState<number | null>(null);
   const [mensajeAtraso, setMensajeAtraso] = useState<string>('');
@@ -176,6 +178,51 @@ function ValidacionesPagoContent() {
   // Permiso del año actual pagado?
   const [permisoAnioActualPagado, setPermisoAnioActualPagado] = useState<string>('');
 
+  // Pagos realizados
+  const [pagosRealizados, setPagosRealizados] = useState<any[]>([]);
+  const [pagoFaltante, setPagoFaltante] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const fetchPagos = async () => {
+      if (!ppu) return;
+      // Obtener ID del permiso
+      let permisoData;
+      try {
+        const response = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${ppu}`);
+        permisoData = await response.json();
+      } catch (error) {
+        console.error('Error fetching permiso data:', error);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_CONFIG.BACKEND}mis_permisos_emitidos/pagos/${permisoData.id}`);
+        const data = await response.json();
+        setPagosRealizados(data);
+        
+        if (data.length === 1 && data[0].cuotas === 2) {
+          console.log('Falta pago de segunda cuota');
+          console.log('Pagos realizados:', data);
+          setPagoFaltante(true);
+        } else {
+          console.log('No falta pago de segunda cuota');
+          console.log('Pagos realizados:', data);
+          setPagoFaltante(false);
+        }
+
+        // Si faltan pagos habilitamos el botón de pago de segunda cuota
+        if (pagoFaltante) {
+          // Lógica para habilitar el botón de pago
+        }
+
+      } catch (error) {
+        console.error('Error fetching pagos:', error);
+      }
+    };
+
+    fetchPagos();
+  }, [ppu]);
+
   // Crear documentos dinámicamente basado en los estados
   const documentos: DocumentoValidacion[] = [
     { nombre: 'Permiso de Circulación', estado: permisoJson && permisoJson.vigencia === true ? 'Vigente' : 'No Vigente' },
@@ -228,8 +275,15 @@ function ValidacionesPagoContent() {
           const anioEmisionPermiso = permisoData.fecha_emision ? new Date(permisoData.fecha_emision).getFullYear() : null;
           console.log('Año emisión permiso:', anioEmisionPermiso);
           if (anioEmisionPermiso == new Date().getFullYear()) {
-            setPermisoAnioActualPagado(`Permiso de circulación del año ${anioEmisionPermiso} pagado`);
-            // MOSTRAR MENSAJE ALMACENADO ARRIBA DE PROCEDER AL PAGO SI EL AÑO ACTUAL YA ESTÁ PAGADO ADEMAS DE BLOQUEAR EL BOTÓN
+            // Obtener los últimos pagos realizados para este permiso
+            const pagosRes = await fetch(`${API_CONFIG.BACKEND}mis_permisos_emitidos/pagos/${permisoData.id}`);
+            const pagosData = await pagosRes.json();
+            if (pagosData.length == 1 && pagosData[0].cuotas == 2) {
+              setPermisoAnioActualPagado(`Permiso de circulación del año ${anioEmisionPermiso} pagado. Recuerda pagar tu segunda cuota en el mes de Agosto`); 
+            }
+            else{
+              setPermisoAnioActualPagado(`Permiso de circulación del año ${anioEmisionPermiso} pagado`);
+            }
           }
         } catch (error) {
           console.error('Error fetching fecha emision permiso:', error);
@@ -394,15 +448,15 @@ function ValidacionesPagoContent() {
 
   // Obtener valor permiso de circulación
   const fetchValorPermiso = async (ppu: string) => {
+    const permisoRes = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${ppu}`);
+    const permisoData = await permisoRes.json();
+    setPermisoJson(permisoData);
     try {
       const response = await fetch(`${API_CONFIG.BACKEND}consultar_valor_permiso/${ppu}`);
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
       const data = await response.json();
-      const permisoRes = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${ppu}`);
-      const permisoData = await permisoRes.json();
-      setPermisoJson(permisoData);
       if (permisoData.fecha_emision) {
         const anioUltimaEmision = new Date(permisoData.fecha_emision).getFullYear();
         const anioActual = new Date().getFullYear();
@@ -432,6 +486,12 @@ function ValidacionesPagoContent() {
       setCapacidadCarga(data.carga || '-');
     } catch (error) {
       console.error('Error fetching valor permiso:', error);
+      // Seteamos el valor del permiso usando el valor del último permiso
+      if (permisoData.valor_permiso) {
+        setValorPermiso(permisoData.valor_permiso);
+      } else {
+        setValorPermiso(0);
+      }
     }
   };
   useEffect(() => {
@@ -626,18 +686,17 @@ function ValidacionesPagoContent() {
                 {modalDocumento.doc.nombre === 'Permiso de Circulación' && permisoJson && (
                   <div>
                     <p><b>PPU:</b> {ppu}</p>
-                    <p><b>RUT Propietario:</b> {rutPropietario}</p>
-                    <p><b>Nombre Propietario:</b> {nombrePropietario}</p>
+                    <p><b>RUT Propietario:</b> {permisoJson.rut}</p>
+                    <p><b>Nombre Propietario:</b> {permisoJson.nombre}</p>
                     <p><b>Fecha Emisión:</b> {permisoJson.fecha_emision || '-'}</p>
                     <p><b>Fecha Expiración:</b> {permisoJson.fecha_expiracion || '-'}</p>
-                    <p><b>Código SII:</b> {codigoSii}</p>
-                    <p><b>Cilindrada:</b> {cilindrada}</p>
-                    <p><b>Tasación:</b> {tasacion}</p>
-                    <p><b>Peso:</b> {peso}</p>
-                    <p><b>N° Asientos:</b> {asientos}</p>
-                    <p><b>N° Puertas:</b> {puertas}</p>
-                    <p><b>Transmisión:</b> {transmision}</p>
-                    <p><b>Equipamiento:</b> {equipamiento}</p>
+                    <p><b>Código SII:</b> {permisoJson.codigo_sii}</p>
+                    <p><b>Cilindrada:</b> {permisoJson.cilindrada}</p>
+                    <p><b>Tasación:</b> {permisoJson.tasacion}</p>
+                    <p><b>N° Asientos:</b> {permisoJson.ast}</p>
+                    <p><b>N° Puertas:</b> {permisoJson.pts}</p>
+                    <p><b>Transmisión:</b> {permisoJson.transmision}</p>
+                    <p><b>Equipamiento:</b> {permisoJson.equipamiento}</p>
                   </div>
                 )}
                 {/* Detalles SOAP */}
@@ -803,16 +862,18 @@ function ValidacionesPagoContent() {
 
             <div className="row">
 
-              <div className="col d-flex justify-content-center align-items-center gap-3">
+                <div className="col d-flex justify-content-center align-items-center gap-3">
                 Selecciona la cantidad de cuotas: 
                 <select
                   className="form-select form-select-lg"
                   style={{ width: '200px', height: '100%', fontFamily: '"Roboto", sans-serif', fontWeight: '500', border: '1px solid #ced4da', padding: '10px', borderRadius: '8px' }}
+                  value={numCuotas}
+                  onChange={e => setNumCuotas(Number(e.target.value))}
                 >
                   <option value={1}>Pago único</option>
                   <option value={2}>2 cuotas (Paga en marzo y en agosto)</option>
                 </select>
-              </div>
+                </div>
 
               {/* Botón proceder al pago */}
               <div className="col text-center">
@@ -829,6 +890,177 @@ function ValidacionesPagoContent() {
                   }}
                   onClick={() => {
                     if (todosDocumentosValidos && permisoAnioActualPagado === '') {
+                      
+                      if (numCuotas === 1) {
+                        const formato_pago = {
+                          'num_cuotas': numCuotas,
+                          'cuota': 1,
+                          'monto_pago': valorPermiso || 0
+                        };
+                        sessionStorage.setItem('formato_pago', JSON.stringify(formato_pago));
+                        // ✅ Crear objeto con todos los datos
+                        const datosVehiculo: DatosVehiculo = {
+                          // Datos básicos
+                          ppu: ppu || '',
+                          rut: rutPropietario || '',
+                          nombre: nombrePropietario || '',
+                          valorPermiso: valorPermiso || 0,
+                          
+                          // Información del vehículo
+                          marca,
+                          modelo,
+                          anio,
+                          color,
+                          tipoVehiculo,
+                          
+                          // Fechas importantes
+                          fechaExpiracionSoap,
+                          fechaExpiracionRevision,
+                          fechaInscripcion,
+                          
+                          // Identificadores
+                          numMotor,
+                          numChasis,
+                          codigoSii,
+                          
+                          // Características técnicas
+                          capacidadCarga,
+                          tipoSello,
+                          tipoCombustible,
+                          cilindrada,
+                          tasacion,
+                          peso,
+                          asientos,
+                          puertas,
+                          transmision,
+                          equipamiento,
+                          
+                          // Estados de validación
+                          revisionTecnica,
+                          soap,
+                          encargoRobo,
+                          multasTransito,
+                          multasRPI,
+                          
+                          // Metadatos
+                          fechaConsulta: new Date().toISOString(),
+                          todosDocumentosValidos
+                        };
+                        
+                        // ✅ Guardar en sessionStorage
+                        try {
+                          sessionStorage.setItem('datos_vehiculo_permiso', JSON.stringify(datosVehiculo));
+                          console.log('Datos guardados en sessionStorage:', datosVehiculo);
+                          
+                          // ✅ Redirigir sin parámetros en la URL
+                          window.location.href = '/home/formulario-pago';
+                        } catch (error) {
+                          console.error('Error guardando datos en sessionStorage:', error);
+                          alert('Error al preparar los datos. Intente nuevamente.');
+                        }
+                      }
+
+                      if (numCuotas === 2) {
+                        const formato_pago = {
+                          'num_cuotas': numCuotas,
+                          'cuota': 1,
+                          'monto_pago': Math.ceil((valorPermiso || 0) / 2)
+                        };
+                        sessionStorage.setItem('formato_pago', JSON.stringify(formato_pago));
+                        // ✅ Crear objeto con todos los datos
+                        const datosVehiculo: DatosVehiculo = {
+                          // Datos básicos
+                          ppu: ppu || '',
+                          rut: rutPropietario || '',
+                          nombre: nombrePropietario || '',
+                          valorPermiso: valorPermiso || 0,
+                          
+                          // Información del vehículo
+                          marca,
+                          modelo,
+                          anio,
+                          color,
+                          tipoVehiculo,
+                          
+                          // Fechas importantes
+                          fechaExpiracionSoap,
+                          fechaExpiracionRevision,
+                          fechaInscripcion,
+                          
+                          // Identificadores
+                          numMotor,
+                          numChasis,
+                          codigoSii,
+                          
+                          // Características técnicas
+                          capacidadCarga,
+                          tipoSello,
+                          tipoCombustible,
+                          cilindrada,
+                          tasacion,
+                          peso,
+                          asientos,
+                          puertas,
+                          transmision,
+                          equipamiento,
+                          
+                          // Estados de validación
+                          revisionTecnica,
+                          soap,
+                          encargoRobo,
+                          multasTransito,
+                          multasRPI,
+                          
+                          // Metadatos
+                          fechaConsulta: new Date().toISOString(),
+                          todosDocumentosValidos
+                        };
+                        
+                        // ✅ Guardar en sessionStorage
+                        try {
+                          sessionStorage.setItem('datos_vehiculo_permiso', JSON.stringify(datosVehiculo));
+                          console.log('Datos guardados en sessionStorage:', datosVehiculo);
+                          
+                          // ✅ Redirigir sin parámetros en la URL
+                          window.location.href = '/home/formulario-pago';
+                        } catch (error) {
+                          console.error('Error guardando datos en sessionStorage:', error);
+                          alert('Error al preparar los datos. Intente nuevamente.');
+                        }
+                      }
+                    }
+                  }}
+                >
+                  Proceder al Pago
+                  <span className="ms-2">→</span>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+          
+          {/* Card segunda cuota */}
+          { (pagoFaltante === true) && (
+            <div className="card-like shadow p-4">
+              <div className="row">
+                <div className="col text-center">
+                  <strong>Pago Segunda Cuota</strong>
+                  <hr />
+                </div>
+              </div>
+              <div className="row">
+                <div className="col">Paga tu segunda cuota de tu permiso de circulación del año {new Date().getFullYear()}</div>
+                <div className="col text-center ">
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => {
+                      const formato_pago = {
+                        'num_cuotas': 2,
+                        'cuota': 2,
+                        'monto_pago': pagosRealizados[0].monto_pago || 0,
+                      };
+                      sessionStorage.setItem('formato_pago', JSON.stringify(formato_pago));
                       // ✅ Crear objeto con todos los datos
                       const datosVehiculo: DatosVehiculo = {
                         // Datos básicos
@@ -889,17 +1121,16 @@ function ValidacionesPagoContent() {
                         console.error('Error guardando datos en sessionStorage:', error);
                         alert('Error al preparar los datos. Intente nuevamente.');
                       }
-                    }
-                  }}
-                >
-                  Proceder al Pago
-                  <span className="ms-2">→</span>
-                </button>
+                    }}
+                  >
+                    Proceder a Pagar
+                    <br />
+                    Segunda Cuota →
+                  </button>
+                </div>
               </div>
-
             </div>
-
-          </div>
+          ) }
         </div>
       </div>
     </div>

@@ -1436,7 +1436,7 @@ export default function VerVehiculos() {
                         <b>Fecha vencimiento permiso:</b>{' '}
                         {vehiculoBuscado.estadoVehiculo.fechaVencimientoPermiso
                           ? formatearFechaLarga(vehiculoBuscado.estadoVehiculo.fechaVencimientoPermiso)
-                          : <span className="text-muted">No disponible</span>
+                          : <span className="text-muted">Vehículo Nuevo</span>
                         }
                       </div>
                       <div className="mt-3 d-flex gap-2">

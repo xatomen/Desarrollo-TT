@@ -97,6 +97,10 @@ class PermisoCirculacionRequest(BaseModel):
     codigo_sii: str
     tasacion: int
 
+class UpdateFechaRequest(BaseModel):
+    id: int
+    fecha_expiracion: str
+
 def validar_rut(rut: str) -> bool:
     """Valida el formato del RUT chileno y permite ambos formatos"""
     # Permitir formato con puntos: 12.345.678-9 o sin puntos: 12345678-9
@@ -215,4 +219,61 @@ async def emitir_permiso_circulacion(
         raise HTTPException(
             status_code=500, 
             detail="Error interno del servidor al emitir permiso de circulación"
+        )
+
+# Endpoint para actualizar fecha de expiración usando id del permiso
+@router.patch("/update_fecha_permiso/")
+async def update_fecha_permiso(
+    update_data: UpdateFechaRequest,
+    db: Session = Depends(get_db)
+):
+    try:
+        # Validar fecha
+        try:
+            nueva_fecha_expiracion = datetime.strptime(update_data.fecha_expiracion, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=400, 
+                detail="Formato de fecha inválido. Use YYYY-MM-DD"
+            )
+
+        # Buscar permiso por id
+        permiso = db.query(PermisoCirculacion).filter(PermisoCirculacion.id == update_data.id).first()
+        if not permiso:
+            raise HTTPException(
+                status_code=404, 
+                detail="Permiso de circulación no encontrado"
+            )
+
+        # Validar que la nueva fecha de expiración sea posterior a la actual
+        if nueva_fecha_expiracion <= permiso.fecha_expiracion:
+            raise HTTPException(
+                status_code=400, 
+                detail="La nueva fecha de expiración debe ser posterior a la fecha actual"
+            )
+
+        # Actualizar fecha de expiración
+        permiso.fecha_expiracion = nueva_fecha_expiracion
+        db.commit()
+        db.refresh(permiso)
+
+        logger.info(f"Fecha de expiración actualizada exitosamente para ID: {update_data.id}")
+        
+        return {
+            "mensaje": "Fecha de expiración actualizada exitosamente", 
+            "id": permiso.id,
+            "ppu": permiso.ppu,
+            "nueva_fecha_expiracion": nueva_fecha_expiracion.isoformat()
+        }
+        
+    except HTTPException as he:
+        db.rollback()
+        logger.error(f"Error de validación: {he.detail}")
+        raise he
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error inesperado al actualizar fecha: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail="Error interno del servidor al actualizar fecha de expiración"
         )

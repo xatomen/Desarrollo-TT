@@ -254,6 +254,16 @@ export default function ConfirmacionPago() {
   const pdfRef = useRef<HTMLDivElement>(null);
   const [resultadoPago, setResultadoPago] = useState<'exitoso' | 'fallido'>('fallido');
 
+  const [montoPago, setMontoPago] = useState(0);
+  const [numCuotas, setNumCuotas] = useState(1);
+  const [numCuota, setNumCuota] = useState(1);
+  useEffect(() => {
+    const formatoPago = sessionStorage.getItem('formato_pago');
+    setMontoPago(formatoPago ? Number(JSON.parse(formatoPago).monto_pago) : 0);
+    setNumCuotas(formatoPago ? Number(JSON.parse(formatoPago).num_cuotas) : 1);
+    setNumCuota(formatoPago ? Number(JSON.parse(formatoPago).cuota) : 1);
+  }, []);
+
   // Resultado del pago
   useEffect(() => {
     const stored = sessionStorage.getItem('resultado_pago');
@@ -287,7 +297,7 @@ export default function ConfirmacionPago() {
       setNumeroComprobante(data.transactionId ? data.transactionId.toString() : `${timestamp}${random}`);
     } else {
       // Si no hay datos de pago, redirigir al home
-      router.push('/home');
+      router.push('/home/ver-vehiculos');
     }
   }, [router]);
 
@@ -303,16 +313,157 @@ export default function ConfirmacionPago() {
     logout();
   };
 
-  // Si el resultado del pago es correcto, cargar permiso de circulación
+  // Si el resultado del pago es correcto, cargar o actualizar permiso de circulación
   const emitirPermiso = async () => {
     if (resultadoPago === 'exitoso') {
-      try {
-        // Obtener datos del vehículo desde sessionStorage
-        const datosString = sessionStorage.getItem('datos_vehiculo_permiso');
-        const datos = datosString ? JSON.parse(datosString) : null;
+      // Obtener datos del vehículo desde sessionStorage
+      const datosString = sessionStorage.getItem('datos_vehiculo_permiso');
+      const datos = datosString ? JSON.parse(datosString) : null;
+      
+      if (!datos) return;
+      if (numCuota == 2 && numCuotas == 2){
+        console.log('No es la primera cuota, no se emite permiso de circulación, solo debemos actualizar la fecha de expiración');
+        // Obtener el último permiso emitido para este vehículo
+        const response = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${datos.ppu}`);
+        const permisoActual = await response.json();
+        // Actualizamos el permiso de circulación en la base de datos TGR
+        await fetch(`${API_CONFIG.TGR}update_fecha_permiso/`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: permisoActual.id,
+            // Nueva fecha expiración será permisoActual.fecha_expiracion + 6 meses
+            fecha_expiracion: new Date(new Date(permisoActual.fecha_expiracion).setMonth(new Date(permisoActual.fecha_expiracion).getMonth() + 6)).toISOString().slice(0, 10)
+          }),
+        });
         
-        if (!datos) return;
+        // Actualizamos el permiso de circulación en la base de datos local
+        const permiso_emitido = await fetch(`${API_CONFIG.BACKEND}update_fecha_permiso/`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: permisoActual.id,
+            // Nueva fecha expiración será permisoActual.fecha_expiracion + 6 meses
+            fecha_expiracion: new Date(new Date(permisoActual.fecha_expiracion).setMonth(new Date(permisoActual.fecha_expiracion).getMonth() + 6)).toISOString().slice(0, 10)
+          }),
+        });
+
+        // Emitir nuevo comprobante en BACKEND/mis_permisos_emitidos/
+        // Obtener el id del permiso emitido desde la respuesta del backend
+
+        await fetch(`${API_CONFIG.BACKEND}mis_permisos_emitidos/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ppu: datos.ppu,
+            rut: pagoInfo?.rut,
+            monto_pago: montoPago,
+            id_permiso: permisoActual.id,
+            fecha_pago: new Date(),
+            tarjeta: pagoInfo?.numeroTarjeta.slice(-4),
+            cuotas: numCuotas ? numCuotas : 1,
+            cuota_pagada: numCuota ? numCuota : 1,
+          }),
+        });
+      }
+      if (numCuota == 1 && numCuotas == 2){
+        console.log('Es la primera cuota de 2, se emite permiso de circulación con fecha de expiración a 6 meses');
+        // Cargar permiso de circulación en la base de datos TGR
+        await fetch(`${API_CONFIG.TGR}subir_permiso/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ppu: datos.ppu,
+            rut: datos.rut,
+            nombre: datos.nombre,
+            fecha_emision: new Date().toISOString().slice(0, 10),
+            fecha_expiracion: new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString().slice(0, 10),
+            valor_permiso: datos.valorPermiso,
+            motor: parseInt(datos.numMotor) || 0,
+            chasis: datos.numChasis,
+            tipo_vehiculo: datos.tipoVehiculo,
+            color: datos.color,
+            marca: datos.marca,
+            modelo: datos.modelo,
+            anio: parseInt(datos.anio) || 0,
+            carga: parseInt(datos.capacidadCarga) || 0,
+            tipo_sello: datos.tipoSello,
+            combustible: datos.tipoCombustible,
+            cilindrada: parseInt(datos.cilindrada) || 0,
+            transmision: datos.transmision,
+            pts: parseInt(datos.puertas) || 0, // Fixed: was using datos.peso instead of datos.puertas
+            ast: parseInt(datos.asientos) || 0,
+            equipamiento: datos.equipamiento || '',
+            codigo_sii: datos.codigoSii || '',
+            tasacion: parseInt(datos.tasacion) || 0
+          }),
+        });
         
+        // Cargar permiso de circulación en la base de datos local
+        const permiso_emitido = await fetch(`${API_CONFIG.BACKEND}emitir_permiso_circulacion/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ppu: datos.ppu,
+            rut: datos.rut,
+            nombre: datos.nombre,
+            fecha_emision: new Date().toISOString().slice(0, 10),
+            fecha_expiracion: new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString().slice(0, 10),
+            valor_permiso: datos.valorPermiso,
+            motor: parseInt(datos.numMotor) || 0,
+            chasis: datos.numChasis,
+            tipo_vehiculo: datos.tipoVehiculo,
+            color: datos.color,
+            marca: datos.marca,
+            modelo: datos.modelo,
+            anio: parseInt(datos.anio) || 0,
+            carga: parseInt(datos.capacidadCarga) || 0,
+            tipo_sello: datos.tipoSello,
+            combustible: datos.tipoCombustible,
+            cilindrada: parseInt(datos.cilindrada) || 0,
+            transmision: datos.transmision,
+            pts: parseInt(datos.puertas) || 0, // Fixed: was using datos.peso instead of datos.puertas
+            ast: parseInt(datos.asientos) || 0,
+            equipamiento: datos.equipamiento || '',
+            codigo_sii: datos.codigoSII || '',
+            tasacion: parseInt(datos.tasacion) || 0
+          }),
+        });
+
+        // Emitir nuevo comprobante en BACKEND/mis_permisos_emitidos/
+        // Obtener el id del permiso emitido desde la respuesta del backend
+        const permisoEmitidoJson = await permiso_emitido.json();
+        const idPermisoEmitido = permisoEmitidoJson.id;
+
+        await fetch(`${API_CONFIG.BACKEND}mis_permisos_emitidos/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ppu: datos.ppu,
+            rut: pagoInfo?.rut,
+            monto_pago: montoPago,
+            id_permiso: idPermisoEmitido,
+            fecha_pago: new Date(),
+            tarjeta: pagoInfo?.numeroTarjeta.slice(-4),
+            cuotas: numCuotas ? numCuotas : 1,
+            cuota_pagada: numCuota ? numCuota : 1,
+          }),
+        });
+      }
+      if (numCuotas == 1){
+        console.log('Es pago único, se emite permiso de circulación con fecha de expiración a 1 año');
         // Cargar permiso de circulación en la base de datos TGR
         await fetch(`${API_CONFIG.TGR}subir_permiso/`, {
           method: 'POST',
@@ -347,7 +498,7 @@ export default function ConfirmacionPago() {
         });
         
         // Cargar permiso de circulación en la base de datos local
-        await fetch(`${API_CONFIG.BACKEND}emitir_permiso_circulacion/`, {
+        const permiso_emitido = await fetch(`${API_CONFIG.BACKEND}emitir_permiso_circulacion/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -380,6 +531,10 @@ export default function ConfirmacionPago() {
         });
 
         // Emitir nuevo comprobante en BACKEND/mis_permisos_emitidos/
+        // Obtener el id del permiso emitido desde la respuesta del backend
+        const permisoEmitidoJson = await permiso_emitido.json();
+        const idPermisoEmitido = permisoEmitidoJson.id;
+
         await fetch(`${API_CONFIG.BACKEND}mis_permisos_emitidos/`, {
           method: 'POST',
           headers: {
@@ -388,15 +543,16 @@ export default function ConfirmacionPago() {
           body: JSON.stringify({
             ppu: datos.ppu,
             rut: pagoInfo?.rut,
-            valor_permiso: datos.valorPermiso,
-            fecha_emision: new Date(),
+            monto_pago: montoPago,
+            id_permiso: idPermisoEmitido,
+            fecha_pago: new Date(),
             tarjeta: pagoInfo?.numeroTarjeta.slice(-4),
+            cuotas: numCuotas ? numCuotas : 1,
+            cuota_pagada: numCuota ? numCuota : 1,
           }),
         });
-
-      } catch (error) {
-        console.error('Error al emitir el permiso:', error);
       }
+
     }
   };
 
@@ -576,8 +732,13 @@ export default function ConfirmacionPago() {
                             fontWeight: '700',
                             color: '#212529'
                           }}>
-                        ${pagoInfo.valorPermiso.toLocaleString('es-CL')}
+                        ${montoPago.toLocaleString('es-CL')}
                       </h1>
+                      {numCuotas > 1 && (
+                        <span>
+                          Cuota {numCuota} de {numCuotas}
+                        </span>
+                      )}
                     </div>
                   )}
                   

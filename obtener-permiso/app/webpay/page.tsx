@@ -48,9 +48,9 @@ export default function WebpayPage() {
 
 	// Recuperamos monto pago desde sessionStorage
 	useEffect(() => {
-		const datos = sessionStorage.getItem('monto_pago');
+		const datos = sessionStorage.getItem('formato_pago');
 		if (datos) {
-			const parsed = JSON.parse(datos);
+			const parsed = JSON.parse(datos).monto_pago;
 			setMontoPago(Number(parsed).toLocaleString());
 		}
 	}, []);
