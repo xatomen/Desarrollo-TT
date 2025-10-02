@@ -54,6 +54,17 @@ class MisPermisosEmitidosModel(BaseModel):
     cuotas: int = None
     cuota_pagada: int = None
 
+class MisPermisosEmitidosCompleteModel(BaseModel):
+    id: int
+    rut: str
+    ppu: str
+    fecha_pago: datetime
+    id_permiso: int
+    monto_pago: int
+    tarjeta: str
+    cuotas: int = None
+    cuota_pagada: int = None
+
 # Dependencia para obtener la sesión de la base de datos
 def get_db():
     db = SessionLocal()
@@ -90,7 +101,7 @@ def guardar_permiso_emitido(permiso: MisPermisosEmitidosModel, db: Session = Dep
     return nuevo_permiso
 
 # Endpoint para obtener los permisos emitidos por RUT
-@router.get("/mis_permisos_emitidos/{rut}", response_model=List[MisPermisosEmitidosModel])
+@router.get("/mis_permisos_emitidos/{rut}", response_model=List[MisPermisosEmitidosCompleteModel])
 def obtener_permisos_emitidos(rut: str, db: Session = Depends(get_db)):
     permisos = db.query(MisPermisosEmitidos).filter(MisPermisosEmitidos.rut == rut).all()
     return permisos
