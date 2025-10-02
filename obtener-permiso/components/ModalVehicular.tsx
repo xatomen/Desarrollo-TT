@@ -1,5 +1,6 @@
 // ModalVehicular.tsx
-import React from 'react';
+import React, { useRef } from 'react';
+import html2pdf from 'html2pdf.js';
 
 export default function ModalVehicular({ show, onClose, title, data }: {
   show: boolean;
@@ -7,11 +8,29 @@ export default function ModalVehicular({ show, onClose, title, data }: {
   title: string;
   data: any;
 }) {
+  const docRef = useRef<HTMLDivElement>(null);
+
   if (!show) return null;
 
   // Cierra el modal al hacer click fuera del contenido
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) onClose();
+  };
+
+  const handleDownload = () => {
+    if (docRef.current) {
+      const rect = docRef.current.getBoundingClientRect();
+      html2pdf()
+        .set({
+          margin: 0,
+          filename: `${title.replace(/\s/g, '_').toLowerCase()}_${data?.padron?.ppu || 'documento'}.pdf`,
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'pt', format: [rect.width, rect.height], orientation: 'landscape' },
+          pagebreak: { mode: ['avoid-all'] }
+        })
+        .from(docRef.current)
+        .save();
+    }
   };
 
   const { padron, permiso, revision, soap } = data;
@@ -26,8 +45,8 @@ export default function ModalVehicular({ show, onClose, title, data }: {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        overflowY: 'auto', // Permite scroll si el contenido es muy alto
-        padding: 24, // Espacio para que la modal no quede pegada al borde
+        overflowY: 'auto',
+        padding: 24,
       }}
       onClick={handleOverlayClick}
     >
@@ -38,11 +57,11 @@ export default function ModalVehicular({ show, onClose, title, data }: {
           minWidth: 340,
           width:
             title.toLowerCase() === 'padron'
-              ? '1200px'
+              ? 'auto'
               : title.toLowerCase() === 'permiso'
               ? 'auto'
               : title.toLowerCase() === 'soap'
-              ? '1200px'
+              ? 'auto'
               : 'auto',
           maxWidth: '95vw',
           maxHeight: '95vh',
@@ -50,7 +69,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
           padding: 0,
           position: 'relative',
           animation: 'modalIn 0.2s',
-          overflow: 'visible', // Permite que el contenido se expanda
+          overflow: 'visible',
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -82,11 +101,13 @@ export default function ModalVehicular({ show, onClose, title, data }: {
           >×</button>
         </div>
         {/* Body */}
-        <div style={{
-          padding: '24px 28px',
-          overflow: 'visible', // Permite que el contenido crezca
-          flexGrow: 1,
-        }}>
+        <div
+          ref={docRef}
+          style={{
+            padding: '24px 28px',
+            overflow: 'visible',
+            flexGrow: 1,
+          }}>
           {data ? (
             title.toLowerCase() === 'padron' ? (
               // FORMATO PERSONALIZADO PARA PADRÓN
@@ -98,6 +119,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                   background: '#fff',
                   fontSize: '1.05rem',
                   position: 'relative',
+                  width: '1200px',
                 }}
               >
                 <div className="row" style={{ width: '100%' }}>
@@ -231,7 +253,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
               <div
                 style={{
                   width: '1400px',
-                  maxWidth: '100vw',
+                  // maxWidth: '100vw',
                   background: 'linear-gradient(135deg, #cfe8fdff, #e5d8ffff)',
                   padding: '20px',
                   position: 'relative',
@@ -327,133 +349,135 @@ export default function ModalVehicular({ show, onClose, title, data }: {
               </div>
             ) : title.toLowerCase() === 'soap' ? (
               <div
-                className="row"
                 style={{
                   background: '#fff',
                   border: '2px solid #222',
                   fontFamily: 'serif',
                   fontSize: '0.8rem',
-                  maxWidth: '100vw',
+                  width: '1000px',
+                  height: 'auto',
                 }}
               >
-                <div className="col">
-                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
-                    
-                    <div className="col-5" style={{ borderRight: '2px solid #222' }}>
-                      <div className="row">
-                        <div className="col"><b>ORIGINAL: ASEGURADO</b></div>
-                        <div className="col"><b>N° Folio {soap.folio || '-'}</b></div>
+                <div className="">
+                  <div className="col">
+                    <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                      
+                      <div className="col-5" style={{ borderRight: '2px solid #222' }}>
+                        <div className="row">
+                          <div className="col"><b>ORIGINAL: ASEGURADO</b></div>
+                          <div className="col"><b>N° Folio {soap.folio || '-'}</b></div>
+                        </div>
+                        <div style={{ fontStyle: 'italic', textAlign: 'justify', fontSize: '0.9rem' }}>
+                          Este certificado acredita que el vehículo aquí individualizado está
+                          asegurado contra el riesgo de Accidentes Personales de acuerdo a la Ley
+                          Nº 18.490 y la Póliza del Seguro Obligatorio de Accidentes Personales
+                          causados por Vehículos Motorizados, incorporada en el Depósito de
+                          Pólizas de la Comisión para el Mercado Financiero bajo el código POL
+                          320130487.
+                        </div>
                       </div>
-                      <div style={{ fontStyle: 'italic', textAlign: 'justify', fontSize: '0.9rem' }}>
-                        Este certificado acredita que el vehículo aquí individualizado está
-                        asegurado contra el riesgo de Accidentes Personales de acuerdo a la Ley
-                        Nº 18.490 y la Póliza del Seguro Obligatorio de Accidentes Personales
-                        causados por Vehículos Motorizados, incorporada en el Depósito de
-                        Pólizas de la Comisión para el Mercado Financiero bajo el código POL
-                        320130487.
-                      </div>
-                    </div>
-                    
-                    <div className="col-7">
-                      <div className="row text-center">
-                        <div className="col"><b>Seguros {soap.compania || '-'} S.A.</b></div>
-                        <div className="col">
-                          <b>Póliza N° {soap.num_poliza || '-'}</b>
-                          <br />
-                          <div style={{ fontSize: '0.8rem', textAlign: 'justify' }}>
-                            Consulta sobre la vigencia de este seguro en www.seguros{soap.compania.toLowerCase() || '-'}.cl o en el fono 600 411 1000
+                      
+                      <div className="col-7">
+                        <div className="row text-center">
+                          <div className="col"><b>Seguros {soap.compania || '-'} S.A.</b></div>
+                          <div className="col">
+                            <b>Póliza N° {soap.num_poliza || '-'}</b>
+                            <br />
+                            <div style={{ fontSize: '0.8rem', textAlign: 'justify' }}>
+                              Consulta sobre la vigencia de este seguro en www.seguros{soap.compania.toLowerCase() || '-'}.cl o en el fono 600 411 1000
+                            </div>
+                          </div>
+                        </div>
+                        <div className="row text-center">
+                          <div className="col"><b>CERTIFICADO SEGURO OBLIGATORIO ACCIDENTES PERSONALES ELECTRONICO LEY 18.490</b></div>
+                          <div className="col" style={{ alignContent: 'center', justifyContent: 'center', display: 'flex' }}>
+                            <img src={`/img/aseguradoras/${soap.compania}.png`} alt="" style={{ height: '60px', objectFit: 'contain' }} />
                           </div>
                         </div>
                       </div>
-                      <div className="row text-center">
-                        <div className="col"><b>CERTIFICADO SEGURO OBLIGATORIO ACCIDENTES PERSONALES ELECTRONICO LEY 18.490</b></div>
-                        <div className="col" style={{ alignContent: 'center', justifyContent: 'center', display: 'flex' }}>
-                          <img src={`/img/aseguradoras/${soap.compania}.png`} alt="" style={{ height: '60px', objectFit: 'contain' }} />
+
+                    </div>
+                    <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                      <div className="col-5" style={{ borderRight: '2px solid #222' }}>
+                        <b>Inscripción R.V.M</b>
+                        <br />
+                        {soap.ppu || '-'}
+                      </div>
+                      <div className="col-7 d-flex align-self-center">
+                        <b>Propietario</b>
+                      </div>
+                    </div>
+
+                    <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                      <div className="col-5" style={{ borderRight: '2px solid #222' }}>
+                        <b>Tipo Vehículo</b>
+                        <br />
+                        {padron.tipo_vehiculo || '-'}
+                      </div>
+                      <div className="col-7">
+                        {padron.rut || '-'}
+                      </div>
+                    </div>
+
+                    <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                      <div className="col-5" style={{ borderRight: '2px solid #222' }}>
+                        <b>Marca</b>
+                        <br />
+                        {padron.marca || '-'}
+                      </div>
+                      <div className="col-7">
+                        <div className="row" style={{ height: '100' }}>
+                          <div className="col" style={{ borderRight: '2px solid #222' }}><br /><b>Rut</b></div>
+                          <div className="col" style={{ borderRight: '2px solid #222' }}><br /><b>Rige Desde</b></div>
+                          <div className="col"><br /><b>Rige Hasta</b></div>
                         </div>
                       </div>
                     </div>
 
-                  </div>
-                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
-                    <div className="col-5" style={{ borderRight: '2px solid #222' }}>
-                      <b>Inscripción R.V.M</b>
-                      <br />
-                      {soap.ppu || '-'}
-                    </div>
-                    <div className="col-7 d-flex align-self-center">
-                      <b>Propietario</b>
-                    </div>
-                  </div>
-
-                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
-                    <div className="col-5" style={{ borderRight: '2px solid #222' }}>
-                      <b>Tipo Vehículo</b>
-                      <br />
-                      {padron.tipo_vehiculo || '-'}
-                    </div>
-                    <div className="col-7">
-                      {padron.rut || '-'}
-                    </div>
-                  </div>
-
-                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
-                    <div className="col-5" style={{ borderRight: '2px solid #222' }}>
-                      <b>Marca</b>
-                      <br />
-                      {padron.marca || '-'}
-                    </div>
-                    <div className="col-7">
-                      <div className="row" style={{ height: '100' }}>
-                        <div className="col" style={{ borderRight: '2px solid #222' }}><br /><b>Rut</b></div>
-                        <div className="col" style={{ borderRight: '2px solid #222' }}><br /><b>Rige Desde</b></div>
-                        <div className="col"><br /><b>Rige Hasta</b></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="row" style={{ borderBottom: '2px solid #222' }}>
-                    <div className="col-5" style={{ borderRight: '2px solid #222' }}>
-                      <div className="row">
-                        <div className="col">
-                          <b>Modelo</b>
-                          <br />
-                          {padron.modelo || '-'}
-                        </div>
-                        <div className="col">
-                          <b>Año</b>
-                          <br />
-                          {padron.anio || '-'}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-7">
-                      <div className="row">
-                        <div className="col" style={{ borderRight: '2px solid #222' }}><br />{padron.rut || '-'}</div>
-                        <div className="col" style={{ borderRight: '2px solid #222' }}><br />{soap.rige_desde || '-'}</div>
-                        <div className="col"><br />{soap.rige_hasta || '-'}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="row">
-                    <div className="col-5" style={{ borderRight: '2px solid #222' }}>
-                      <b>N° Motor</b>
-                      <br />
-                      {padron.num_motor || '-'}
-                    </div>
-                    <div className="col-7">
-                      <div className="row">
-                        <div className="col" style={{ borderRight: '2px solid #222' }}>
-                          <b>Prima</b>
-                          <br />
-                          {soap.prima ? `$${soap.prima.toLocaleString('es-CL')}` : '-'}
-                        </div>
-                        <div className="col-8">
-                          <div className="row">
-                            <img src="/img/aseguradoras/timbre.png" alt="" style={{ height: '50px', objectFit: 'contain', flex: 1 }} />
+                    <div className="row" style={{ borderBottom: '2px solid #222' }}>
+                      <div className="col-5" style={{ borderRight: '2px solid #222' }}>
+                        <div className="row">
+                          <div className="col">
+                            <b>Modelo</b>
+                            <br />
+                            {padron.modelo || '-'}
                           </div>
-                          <div className="row">
-                            <div className="col text-center" style={{ borderTop: '2px solid #222', margin: '0px 50px 0px 50px' }}><b>Firma apoderado compañía</b></div>
+                          <div className="col">
+                            <b>Año</b>
+                            <br />
+                            {padron.anio || '-'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="col-7">
+                        <div className="row">
+                          <div className="col" style={{ borderRight: '2px solid #222' }}><br />{padron.rut || '-'}</div>
+                          <div className="col" style={{ borderRight: '2px solid #222' }}><br />{soap.rige_desde || '-'}</div>
+                          <div className="col"><br />{soap.rige_hasta || '-'}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="row">
+                      <div className="col-5" style={{ borderRight: '2px solid #222' }}>
+                        <b>N° Motor</b>
+                        <br />
+                        {padron.num_motor || '-'}
+                      </div>
+                      <div className="col-7">
+                        <div className="row">
+                          <div className="col" style={{ borderRight: '2px solid #222' }}>
+                            <b>Prima</b>
+                            <br />
+                            {soap.prima ? `$${soap.prima.toLocaleString('es-CL')}` : '-'}
+                          </div>
+                          <div className="col-8">
+                            <div className="row">
+                              <img src="/img/aseguradoras/timbre.png" alt="" style={{ height: '50px', objectFit: 'contain', flex: 1 }} />
+                            </div>
+                            <div className="row">
+                              <div className="col text-center" style={{ borderTop: '2px solid #222', margin: '0px 50px 0px 50px' }}><b>Firma apoderado compañía</b></div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -605,6 +629,9 @@ export default function ModalVehicular({ show, onClose, title, data }: {
           padding: '14px 28px',
           textAlign: 'right',
           flexShrink: 0,
+          display: 'flex',
+          justifyContent: 'flex-end',
+          gap: 8
         }}>
           <button
             onClick={onClose}
@@ -620,6 +647,21 @@ export default function ModalVehicular({ show, onClose, title, data }: {
             }}
           >
             Cerrar
+          </button>
+          <button
+            onClick={handleDownload}
+            style={{
+              background: '#0d6efd',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              padding: '8px 22px',
+              fontWeight: 600,
+              fontSize: '1rem',
+              cursor: 'pointer',
+            }}
+          >
+            Descargar
           </button>
         </div>
       </div>
