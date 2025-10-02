@@ -73,9 +73,9 @@ CREATE TABLE IF NOT EXISTS mis_permisos_emitidos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     rut VARCHAR(12) NOT NULL,
     ppu VARCHAR(10) NOT NULL,
-    fecha_emision DATETIME NOT NULL,
+    fecha_pago DATETIME NOT NULL,
     id_permiso INT NOT NULL,
-    valor_permiso INT NOT NULL,
+    monto_pago INT NOT NULL,
     tarjeta VARCHAR (16) NOT NULL,
     cuotas INT NOT NULL,
     cuota_pagada INT NOT NULL

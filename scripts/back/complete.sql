@@ -73,9 +73,12 @@ CREATE TABLE IF NOT EXISTS mis_permisos_emitidos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     rut VARCHAR(12) NOT NULL,
     ppu VARCHAR(10) NOT NULL,
-    fecha_emision DATETIME NOT NULL,
-    valor_permiso INT NOT NULL,
-    tarjeta VARCHAR (16) NOT NULL
+    fecha_pago DATETIME NOT NULL,
+    id_permiso INT NOT NULL,
+    monto_pago INT NOT NULL,
+    tarjeta VARCHAR (16) NOT NULL,
+    cuotas INT NOT NULL,
+    cuota_pagada INT NOT NULL
 );
 
 USE back_db;
@@ -98,13 +101,13 @@ INSERT INTO usuarios_admin (rut, nombre, email, password) VALUES
 -- ############################################################
 -- Datos de permisos emitidos
 -- ############################################################
-INSERT INTO mis_permisos_emitidos (rut, ppu, fecha_emision, valor_permiso, tarjeta) VALUES
-('20961960-1', 'AH1234', '2023-11-20 00:00:00', 78000, '4345591084215296'),
-('20961960-1', 'BWFD87', '2022-06-15 00:00:00', 62000, '4345591084215296'),
-('20961960-1', 'CBKS56', '2023-03-10 00:00:00', 35000, '4345591084215296'),
-('20857826-K', 'HRWY25', '2021-08-30 00:00:00', 69000, '6011514433546201'),
-('20595210-1', 'WXY123', '2025-05-15 00:00:00', 18000, '3530111333300000'),
-('20595210-1', 'HWRY70', '2025-06-20 00:00:00', 260000, '3530111333300000');
+INSERT INTO mis_permisos_emitidos (rut, ppu, fecha_pago, id_permiso, monto_pago, tarjeta, cuotas, cuota_pagada) VALUES
+('20961960-1', 'AH1234', '2023-11-20 00:00:00', 36, 78000, '4345591084215296', 1, 1),
+('20961960-1', 'BWFD87', '2022-06-15 00:00:00', 37, 62000, '4345591084215296', 1, 1),
+('20961960-1', 'CBKS56', '2023-03-10 00:00:00', 38, 35000, '4345591084215296', 1, 1),
+('20857826-K', 'HRWY25', '2021-08-30 00:00:00', 39, 69000, '6011514433546201', 1, 1),
+('20595210-1', 'WXY123', '2025-05-15 00:00:00', 40, 18000, '3530111333300000', 1, 1),
+('20595210-1', 'HWRY70', '2025-06-20 00:00:00', 41, 260000, '3530111333300000', 1, 1);
 
 INSERT INTO mis_vehiculos (rut, ppu, nombre_vehiculo, fecha_agregado) VALUES
 ('20961960-1', 'DVGF33', 'Auto del abuelo', '2025-09-23 09:00:00'),

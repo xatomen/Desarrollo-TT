@@ -36,17 +36,23 @@ class MisPermisosEmitidos(Base):
     id = Column(Integer, primary_key=True, index=True)
     rut = Column(String(12), nullable=False)
     ppu = Column(String(10), nullable=False)
-    fecha_emision = Column(DateTime, nullable=False)
-    valor_permiso = Column(Integer, nullable=False)
+    fecha_pago = Column(DateTime, nullable=False)
+    id_permiso = Column(Integer, nullable=False)
+    monto_pago = Column(Integer, nullable=False)
     tarjeta = Column(String(16), nullable=False)
+    cuotas = Column(Integer, nullable=True)
+    cuota_pagada = Column(Integer, nullable=True)
 
 # Modelo Pydantic para validación de datos
 class MisPermisosEmitidosModel(BaseModel):
     rut: str
     ppu: str
-    fecha_emision: datetime
-    valor_permiso: int
+    fecha_pago: datetime
+    id_permiso: int
+    monto_pago: int
     tarjeta: str
+    cuotas: int = None
+    cuota_pagada: int = None
 
 # Dependencia para obtener la sesión de la base de datos
 def get_db():
@@ -63,7 +69,7 @@ def guardar_permiso_emitido(permiso: MisPermisosEmitidosModel, db: Session = Dep
     existing_permiso = db.query(MisPermisosEmitidos).filter(
         MisPermisosEmitidos.rut == permiso.rut,
         MisPermisosEmitidos.ppu == permiso.ppu,
-        MisPermisosEmitidos.fecha_emision == permiso.fecha_emision
+        MisPermisosEmitidos.fecha_pago == permiso.fecha_pago
     ).first()
     if existing_permiso:
         raise HTTPException(status_code=400, detail="El permiso ya está guardado para este RUT y PPU en la fecha especificada.")
@@ -71,9 +77,12 @@ def guardar_permiso_emitido(permiso: MisPermisosEmitidosModel, db: Session = Dep
     nuevo_permiso = MisPermisosEmitidos(
         rut=permiso.rut,
         ppu=permiso.ppu,
-        fecha_emision=permiso.fecha_emision,
-        valor_permiso=permiso.valor_permiso,
-        tarjeta=permiso.tarjeta
+        fecha_pago=permiso.fecha_pago,
+        id_permiso=permiso.id_permiso,
+        monto_pago=permiso.monto_pago,
+        tarjeta=permiso.tarjeta,
+        cuotas=permiso.cuotas,
+        cuota_pagada=permiso.cuota_pagada
     )
     db.add(nuevo_permiso)
     db.commit()
@@ -84,4 +93,12 @@ def guardar_permiso_emitido(permiso: MisPermisosEmitidosModel, db: Session = Dep
 @router.get("/mis_permisos_emitidos/{rut}", response_model=List[MisPermisosEmitidosModel])
 def obtener_permisos_emitidos(rut: str, db: Session = Depends(get_db)):
     permisos = db.query(MisPermisosEmitidos).filter(MisPermisosEmitidos.rut == rut).all()
+    return permisos
+
+# Endpoint para obtener todos los pagos de un permiso a través de su id
+@router.get("/mis_permisos_emitidos/pagos/{id}", response_model=List[MisPermisosEmitidosModel])
+def obtener_pago_por_id(id: int, db: Session = Depends(get_db)):
+    permisos = db.query(MisPermisosEmitidos).filter(MisPermisosEmitidos.id == id).all()
+    if not permisos:
+        raise HTTPException(status_code=404, detail="Permiso no encontrado")
     return permisos
