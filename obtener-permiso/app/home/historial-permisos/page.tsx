@@ -8,7 +8,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import Pagination from "react-bootstrap/Pagination";
 
 // Componente para mostrar el permiso de circulación en un modal
 function PermisoCirculacionModal({ show, onHide, permiso }: { show: boolean, onHide: () => void, permiso: any }) {
@@ -174,10 +173,19 @@ export default function HistorialPermisosPage() {
             </div>
 
             <div className="table-responsive">
-              <table className="table table-striped">
-                <thead>
+              <table
+                className="table"
+                style={{
+                  background: "#fff",
+                  width: '75%',
+                  flex: 1,
+                  margin: '0 auto',
+                  borderRadius: 8,
+                  boxShadow: '0 2px 8px #0001'
+                }}
+              >
+                <thead style={{ backgroundColor: "#0d6efd", color: "#fff" }}>
                   <tr>
-                    <th scope="col">#</th>
                     <th scope="col">PPU</th>
                     <th scope="col">Fecha de Emisión</th>
                     <th scope="col">Tarjeta</th>
@@ -191,10 +199,9 @@ export default function HistorialPermisosPage() {
                       <td colSpan={6} className="text-center">No hay permisos emitidos.</td>
                     </tr>
                   ) : (
-                    permisosPagina.map((permiso, index) => (
-                      <tr key={permiso.id || permiso.ppu || index}>
-                        <td>{(currentPage - 1) * permisosPorPagina + index + 1}</td>
-                        <td>{permiso.ppu}</td>
+                    permisosPagina.map((permiso) => (
+                      <tr key={permiso.id}>
+                        <td style={{ fontWeight: 600 }}>{permiso.ppu}</td>
                         <td>{new Date(permiso.fecha_emision).toLocaleDateString()}</td>
                         <td>{"**** **** **** " + permiso.tarjeta}</td>
                         <td>${permiso.valor_permiso?.toLocaleString('es-CL')}</td>
@@ -212,27 +219,6 @@ export default function HistorialPermisosPage() {
                 </tbody>
               </table>
             </div>
-
-            {/* Paginación */}
-            {totalPaginas > 1 && (
-              <div className="d-flex justify-content-center mt-4">
-                <Pagination>
-                  <Pagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
-                  <Pagination.Prev onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} />
-                  {Array.from({ length: totalPaginas }, (_, i) => (
-                    <Pagination.Item
-                      key={i + 1}
-                      active={currentPage === i + 1}
-                      onClick={() => setCurrentPage(i + 1)}
-                    >
-                      {i + 1}
-                    </Pagination.Item>
-                  ))}
-                  <Pagination.Next onClick={() => setCurrentPage(p => Math.min(totalPaginas, p + 1))} disabled={currentPage === totalPaginas} />
-                  <Pagination.Last onClick={() => setCurrentPage(totalPaginas)} disabled={currentPage === totalPaginas} />
-                </Pagination>
-              </div>
-            )}
           </div>
         </div>
         {/* Modal para mostrar el permiso */}
