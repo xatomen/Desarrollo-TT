@@ -79,21 +79,16 @@ export default function HistorialPermisosPage() {
   // Estados para búsqueda y paginación
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const permisosPorPagina = 8;
+
+  console.log(permisos)
 
   // Filtrar permisos por búsqueda
   const permisosFiltrados = permisos.filter(
     (permiso) =>
+      permiso.id?.toString().includes(search.toLowerCase()) ||
       permiso.ppu?.toLowerCase().includes(search.toLowerCase()) ||
       permiso.nombre?.toLowerCase().includes(search.toLowerCase()) ||
       permiso.rut?.toLowerCase().includes(search.toLowerCase())
-  );
-
-  // Paginación
-  const totalPaginas = Math.ceil(permisosFiltrados.length / permisosPorPagina);
-  const permisosPagina = permisosFiltrados.slice(
-    (currentPage - 1) * permisosPorPagina,
-    currentPage * permisosPorPagina
   );
 
   console.log("RUT del usuario autenticado:", user?.rut);
@@ -156,10 +151,54 @@ export default function HistorialPermisosPage() {
         <div className="row" style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div className="card-like shadow col p-3 m-3">
             <h1 className="text-center my-4" style={{ fontSize: '2rem', fontWeight: '500', fontFamily: '"Roboto", Arial, sans-serif' }}>Historial de Permisos de Circulación</h1>
-            <p className="text-center mb-4">Aquí puedes ver el historial de permisos de circulación que has emitido.</p>
+            <div
+              style={{
+                maxWidth: '900px',
+                background: 'linear-gradient(135deg, #e0e7ff 0%, #fbeaf6 100%)',
+                borderRadius: '18px',
+                boxShadow: '0 4px 16px #0002',
+                color: '#222',
+                fontFamily: '"Dosis", "Roboto", Arial, sans-serif',
+                padding: '1.5rem 1.2rem',
+                marginBottom: '2rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 24,
+                margin: '0 auto 2rem auto'
+              }}
+            >
+              <div style={{
+                background: '#6D2077',
+                borderRadius: '50%',
+                width: 56,
+                height: 56,
+                fontFamily: '"Dosis", "Roboto", Arial, sans-serif',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 18,
+                flexShrink: 0
+              }}>
+                <i className="bi bi-file-earmark-pdf" style={{ color: '#fff', fontSize: 32 }} />
+              </div>
+              <div>
+                <h2 style={{
+                  fontWeight: 700,
+                  fontSize: '1.3rem',
+                  marginBottom: 6,
+                  color: '#6D2077',
+                  fontFamily: '"Dosis", "Roboto", Arial, sans-serif'
+                }}>
+                  Historial de Permisos Pagados
+                </h2>
+                <p style={{ fontSize: '1.08rem', marginBottom: 0, fontFamily: '"Dosis", "Roboto", Arial, sans-serif' }}>
+                  Aquí puedes consultar todos los permisos de circulación que has pagado, revisar su información detallada y descargar cada uno en formato PDF para tus registros o trámites.
+                </p>
+              </div>
+            </div>
             
             {/* Barra de búsqueda */}
-            <div className="mb-3 d-flex justify-content-end">
+            <div className="mb-3 d-flex justify-content-center">
               <Form.Control
                 type="text"
                 placeholder="Buscar por PPU, nombre o RUT..."
@@ -168,23 +207,23 @@ export default function HistorialPermisosPage() {
                   setSearch(e.target.value);
                   setCurrentPage(1);
                 }}
-                style={{ maxWidth: 320 }}
+                style={{ maxWidth: 320, borderRadius: 10}}
               />
             </div>
 
-            <div className="table-responsive">
+            <div className="p-3">
               <table
-                className="table"
+                className="table card-like shadow"
                 style={{
-                  background: "#fff",
-                  width: '75%',
+                  // background: "#fff",
+                  maxWidth: '900px',
                   flex: 1,
                   margin: '0 auto',
-                  borderRadius: 8,
+                  borderRadius: 16,
                   boxShadow: '0 2px 8px #0001'
                 }}
               >
-                <thead style={{ backgroundColor: "#0d6efd", color: "#fff" }}>
+                <thead style={{ backgroundColor: "#0d6efd", color: "#fff", borderRadius: 16 }}>
                   <tr>
                     <th scope="col">PPU</th>
                     <th scope="col">Fecha de Emisión</th>
@@ -200,7 +239,7 @@ export default function HistorialPermisosPage() {
                       <td colSpan={6} className="text-center">No hay permisos emitidos.</td>
                     </tr>
                   ) : (
-                    permisosPagina.map((permiso) => (
+                    permisosFiltrados.map((permiso) => (
                       <tr key={permiso.id}>
                         <td style={{ fontWeight: 600 }}>{permiso.ppu}</td>
                         <td>{new Date(permiso.fecha_pago).toLocaleDateString()}</td>
@@ -220,6 +259,20 @@ export default function HistorialPermisosPage() {
                   )}
                 </tbody>
               </table>
+
+              {/* Paginación */}
+              <div className="d-flex justify-content-center mt-4">
+                <nav>
+                  <ul className="pagination">
+                    {Array.from({ length: Math.ceil(permisosFiltrados.length / 10) }, (_, i) => i + 1).map(page => (
+                      <li key={page} className={`page-item ${page === currentPage ? 'active' : ''}`}>
+                        <button className="page-link" onClick={() => setCurrentPage(page)}>{page}</button>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              </div>
+              
             </div>
           </div>
         </div>

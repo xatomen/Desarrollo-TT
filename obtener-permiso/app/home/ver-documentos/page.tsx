@@ -270,7 +270,7 @@ export default function VerDocumentosPage() {
                         <td style={{ fontWeight: 600 }}>{vehiculo.ppu}</td>
                         <td>{vehiculo.marca}</td>
                         <td>{vehiculo.modelo}</td>
-                        <td>
+                        <td style={{ verticalAlign: 'middle', padding: '0.5rem', justifyContent: 'center', textAlign: 'center', alignItems: 'center', display: 'flex' }}>
                           <div className="d-flex flex-wrap gap-2">
                             <button
                               className="btn btn-outline-primary btn-sm"

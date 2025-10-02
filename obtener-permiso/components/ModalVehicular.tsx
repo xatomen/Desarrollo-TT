@@ -493,11 +493,11 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                   background: '#fff',
                   fontFamily: 'serif',
                   fontSize: '0.8rem',
-                  width: 'auto',           // Cambiado de '1200px' a 'auto'
-                  maxWidth: '100%',        // Para que no se pase del contenedor
+                  // width: 'auto',           // Cambiado de '1200px' a 'auto'
+                  // maxWidth: '100%',        // Para que no se pase del contenedor
                   minWidth: 1200,           // Opcional: mínimo igual que el modal
-                  margin: '0 auto',        // Centrado
-                  boxSizing: 'border-box', // Asegura que padding/border no desborden
+                  // margin: '0 auto',        // Centrado
+                  // boxSizing: 'border-box', // Asegura que padding/border no desborden
                 }}
               >
 
@@ -634,21 +634,6 @@ export default function ModalVehicular({ show, onClose, title, data }: {
           gap: 8
         }}>
           <button
-            onClick={onClose}
-            style={{
-              background: '#6D2077',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 6,
-              padding: '8px 22px',
-              fontWeight: 600,
-              fontSize: '1rem',
-              cursor: 'pointer',
-            }}
-          >
-            Cerrar
-          </button>
-          <button
             onClick={handleDownload}
             style={{
               background: '#0d6efd',
@@ -662,6 +647,21 @@ export default function ModalVehicular({ show, onClose, title, data }: {
             }}
           >
             Descargar
+          </button>
+          <button
+            onClick={onClose}
+            style={{
+              background: '#6D2077',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              padding: '8px 22px',
+              fontWeight: 600,
+              fontSize: '1rem',
+              cursor: 'pointer',
+            }}
+          >
+            Cerrar
           </button>
         </div>
       </div>
