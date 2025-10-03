@@ -73,10 +73,10 @@ export default function PermisoCirculacionModal({ visible, onClose, datos }: Per
                 </View>
               </View>
             </ScrollView>
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Cerrar</Text>
+            </TouchableOpacity>
           </LinearGradient>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>Cerrar</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </Modal>
@@ -86,7 +86,7 @@ export default function PermisoCirculacionModal({ visible, onClose, datos }: Per
 const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center' },
   modalCard: { backgroundColor: 'transparent', borderRadius: 0, padding: 0, width: '90%', maxHeight: '90%' },
-  gradientBg: { borderRadius: 12, padding: 0, flex: 1 },
+  gradientBg: { borderRadius: 16, padding: 0, flex: 1 },
   logo: { width: 300, height: 20, alignSelf: 'center', marginTop: 15, marginBottom: 0 },
   watermarkContainer: { position: 'relative', alignItems: 'center', minHeight: 600 },
   watermark: { position: 'absolute', opacity: 0.15, width: 200, height: 200, top: 40, alignSelf: 'center', zIndex: 0 },
@@ -126,6 +126,12 @@ const styles = StyleSheet.create({
   },
   label: { fontWeight: 'bold', fontFamily: 'Dosis-Bold' }, // Cambiado aquí
   logoCert: { width: 120, height: 120, alignSelf: 'center', marginTop: 16, marginBottom: 16 },
-  closeButton: { backgroundColor: '#0051A8', padding: 12, borderRadius: 8, marginTop: 12 },
+  closeButton: {
+    backgroundColor: '#6D2077',
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+  },
   closeButtonText: { color: 'white', textAlign: 'center', fontWeight: 'bold' },
 });

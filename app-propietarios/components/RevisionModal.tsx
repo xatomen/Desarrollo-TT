@@ -133,8 +133,8 @@ const styles = StyleSheet.create({
     width: '92%',
     maxHeight: '90%',
     overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#222',
+    // borderWidth: 2,
+    // borderColor: '#222',
   },
   sectionBox: {
     backgroundColor: '#fff',
