@@ -390,9 +390,27 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                         </div>
                         <div className="row text-center">
                           <div className="col"><b>CERTIFICADO SEGURO OBLIGATORIO ACCIDENTES PERSONALES ELECTRONICO LEY 18.490</b></div>
-                          <div className="col" style={{ alignContent: 'center', justifyContent: 'center', display: 'flex' }}>
-                            <img src={`/img/aseguradoras/${soap.compania}.png`} alt="" style={{ height: '60px', objectFit: 'contain' }} />
-                          </div>
+                            <div className="col" style={{ alignContent: 'center', justifyContent: 'center', display: 'flex' }}>
+                              <img
+                                src={
+                                  soap.compania === 'Consorcio'
+                                    ? '/img/aseguradoras/consorcio.png'
+                                    : soap.compania === 'BCI Seguros'
+                                    ? '/img/aseguradoras/bciseguros.png'
+                                    : soap.compania === 'Mapfre'
+                                    ? '/img/aseguradoras/mapfre.png'
+                                    : soap.compania === 'Sura'
+                                    ? '/img/aseguradoras/sura.png'
+                                    : soap.compania === 'HDI Seguros'
+                                    ? '/img/aseguradoras/hdi.png'
+                                    : soap.compania === 'Liberty Seguros'
+                                    ? '/img/aseguradoras/libertyseguros.png'
+                                    : ''
+                                }
+                                alt=""
+                                style={{ height: '60px', objectFit: 'contain' }}
+                              />
+                            </div>
                         </div>
                       </div>
 
