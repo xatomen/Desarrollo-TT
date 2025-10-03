@@ -41,18 +41,31 @@ export default function SoapModal({ visible, onClose, datos }: SoapModalProps) {
                     </View>
                   </View>
                   <View style={[styles.row, { alignItems: 'center', marginTop: 8 }]}>
-                    <Text style={{ fontWeight: 'bold', flex: 2, fontSize: 12, textAlign: 'center' }}>
+                    <Text style={{ fontWeight: 'bold', flex: 1, fontSize: 12, textAlign: 'center' }}>
                       CERTIFICADO SEGURO OBLIGATORIO ACCIDENTES PERSONALES ELECTRONICO LEY 18.490
                     </Text>
                     <View style={{ flex: 1, alignItems: 'center' }}>
+                      {soap.compania ? (
                       <Image
                         source={
-                          soap.compania
-                            ? { uri: `../assets/images/aseguradoras/${soap.compania}.png` }
-                            : require('../assets/images/aseguradoras/consorcio.png')
+                        // Importa todas las imágenes posibles de aseguradoras
+                        soap.compania === 'Consorcio'
+                          ? require('../assets/images/aseguradoras/consorcio.png')
+                          : soap.compania === 'BCI Seguros'
+                          ? require('../assets/images/aseguradoras/bciseguros.png')
+                          : soap.compania === 'Mapfre'
+                          ? require('../assets/images/aseguradoras/mapfre.png')
+                          : soap.compania === 'Sura'
+                          ? require('../assets/images/aseguradoras/sura.png')
+                          : soap.compania === 'HDI Seguros'
+                          ? require('../assets/images/aseguradoras/hdi.png')
+                          : soap.compania === 'Liberty Seguros'
+                          ? require('../assets/images/aseguradoras/libertyseguros.png')
+                          : require('../assets/images/aseguradoras/sura.png') // Imagen por defecto 
                         }
-                        style={{ height: 40, width: 80, resizeMode: 'contain' }}
+                        style={{ resizeMode: 'cover', width: '100%', maxHeight: 49 }}
                       />
+                      ) : null}
                     </View>
                   </View>
                   {/* Ahora el texto original va aquí abajo */}
@@ -69,34 +82,34 @@ export default function SoapModal({ visible, onClose, datos }: SoapModalProps) {
               {/* Fila 2: Inscripción y Propietario (Propietario en una sola celda) */}
               <View style={[styles.row, { borderBottomWidth: 2, borderColor: '#222'}]}>
                 <View style={{ flex: 1, paddingRight: 8 }}>
-                  <Text style={{ fontWeight: 'bold' }}>Inscripción R.V.M</Text>
-                  <Text>{soap.ppu || '-'}</Text>
+                  <Text style={{ fontWeight: 'bold', paddingLeft: 8 }}>Inscripción R.V.M</Text>
+                  <Text style={{ paddingLeft: 8 }}>{soap.ppu || '-'}</Text>
                 </View>
                 <View style={{ width: 2, backgroundColor: '#222', alignSelf: 'stretch' }} />
                 <View style={{ flex: 1, justifyContent: 'center' }}>
-                  <Text style={{ fontWeight: 'bold' }}>Propietario</Text>
-                  <Text>{padron.nombre || '-'}</Text>
+                  <Text style={{ fontWeight: 'bold', paddingLeft: 8 }}>Propietario</Text>
+                  <Text style={{ paddingLeft: 8 }}>{padron.nombre || '-'}</Text>
                 </View>
               </View>
 
               {/* Fila 3: Tipo Vehículo y Rut (Rut en una sola celda) */}
               <View style={[styles.row, { borderBottomWidth: 2, borderColor: '#222' }]}>
                 <View style={{ flex: 1, paddingRight: 8 }}>
-                  <Text style={{ fontWeight: 'bold' }}>Tipo Vehículo</Text>
-                  <Text>{padron.tipo_vehiculo || '-'}</Text>
+                  <Text style={{ fontWeight: 'bold', paddingLeft: 8 }}>Tipo Vehículo</Text>
+                  <Text style={{ paddingLeft: 8 }}>{padron.tipo_vehiculo || '-'}</Text>
                 </View>
                 <View style={{ width: 2, backgroundColor: '#222', alignSelf: 'stretch' }} />
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontWeight: 'bold' }}>Rut</Text>
-                  <Text>{padron.rut || '-'}</Text>
+                  <Text style={{ fontWeight: 'bold', paddingLeft: 8 }}>Rut</Text>
+                  <Text style={{ paddingLeft: 8 }}>{padron.rut || '-'}</Text>
                 </View>
               </View>
 
               {/* Fila 4: Marca y Fechas (Rige Desde y Rige Hasta en una sola celda cada uno) */}
               <View style={[styles.row, { borderBottomWidth: 2, borderColor: '#222'}]}>
                 <View style={{ flex: 1, paddingRight: 8 }}>
-                  <Text style={{ fontWeight: 'bold' }}>Marca</Text>
-                  <Text>{padron.marca || '-'}</Text>
+                  <Text style={{ fontWeight: 'bold', paddingLeft: 8 }}>Marca</Text>
+                  <Text style={{ paddingLeft: 8 }}>{padron.marca || '-'}</Text>
                 </View>
                 <View style={{ width: 2, backgroundColor: '#222', alignSelf: 'stretch' }} />
                 <View style={{ flex: 2 }}>
@@ -122,8 +135,8 @@ export default function SoapModal({ visible, onClose, datos }: SoapModalProps) {
                 <View style={{ flex: 1, paddingRight: 8 }}>
                   <View style={styles.row}>
                     <View style={{ flex: 1 }}>
-                      <Text style={{ fontWeight: 'bold' }}>Modelo</Text>
-                      <Text>{padron.modelo || '-'}</Text>
+                      <Text style={{ fontWeight: 'bold', paddingLeft: 8 }}>Modelo</Text>
+                      <Text style={{ paddingLeft: 8 }}>{padron.modelo || '-'}</Text>
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={{ fontWeight: 'bold' }}>Año</Text>
@@ -147,8 +160,8 @@ export default function SoapModal({ visible, onClose, datos }: SoapModalProps) {
               {/* Fila 6: Motor, Prima, Timbre */}
               <View style={styles.row}>
                 <View style={{ flex: 1, paddingRight: 8 }}>
-                  <Text style={{ fontWeight: 'bold' }}>N° Motor</Text>
-                  <Text>{padron.num_motor || '-'}</Text>
+                  <Text style={{ fontWeight: 'bold', paddingLeft: 8 }}>N° Motor</Text>
+                  <Text style={{ paddingLeft: 8 }}>{padron.num_motor || '-'}</Text>
                 </View>
                 <View style={{ width: 2, backgroundColor: '#222', alignSelf: 'stretch' }} />
                 <View style={{ flex: 2 }}>
@@ -189,14 +202,14 @@ const styles = StyleSheet.create({
     width: '92%',
     maxHeight: '90%',
     overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#222',
+    // borderWidth: 2,
+    // borderColor: '#222',
   },
   sectionBox: {
     backgroundColor: '#fff',
     // padding: 12,
     marginBottom: 18,
-    borderRadius: 8,
+    // borderRadius: 8,
     borderWidth: 2,
     borderColor: '#222',
     elevation: 2,
