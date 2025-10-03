@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
+import ModalVehicular from '@/components/ModalVehicular';
 
 // Componente para mostrar el permiso de circulación en un modal
 function PermisoCirculacionModal({ show, onHide, permiso }: { show: boolean, onHide: () => void, permiso: any }) {
@@ -73,7 +74,7 @@ export default function HistorialPermisosPage() {
   const [loading, setLoading] = React.useState<boolean>(true);
 
   // Estado para el modal
-  const [showModal, setShowModal] = useState(false);
+  // const [showModal, setShowModal] = useState(false);
   const [permisoSeleccionado, setPermisoSeleccionado] = useState<any>(null);
 
   // Estados para búsqueda y paginación
@@ -90,6 +91,10 @@ export default function HistorialPermisosPage() {
       permiso.nombre?.toLowerCase().includes(search.toLowerCase()) ||
       permiso.rut?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const [showModal, setShowModal] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalData, setModalData] = useState<any>(null);
 
   console.log("RUT del usuario autenticado:", user?.rut);
   // Obtener los permisos emitidos por el usuario
@@ -117,20 +122,28 @@ export default function HistorialPermisosPage() {
     );
   }
 
-  // Obtener permiso de circulación
-  const obtenerPermisoCirculacion = async (ppu: string) => {
-    try {
-      const response = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${ppu}`);
-      const data = await response.json();
-      setPermisoSeleccionado(data);
-      setShowModal(true);
-      console.log("Permiso de circulación obtenido:", data);
-    } catch (error) {
-      console.error("Error fetching permiso de circulación:", error);
-    }
-  };
-  
-  // Renderizar la tabla de permisos
+  async function mostrarDocumento(tipo: string, id: number, ppu: string) {
+    const [padronRes, permisoRes, revisionRes, soapRes] = await Promise.all([
+      fetch(`${API_CONFIG.BACKEND}consultar_patente/${ppu}`),
+      fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion_id/${id}`),
+      fetch(`${API_CONFIG.BACKEND}consultar_revision_tecnica/${ppu}`),
+      fetch(`${API_CONFIG.BACKEND}consultar_soap/${ppu}`),
+    ]);
+    const [padron, permiso, revision, soap] = await Promise.all([
+      padronRes.json(),
+      permisoRes.json(),
+      revisionRes.json(),
+      soapRes.json(),
+    ]);
+    setModalTitle(tipo.charAt(0).toUpperCase() + tipo.slice(1));
+    setModalData({
+      padron,
+      permiso,
+      revision,
+      soap,
+    });
+    setShowModal(true);
+  }
 
 
   return (
@@ -226,6 +239,7 @@ export default function HistorialPermisosPage() {
                 <thead style={{ backgroundColor: "#0d6efd", color: "#fff", borderRadius: 16 }}>
                   <tr>
                     <th scope="col">PPU</th>
+                    <th scope="col">N° Permiso</th>
                     <th scope="col">Fecha de Emisión</th>
                     <th scope="col">Tarjeta</th>
                     <th scope="col">Valor Permiso</th>
@@ -242,6 +256,7 @@ export default function HistorialPermisosPage() {
                     permisosFiltrados.map((permiso) => (
                       <tr key={permiso.id}>
                         <td style={{ fontWeight: 600 }}>{permiso.ppu}</td>
+                        <td>{permiso.id_permiso}</td>
                         <td>{new Date(permiso.fecha_pago).toLocaleDateString()}</td>
                         <td>{"**** **** **** " + permiso.tarjeta.slice(-4)}</td>
                         <td>${permiso.monto_pago?.toLocaleString('es-CL')}</td>
@@ -249,7 +264,7 @@ export default function HistorialPermisosPage() {
                         <td>
                           <button
                             className="btn btn-primary"
-                            onClick={() => obtenerPermisoCirculacion(permiso.ppu)}
+                            onClick={() => mostrarDocumento('permiso', permiso.id_permiso, permiso.ppu)}
                           >
                             Ver Permiso
                           </button>
@@ -277,7 +292,12 @@ export default function HistorialPermisosPage() {
           </div>
         </div>
         {/* Modal para mostrar el permiso */}
-        <PermisoCirculacionModal show={showModal} onHide={() => setShowModal(false)} permiso={permisoSeleccionado} />
+        <ModalVehicular
+          show={showModal}
+          onClose={() => setShowModal(false)}
+          title={modalTitle}
+          data={modalData}
+        />
       </div>
     </ProtectedRoute>
   );

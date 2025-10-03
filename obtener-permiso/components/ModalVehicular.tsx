@@ -331,12 +331,12 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                         <div style={{ fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>Información Pago</div>
                         <div className="row">
                           <div className="col">
-                            <div><b>Número Comprobante:</b> {data?.id}</div>
-                            <div><b>Tasación:</b> ${data?.tasacion?.toLocaleString('es-CL')}</div>
-                            <div><b>Código SII:</b> {data?.codigo_sii || 'No disponible'}</div>
-                            <div><b>Valor Permiso:</b> ${data?.valor_permiso?.toLocaleString('es-CL')}</div>
-                            <div><b>Fecha Pago:</b> {data?.fecha_emision}</div>
-                            <div><b>Fecha Vencimiento:</b> {data?.fecha_expiracion}</div>
+                            <div><b>Número Comprobante:</b> {permiso?.id}</div>
+                            <div><b>Tasación:</b> ${permiso?.tasacion?.toLocaleString('es-CL')}</div>
+                            <div><b>Código SII:</b> {permiso?.codigo_sii || 'No disponible'}</div>
+                            <div><b>Valor Permiso:</b> ${permiso?.valor_permiso?.toLocaleString('es-CL')}</div>
+                            <div><b>Fecha Pago:</b> {permiso?.fecha_emision}</div>
+                            <div><b>Fecha Vencimiento:</b> {permiso?.fecha_expiracion}</div>
                           </div>
                           <div className="col" style={{ textAlign: 'center', marginTop: 16 }}>
                             <img src="/img/tupermiso/logo-cert.png" style={{ width: '75%', height: 'auto' }} alt="Certificado" />

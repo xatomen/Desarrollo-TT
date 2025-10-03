@@ -327,6 +327,39 @@ def get_permiso_circulacion(ppu: str, db: Session = Depends(get_db)):
         tasacion=permiso.tasacion
     )
 
+# GET - Endpoint para consultar el Permiso de Circulación a través del ID
+@app.get("/consultar_permiso_id/{id}", response_model=PermisoCirculacionModel)
+def get_permiso_circulacion_id(id: int, db: Session = Depends(get_db)):
+    permiso = db.query(PermisoCirculacion).filter(PermisoCirculacion.id == id).first()
+    if not permiso:
+        raise HTTPException(status_code=404, detail="Permiso de circulación no encontrado")
+    return PermisoCirculacionModel(
+        id=permiso.id,
+        ppu=permiso.ppu,
+        rut=permiso.rut,
+        nombre=permiso.nombre,
+        fecha_emision=permiso.fecha_emision,
+        fecha_expiracion=permiso.fecha_expiracion,
+        valor_permiso=permiso.valor_permiso,
+        motor=permiso.motor,
+        chasis=permiso.chasis,
+        tipo_vehiculo=permiso.tipo_vehiculo,
+        color=permiso.color,
+        marca=permiso.marca,
+        modelo=permiso.modelo,
+        anio=permiso.anio,
+        carga=permiso.carga,
+        tipo_sello=permiso.tipo_sello,
+        combustible=permiso.combustible,
+        cilindrada=permiso.cilindrada,
+        transmision=permiso.transmision,
+        pts=permiso.pts,
+        ast=permiso.ast,
+        equipamiento=permiso.equipamiento,
+        codigo_sii=permiso.codigo_sii,
+        tasacion=permiso.tasacion
+    )
+
 # POST - Endpoint para cargar un nuevo Permiso de Circulación
 @app.post("/subir_permiso/", response_model=PermisoCirculacionUploadModel)
 def cargar_permiso_circulacion(permiso: PermisoCirculacionUploadModel, db: Session = Depends(get_db)):
