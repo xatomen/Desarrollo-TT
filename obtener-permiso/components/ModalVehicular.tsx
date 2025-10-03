@@ -1,6 +1,5 @@
 // ModalVehicular.tsx
 import React, { useRef } from 'react';
-import html2pdf from 'html2pdf.js';
 
 export default function ModalVehicular({ show, onClose, title, data }: {
   show: boolean;
@@ -17,8 +16,9 @@ export default function ModalVehicular({ show, onClose, title, data }: {
     if (e.target === e.currentTarget) onClose();
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (docRef.current) {
+      const html2pdf = (await import('html2pdf.js')).default;
       const rect = docRef.current.getBoundingClientRect();
       html2pdf()
         .set({
@@ -415,7 +415,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                         {padron.tipo_vehiculo || '-'}
                       </div>
                       <div className="col-7">
-                        {padron.rut || '-'}
+                        {padron.nombre || '-'}
                       </div>
                     </div>
 
