@@ -226,9 +226,9 @@ const PermisoCirculacionPDF = forwardRef<HTMLDivElement, PermisoCirculacionPDFPr
               <div className="row m-0 p-2">
                 <div className="col m-0 p-0">
                   <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Número Comprobante</strong> {datos?.id}</p>
-                  <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Tasación</strong> ${datos?.tasacion.toLocaleString('es-CL')}</p>
+                  <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Tasación</strong> ${datos?.tasacion.toLocaleString()}</p>
                   <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Código SII</strong> {datos?.codigo_sii ? datos.codigo_sii : 'No disponible'}</p>
-                  <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Valor Permiso</strong> ${datos?.valor_permiso.toLocaleString('es-CL')}</p>
+                  <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Valor Permiso</strong> ${datos?.valor_permiso.toLocaleString()}</p>
                   <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Fecha Pago</strong> {datos?.fecha_emision}</p>
                   <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Fecha Vencimiento</strong> {datos?.fecha_expiracion}</p>
                 </div>
@@ -253,6 +253,8 @@ export default function ConfirmacionPago() {
   const cardRef = useRef<HTMLDivElement>(null);
   const pdfRef = useRef<HTMLDivElement>(null);
   const [resultadoPago, setResultadoPago] = useState<'exitoso' | 'fallido'>('fallido');
+
+  const [permisoCargado, setPermisoCargado] = useState(false);
 
   const [montoPago, setMontoPago] = useState(0);
   const [numCuotas, setNumCuotas] = useState(1);
@@ -560,6 +562,7 @@ export default function ConfirmacionPago() {
     if (pagoInfo?.resultadoPago === 'exitoso') {
       console.log('Emitiendo permiso de circulación...');
       emitirPermiso();
+      setPermisoCargado(true);
     }
   }, [pagoInfo]);
 
@@ -732,7 +735,7 @@ export default function ConfirmacionPago() {
                             fontWeight: '700',
                             color: '#212529'
                           }}>
-                        ${montoPago.toLocaleString('es-CL')}
+                        ${montoPago.toLocaleString()}
                       </h1>
                       {numCuotas > 1 && (
                         <span>
@@ -862,7 +865,7 @@ export default function ConfirmacionPago() {
           </div>
           {/* Renderiza el PDF oculto para la descarga */}
           <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
-            {datosVehiculo?.ppu && <PermisoCirculacionPDF ppu={datosVehiculo?.ppu ? datosVehiculo.ppu : ''} ref={pdfRef} />}
+            {datosVehiculo?.ppu && permisoCargado && <PermisoCirculacionPDF ppu={datosVehiculo?.ppu ? datosVehiculo.ppu : ''} ref={pdfRef} />}
           </div>
         </div>
       </div>

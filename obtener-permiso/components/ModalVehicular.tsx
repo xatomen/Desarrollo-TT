@@ -486,7 +486,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                 </div>
 
               </div>
-            ) : (
+            ) : title.toLowerCase() == 'revision' ? (
               <div
                 className="row"
                 style={{
@@ -618,10 +618,13 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                 </div>
               
               </div>
-            )
-          ) : (
-            <div style={{ textAlign: 'center', color: '#888' }}>No hay datos disponibles.</div>
-          )}
+            ) : ( title.toLowerCase() == 'revision' ? (
+              <div style={{ textAlign: 'center', color: '#888' }}>No hay datos disponibles.</div>
+            ) : (
+              <div style={{ textAlign: 'center', color: '#888' }}>No hay datos disponibles.</div>
+            ))) : (
+              <div style={{ textAlign: 'center', color: '#888' }}>No hay datos disponibles.</div>
+            )}
         </div>
         {/* Footer */}
         <div style={{

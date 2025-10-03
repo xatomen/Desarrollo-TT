@@ -103,10 +103,10 @@ function EstadoVehiculoTooltip({ detalle }: { detalle: EstadoVehiculoDetalle }) 
     { label: 'Permiso de Circulación', value: detalle.permiso },
     { label: 'Encargo por Robo', value: detalle.encargo },
     { label: 'Estado en RPI', value: detalle.rpi },
-    detalle.fechaVencimientoPermiso && {
-      label: 'Fecha Vencimiento Permiso',
-      value: formatearFechaLarga(detalle.fechaVencimientoPermiso)
-    }
+    // detalle.fechaVencimientoPermiso && {
+    //   label: 'Fecha Vencimiento Permiso',
+    //   value: formatearFechaLarga(detalle.fechaVencimientoPermiso)
+    // }
   ].filter(Boolean);
 
   return (
