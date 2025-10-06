@@ -82,6 +82,8 @@ INSERT INTO PADRON (PPU, RUT, NOMBRE, TIPO_VEHICULO, MARCA, MODELO, ANIO, COLOR,
 ('AH1234', '20961960-1', 'Jorge Gallardo Contreras', 'Sedán', 'Chevrolet', 'Cruze', 2020, 'Blanco', 1600, '5566778', '1G1BE5SM0J7123456', '2023-11-20'),
 ('BWFD87', '20961960-1', 'Jorge Gallardo Contreras', 'Sedán', 'Renault', 'Clio', 2019, 'Rojo', 1200, '998877', 'VF1BR0B0C12345678', '2022-06-15'),
 ('CBKS56', '20961960-1', 'Jorge Gallardo Contreras', 'Hatchback', 'Kia', 'Rio 3', 2021, 'Blanco', 200, '334455', 'VBKRD1100M1234567', '2023-03-10'),
+('BRK90', '20961960-1', 'Jorge Gallardo Contreras', 'Motocicleta', 'Honda', 'CBR500R', 2022, 'Negro', 500, '223344', 'JH2PC4000NM123456', '2024-01-05'),
+('RSDY20', '20961960-1', 'Jorge Gallardo Contreras', 'Sedán', 'Toyota', 'Corolla', 2020, 'Negro', 1800, '78968686', 'JA590234859123JD9', '2020-05-15'),
 -- Vehículo Felipe Vera Andrade (RUT 20857826-K)
 ('HRWY25', '20857826-K', 'Felipe Vera Andrade', 'Sedán', 'Hyundai', 'Elantra', 2018, 'Azul', 1600, '334455', 'KMHDH4AE0JU123456', '2021-08-30'),
 -- Vehículos Luis Caro Morales (RUT 20595210-1)

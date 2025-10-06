@@ -52,6 +52,8 @@ INSERT INTO REVISION_TECNICA (ppu, fecha, codigo_planta, planta, nom_certificado
 ('AH1234', '2024-11-20', 'PLT1002', 'PRT Providencia', 'CERT-2023-012', '2025-11-20', 'aprobada'),
 ('BWFD87', '2025-06-15', 'PLT1003', 'PRT Ñuñoa', 'CERT-2022-013', '2026-06-15', 'aprobada'),
 ('CBKS56', '2025-03-10', 'PLT1004', 'PRT Las Condes', 'CERT-2023-014', '2026-03-10', 'aprobada'),
+('BRK90', '2022-01-05', 'PLT1008', 'PRT La Florida', 'CERT-2023-018', '2023-01-05', 'aprobada'),
+('RSDY20', '2025-05-15', 'PLT1009', 'PRT Vitacura', 'CERT-2025-019', '2026-05-15', 'aprobada'),
 -- REVISION_TECNICA para vehículo de Felipe Vera Andrade
 ('HRWY25', '2025-08-30', 'PLT1005', 'PRT Maipú', 'CERT-2025-015', '2026-08-30', 'aprobada'),
 -- REVISION_TECNICA para vehículos de Luis Caro Morales

@@ -111,6 +111,8 @@ INSERT INTO permiso_circulacion (ppu, rut, nombre, fecha_emision, fecha_expiraci
 ('AH1234', '20961960-1', 'Jorge Gallardo Contreras', '2023-11-20 00:00:00', '2024-11-20 00:00:00', 78000, '5566778', '1G1BE5SM0J7123456', 'Sedán', 'Blanco', 'Chevrolet', 'Cruze', 2020, 0, 'Verde', 'Gasolina', 1600, 'Automática', 4, 2, 'Bluetooth, ABS', 'SD634452', 7800000),
 ('BWFD87', '20961960-1', 'Jorge Gallardo Contreras', '2022-06-15 00:00:00', '2023-06-15 00:00:00', 62000, '998877', 'VF1BR0B0C12345678', 'Sedán', 'Rojo', 'Renault', 'Clio', 2019, 0, 'Verde', 'Gasolina', 1200, 'Manual', 4, 2, 'Aire Acondicionado, Radio', 'SD635443', 6200000),
 ('CBKS56', '20961960-1', 'Jorge Gallardo Contreras', '2023-03-10 00:00:00', '2024-03-10 00:00:00', 35000, '334455', 'VBKRD1100M1234567', 'Hatchback', 'Blanco', 'Kia', 'Rio 3', 2021, 0, 'Verde', 'Gasolina', 1200, 'Manual', 5, 2, 'Bluetooth, Airbags', 'SD654233', 3500000),
+('BRK90', '20961960-1', 'Jorge Gallardo Contreras', '2025-01-05 00:00:00', '2026-01-05 00:00:00', 32000, '223344', 'JH2PC4000NM123456', 'Motocicleta', 'Negro', 'Honda', 'CBR500R', 2022, 0, 'Verde', 'Gasolina', 500, 'Manual', 0, 0, 'ABS', 'MT500900', 4200000),
+('RSDY20', '20961960-1', 'Jorge Gallardo Contreras', '2025-05-15 00:00:00', '2026-05-15 00:00:00', 54000, '78968686', 'JA590234859123JD9', 'Sedán', 'Negro', 'Toyota', 'Corolla', 2020, 0, 'Verde', 'Gasolina', 1800, 'Automática', 0, 0, 'Aire Acondicionado, ABS', 'SD202015', 8500000),
 -- Felipe Vera Andrade
 ('HRWY25', '20857826-K', 'Felipe Vera Andrade', '2021-08-30 00:00:00', '2022-08-30 00:00:00', 69000, '334455', 'KMHDH4AE0JU123456', 'Sedán', 'Azul', 'Hyundai', 'Elantra', 2018, 0, 'Verde', 'Gasolina', 1600, 'Automática', 4, 2, 'Aire Acondicionado, ABS', 'SD542364', 6900000),
 -- Luis Caro Morales

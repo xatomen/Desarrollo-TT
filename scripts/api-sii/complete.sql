@@ -75,6 +75,8 @@ INSERT INTO TASACION_FISCAL (codigo_sii, tipo, anio, marca, modelo, version, com
 ('SD634452', 'Sedán', 2020, 'Chevrolet', 'Cruze', 'LT', 'Gasolina', 1600, 113, 6, 'Automática', '4x2', 4, 'Estados Unidos', 'Bluetooth, ABS', 7800000, 2, 78000),
 ('SD635443', 'Sedán', 2019, 'Renault', 'Clio', 'Intens', 'Gasolina', 1200, 75, 5, 'Manual', '4x2', 4, 'Francia', 'Aire Acondicionado, Radio', 6200000, 2, 62000),
 ('SD654233', 'Hatchback', 2021, 'Kia', 'Rio 3', 'LX', 'Gasolina', 1200, 83, 5, 'Manual', '4x2', 5, 'Corea', 'Bluetooth, Airbags', 3500000, 2, 35000),
+('MT500900', 'Motocicleta', 2022, 'Honda', 'CBR500R', '', 'Gasolina', 500, 30, 6, 'Manual', '-', 0, 'Japón', 'ABS', 4200000, 2, 36000),
+('SD202015', 'Sedán', 2020, 'Toyota', 'Corolla', '', 'Gasolina', 1800, 115, 6, 'Automática', '4x2', 0, 'Japón', 'Aire Acondicionado, ABS', 8500000, 2, 114000),
 -- Vehículo Felipe Vera Andrade (RUT 20857826-K)
 ('SD542364', 'Sedán', 2018, 'Hyundai', 'Elantra', 'GLS', 'Gasolina', 1600, 126, 6, 'Automática', '4x2', 4, 'Corea', 'Aire Acondicionado, ABS', 6900000, 2, 69000),
 -- Vehículos Luis Caro Morales (RUT 20595210-1)
