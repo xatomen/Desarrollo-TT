@@ -17,6 +17,7 @@ import {
 import { Bar, Line, Pie } from 'react-chartjs-2';
 import { applyChartTheme, palette, CHART_HEIGHT, buildBarOptions, buildLineOptions, pieOptions as sharedPieOptions } from "@/app/components/charts/theme";
 import API_CONFIG from "@/config/api";
+import { generatePDFFromElement, generateStructuredPDFFromElement } from "@/app/utils/pdfGenerator";
 
 // Registrar componentes de Chart.js
 ChartJS.register(
@@ -93,6 +94,9 @@ type Row = {
 };
 
 export default function RegistroFiscalizacionPage() {
+  // Estados para generación de PDF
+  const [generatingPDF, setGeneratingPDF] = useState(false);
+  
   // Estados para datos de la API
   const [apiData, setApiData] = useState<ApiResponse['data'] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -453,16 +457,41 @@ export default function RegistroFiscalizacionPage() {
   };
 
   // Actualizar localStorage cuando se genere PDF
-  function handleGeneratePDF() {
-    if (typeof window !== 'undefined') {
-      const timestamp = new Date().toLocaleString();
-      localStorage.setItem('lastReport:fiscalizacion', timestamp);
+  async function handleGeneratePDF() {
+    if (generatingPDF) return;
+    
+    setGeneratingPDF(true);
+    
+    try {
+      // Preparar información para el PDF
+      const currentDate = new Date().toLocaleDateString('es-CL');
+      const subtitle = `Período: ${desde} al ${hasta} | Generado: ${currentDate}`;
+      const filename = `Registro_Fiscalizacion_${desde}_${hasta}.pdf`;
+      
+      // Generar el PDF usando el método estructurado
+      await generateStructuredPDFFromElement(
+        'pdf-content',
+        'Registro de Fiscalización',
+        subtitle,
+        filename
+      );
+      
+      // Actualizar localStorage
+      if (typeof window !== 'undefined') {
+        const timestamp = new Date().toLocaleString();
+        localStorage.setItem('lastReport:fiscalizacion', timestamp);
+      }
+      
+    } catch (error) {
+      console.error('Error al generar PDF:', error);
+      alert('Error al generar el PDF. Por favor, inténtalo de nuevo.');
+    } finally {
+      setGeneratingPDF(false);
     }
-    alert("Generar PDF (por implementar)");
   }
 
   return (
-    <div className="my-4">
+    <div className="my-4" id="pdf-content">
       <header className="mb-4">
         <h2 className="h3 d-flex align-items-center gap-2">
           <span role="img" aria-label="shield">🛡️</span>
@@ -520,14 +549,28 @@ export default function RegistroFiscalizacionPage() {
           </div>
 
           <div className="col-12 col-md-2 d-grid">
-            <button type="submit" className="btn btn-success w-100" disabled={loading}>
+            <button type="submit" className="btn btn-success w-100 pdf-hide-buttons" disabled={loading}>
               {loading ? 'Filtrando...' : 'Filtrar'}
             </button>
           </div>
 
           <div className="col-12 col-md-2 d-grid">
-            <button type="button" className="btn btn-primary w-100" onClick={handleGeneratePDF}>
-              Generar Informe
+            <button
+              type="button"
+              className="btn btn-primary w-100 pdf-hide-buttons"
+              onClick={handleGeneratePDF}
+              disabled={generatingPDF}
+            >
+              {generatingPDF ? (
+                <>
+                  <div className="spinner-border spinner-border-sm me-2" role="status">
+                    <span className="visually-hidden">Generando...</span>
+                  </div>
+                  Generando...
+                </>
+              ) : (
+                'Generar Informe'
+              )}
             </button>
           </div>
 
@@ -587,38 +630,139 @@ export default function RegistroFiscalizacionPage() {
         </div>
       </div>
       
-      {/* SRCEI global: destacado debajo del resumen */}
-      <div className="card mt-4 shadow-sm">
-        <div className="card-header bg-light">
-          <h5 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
-            <i className="bi bi-database" style={{ color: palette.info }}></i>
-            Matrículas {new Date().getFullYear()}
-            {srceiLoading && <div className="spinner-border spinner-border-sm ms-2" role="status"></div>}
-          </h5>
-        </div>
-        <div className="card-body">
-          <div style={{ height: CHART_HEIGHT.lg }}>
-            {srceiData ? (
-              <Pie data={srceiChartData} options={sharedPieOptions} />
-            ) : (
-              <div className="d-flex align-items-center justify-content-center h-100">
-                <span className="text-muted">
-                  {srceiLoading ? 'Cargando datos SRCEI...' : 'Sin datos disponibles'}
-                </span>
+      {/* Gráficos de estado de documentos - Primero */}
+      <div className="col-12 mt-4">
+        <div className="row">
+          {/* Estado Permiso */}
+          <div className="col-12 col-md-3">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-file-earmark-text" style={{ color: palette.success }}></i>
+                  Estado Permiso
+                </h6>
               </div>
-            )}
-          </div>
-          {srceiData && (
-            <div className="text-center mt-3">
-              <div className="d-inline-flex gap-4 flex-wrap">
-                <span><strong>Total inscritos:</strong> {srceiData.total_matriculas}</span>
-                <span><strong>Al día:</strong> {srceiData.vehiculos_pagados}</span>
-                <span><strong>Con multas:</strong> {srceiData.total_matriculas - srceiData.vehiculos_pagados}</span>
+              <div className="card-body">
+                <div style={{ height: CHART_HEIGHT.sm }}>
+                  {documentStatusCharts.permiso.datasets[0].data.some((val: number) => val > 0) ? (
+                    <Bar data={documentStatusCharts.permiso} options={statusBarOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+                {documentStatusCharts.permiso.datasets[0].data.some((val: number) => val > 0) && (
+                  <div className="text-center mt-3">
+                    <div className="d-inline-flex gap-3 flex-wrap" style={{ fontSize: '0.9rem' }}>
+                      <span><strong>Total:</strong> {documentStatusCharts.permiso.datasets[0].data[0] + documentStatusCharts.permiso.datasets[0].data[1]}</span>
+                      <span><strong>Vigente:</strong> {documentStatusCharts.permiso.datasets[0].data[0]}</span>
+                      <span><strong>No vigente:</strong> {documentStatusCharts.permiso.datasets[0].data[1]}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          )}
+          </div>
+
+          {/* Estado Revisión */}
+          <div className="col-12 col-md-3">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-gear" style={{ color: palette.warning }}></i>
+                  Estado Revisión
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: CHART_HEIGHT.sm }}>
+                  {documentStatusCharts.revision.datasets[0].data.some((val: number) => val > 0) ? (
+                    <Bar data={documentStatusCharts.revision} options={statusBarOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+                {documentStatusCharts.revision.datasets[0].data.some((val: number) => val > 0) && (
+                  <div className="text-center mt-3">
+                    <div className="d-inline-flex gap-3 flex-wrap" style={{ fontSize: '0.9rem' }}>
+                      <span><strong>Total:</strong> {documentStatusCharts.revision.datasets[0].data[0] + documentStatusCharts.revision.datasets[0].data[1]}</span>
+                      <span><strong>Vigente:</strong> {documentStatusCharts.revision.datasets[0].data[0]}</span>
+                      <span><strong>No vigente:</strong> {documentStatusCharts.revision.datasets[0].data[1]}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Estado SOAP */}
+          <div className="col-12 col-md-3">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-shield-check" style={{ color: palette.info }}></i>
+                  Estado SOAP
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: CHART_HEIGHT.sm }}>
+                  {documentStatusCharts.soap.datasets[0].data.some((val: number) => val > 0) ? (
+                    <Bar data={documentStatusCharts.soap} options={statusBarOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+                {documentStatusCharts.soap.datasets[0].data.some((val: number) => val > 0) && (
+                  <div className="text-center mt-3">
+                    <div className="d-inline-flex gap-3 flex-wrap" style={{ fontSize: '0.9rem' }}>
+                      <span><strong>Total:</strong> {documentStatusCharts.soap.datasets[0].data[0] + documentStatusCharts.soap.datasets[0].data[1]}</span>
+                      <span><strong>Vigente:</strong> {documentStatusCharts.soap.datasets[0].data[0]}</span>
+                      <span><strong>No vigente:</strong> {documentStatusCharts.soap.datasets[0].data[1]}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Distribución Encargo/Robo */}
+          <div className="col-12 col-md-3">
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                  <i className="bi bi-pie-chart" style={{ color: palette.danger }}></i>
+                  Distribución Encargo/Robo
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: CHART_HEIGHT.sm }}>
+                  {encargoChartData.datasets[0].data.some((val: number) => val > 0) ? (
+                    <Pie data={encargoChartData} options={sharedPieOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+                {encargoChartData.datasets[0].data.some((val: number) => val > 0) && (
+                  <div className="text-center mt-3">
+                    <div className="d-inline-flex gap-3 flex-wrap" style={{ fontSize: '0.9rem' }}>
+                      <span><strong>Total:</strong> {encargoChartData.datasets[0].data[0] + encargoChartData.datasets[0].data[1]}</span>
+                      <span><strong>Sin encargo:</strong> {encargoChartData.datasets[0].data[0]}</span>
+                      <span><strong>Con encargo:</strong> {encargoChartData.datasets[0].data[1]}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
 
       {/* Contenido principal */}
       <div className="row mt-4">
@@ -763,103 +907,6 @@ export default function RegistroFiscalizacionPage() {
                     </li>
                   </ul>
                 </nav>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-  {/* Gráficos adicionales de análisis */}
-  <div className="col-12 mt-4">
-        <div className="row">
-          {/* Gráficos de estado de documentos */}
-          <div className="col-12 col-md-4">
-            <div className="card shadow-sm mb-3">
-              <div className="card-header bg-light">
-                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
-                  <i className="bi bi-file-earmark-text" style={{ color: palette.success }}></i>
-                  Estado Permiso
-                </h6>
-              </div>
-              <div className="card-body">
-                <div style={{ height: CHART_HEIGHT.sm }}>
-                  {documentStatusCharts.permiso.datasets[0].data.some((val: number) => val > 0) ? (
-                    <Bar data={documentStatusCharts.permiso} options={statusBarOptions} />
-                  ) : (
-                    <div className="d-flex align-items-center justify-content-center h-100">
-                      <span className="text-muted">Sin datos disponibles</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-12 col-md-4">
-            <div className="card shadow-sm mb-3">
-              <div className="card-header bg-light">
-                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
-                  <i className="bi bi-gear" style={{ color: palette.warning }}></i>
-                  Estado Revisión
-                </h6>
-              </div>
-              <div className="card-body">
-                <div style={{ height: CHART_HEIGHT.sm }}>
-                  {documentStatusCharts.revision.datasets[0].data.some((val: number) => val > 0) ? (
-                    <Bar data={documentStatusCharts.revision} options={statusBarOptions} />
-                  ) : (
-                    <div className="d-flex align-items-center justify-content-center h-100">
-                      <span className="text-muted">Sin datos disponibles</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-12 col-md-4">
-            <div className="card shadow-sm mb-3">
-              <div className="card-header bg-light">
-                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
-                  <i className="bi bi-shield-check" style={{ color: palette.info }}></i>
-                  Estado SOAP
-                </h6>
-              </div>
-              <div className="card-body">
-                <div style={{ height: CHART_HEIGHT.sm }}>
-                  {documentStatusCharts.soap.datasets[0].data.some((val: number) => val > 0) ? (
-                    <Bar data={documentStatusCharts.soap} options={statusBarOptions} />
-                  ) : (
-                    <div className="d-flex align-items-center justify-content-center h-100">
-                      <span className="text-muted">Sin datos disponibles</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row">
-          {/* Gráfico de pastel para Encargo */}
-          <div className="col-12">
-            <div className="card shadow-sm mb-3">
-              <div className="card-header bg-light">
-                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
-                  <i className="bi bi-pie-chart" style={{ color: palette.danger }}></i>
-                  Distribución Encargo/Robo
-                </h6>
-              </div>
-              <div className="card-body">
-                <div style={{ height: CHART_HEIGHT.md }}>
-                  {encargoChartData.datasets[0].data.some((val: number) => val > 0) ? (
-                      <Pie data={encargoChartData} options={sharedPieOptions} />
-                  ) : (
-                    <div className="d-flex align-items-center justify-content-center h-100">
-                      <span className="text-muted">Sin datos disponibles</span>
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
           </div>

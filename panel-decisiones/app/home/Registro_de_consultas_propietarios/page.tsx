@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useMemo, useState } from "react";
 import {
   Chart as ChartJS,
@@ -13,6 +12,7 @@ import {
 import { Bar } from 'react-chartjs-2';
 import { applyChartTheme, palette, CHART_HEIGHT, buildBarOptions } from "@/app/components/charts/theme";
 import API_CONFIG from "@/config/api";
+import { generatePDFFromElement, generateStructuredPDFFromElement } from "@/app/utils/pdfGenerator";
 
 // Registrar componentes de Chart.js
 ChartJS.register(
@@ -75,6 +75,9 @@ type Consulta = {
 type GroupBy = "DIA" | "MES" | "AÑO";
 
 export default function RegistroConsultasPropietariosPage() {
+  // Estados para generación de PDF
+  const [generatingPDF, setGeneratingPDF] = useState(false);
+  
   // Estados para datos de la API
   const [apiData, setApiData] = useState<ApiResponse['data'] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -203,16 +206,41 @@ export default function RegistroConsultasPropietariosPage() {
   const chartOptions = buildBarOptions({ showLegend: false });
 
   // Actualizar localStorage cuando se genere PDF
-  function handleGeneratePDF() {
-    if (typeof window !== 'undefined') {
-      const timestamp = new Date().toLocaleString();
-      localStorage.setItem('lastReport:consultas', timestamp);
+  async function handleGeneratePDF() {
+    if (generatingPDF) return;
+    
+    setGeneratingPDF(true);
+    
+    try {
+      // Preparar información para el PDF
+      const currentDate = new Date().toLocaleDateString('es-CL');
+      const subtitle = `Período: ${desde} al ${hasta} | Generado: ${currentDate}`;
+      const filename = `Registro_Consultas_Propietarios_${desde}_${hasta}.pdf`;
+      
+      // Generar el PDF usando el método estructurado
+      await generateStructuredPDFFromElement(
+        'pdf-content',
+        'Registro de Consultas de Propietarios',
+        subtitle,
+        filename
+      );
+      
+      // Actualizar localStorage
+      if (typeof window !== 'undefined') {
+        const timestamp = new Date().toLocaleString();
+        localStorage.setItem('lastReport:consultas', timestamp);
+      }
+      
+    } catch (error) {
+      console.error('Error al generar PDF:', error);
+      alert('Error al generar el PDF. Por favor, inténtalo de nuevo.');
+    } finally {
+      setGeneratingPDF(false);
     }
-    alert("Generar PDF (por implementar)");
   }
 
   return (
-    <div className="my-4">
+    <div className="my-4" id="pdf-content">
       <header className="mb-4">
         <h2 className="h3 d-flex align-items-center gap-2">
           <span role="img" aria-label="chart">📊</span>
@@ -276,7 +304,7 @@ export default function RegistroConsultasPropietariosPage() {
           </div>
 
           <div className="col-12 col-md-2 d-grid">
-            <button type="submit" className="btn btn-success w-100" disabled={loading}>
+            <button type="submit" className="btn btn-success w-100 pdf-hide-buttons" disabled={loading}>
               {loading ? 'Filtrando...' : 'Filtrar'}
             </button>
           </div>
@@ -284,10 +312,20 @@ export default function RegistroConsultasPropietariosPage() {
           <div className="col-12 col-md-2 d-grid">
             <button
               type="button"
-              className="btn btn-primary w-100"
+              className="btn btn-primary w-100 pdf-hide-buttons"
               onClick={handleGeneratePDF}
+              disabled={generatingPDF}
             >
-              Generar Informe
+              {generatingPDF ? (
+                <>
+                  <div className="spinner-border spinner-border-sm me-2" role="status">
+                    <span className="visually-hidden">Generando...</span>
+                  </div>
+                  Generando...
+                </>
+              ) : (
+                'Generar Informe'
+              )}
             </button>
           </div>
         </form>
