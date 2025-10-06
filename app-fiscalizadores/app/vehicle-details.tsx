@@ -68,10 +68,10 @@ export default function VehicleDetailsScreen() {
     // Solo proceder si todos los valores necesarios están definidos y no están vacíos
     if (encargoRobo && vigenciaPermiso && revisionTecnica && soap && 
         encargoRobo !== '' && vigenciaPermiso !== '' && revisionTecnica !== '' && soap !== '') {
-      
+      console.log('###### Calculando estado del vehículo con:', { encargoRobo, vigenciaPermiso, revisionTecnica, soap });
       if (encargoRobo === 'Sí') {
         setEstadoVehiculo('Posee Encargo por Robo');
-      } else if (vigenciaPermiso === 'Vencido' || revisionTecnica === 'Vencido' || soap === 'Vencido') {
+      } else if (vigenciaPermiso === 'Vencido' || revisionTecnica === 'No Vigente' || soap === 'No Vigente') {
         setEstadoVehiculo('Documentos Vencidos');
       } else {
         setEstadoVehiculo('Vehículo al Día');
