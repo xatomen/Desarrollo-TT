@@ -56,6 +56,8 @@ function EstadoVehiculoTag({ estado }: { estado: string }) {
   const cfg =
     estado === 'Al día'
       ? { cls: 'status--pagado', label: 'Al día' }
+      : estado === 'Apto para pagar'
+      ? { cls: 'status--habilitado', label: 'Apto para pagar' }
       : { cls: 'status--vencido', label: 'No vigente' };
 
   return (
@@ -394,15 +396,35 @@ export default function VerVehiculos() {
         estadoRPI = rpiData.cantidad_multas === 0 ? 'Sin multas' : 'Con multas';
       }
 
-      // Lógica final
-      const estadoGeneral = (
+      // Lógica final - NUEVA LÓGICA PARA "APTO PARA PAGAR"
+      let estadoGeneral = '';
+      
+      // Verificar si todos los documentos están vigentes (Al día)
+      if (
         estadoRevision === 'Vigente' &&
         estadoSoap === 'Vigente' &&
         estadoMultas === 'No posee multas' &&
         (estadoPermiso === 'Vigente' || estadoPermiso === 'Primera obtención') &&
         estadoEncargo === 'No tiene encargo por robo' &&
         estadoRPI === 'Sin multas'
-      ) ? 'Al día' : 'No vigente';
+      ) {
+        estadoGeneral = 'Al día';
+      } 
+      // Verificar si solo el permiso está vencido (Apto para pagar)
+      else if (
+        estadoRevision === 'Vigente' &&
+        estadoSoap === 'Vigente' &&
+        estadoMultas === 'No posee multas' &&
+        estadoPermiso === 'No vigente' &&
+        estadoEncargo === 'No tiene encargo por robo' &&
+        estadoRPI === 'Sin multas'
+      ) {
+        estadoGeneral = 'Apto para pagar';
+      }
+      // En cualquier otro caso
+      else {
+        estadoGeneral = 'No vigente';
+      }
 
       return {
         estadoGeneral,
@@ -526,8 +548,8 @@ export default function VerVehiculos() {
       filtroEstado === 'todos'
         ? true
         : filtroEstado === 'al-dia'
-        ? v.estadoVehiculo?.estadoGeneral === 'Al día'
-        : v.estadoVehiculo?.estadoGeneral !== 'Al día';
+        ? v.estadoVehiculo?.estadoGeneral === 'Al día' || v.estadoVehiculo?.estadoGeneral === 'Apto para pagar'
+        : v.estadoVehiculo?.estadoGeneral !== 'Al día' && v.estadoVehiculo?.estadoGeneral !== 'Apto para pagar';
     return coincideBusqueda && coincideEstado;
   });
 
@@ -542,8 +564,8 @@ export default function VerVehiculos() {
       filtroEstado === 'todos'
         ? true
         : filtroEstado === 'al-dia'
-        ? v.estadoVehiculo?.estadoGeneral === 'Al día'
-        : v.estadoVehiculo?.estadoGeneral !== 'Al día';
+        ? v.estadoVehiculo?.estadoGeneral === 'Al día' || v.estadoVehiculo?.estadoGeneral === 'Apto para pagar'
+        : v.estadoVehiculo?.estadoGeneral !== 'Al día' && v.estadoVehiculo?.estadoGeneral !== 'Apto para pagar';
     return coincideBusqueda && coincideEstado;
   });
 
@@ -944,7 +966,7 @@ export default function VerVehiculos() {
                       onChange={e => setFiltroEstado(e.target.value as any)}
                     >
                       <option value="todos">Todos los estados</option>
-                      <option value="al-dia">Al día</option>
+                      <option value="al-dia">Al día / Apto para pagar</option>
                       <option value="no-vigente">Presenta problemas</option>
                     </select>
                   </div>
@@ -1007,11 +1029,22 @@ export default function VerVehiculos() {
                                     onClick={() => abrirModal(v.estadoVehiculo!)}
                                   >
                                     <span
-                                      className={`status-chip p-2 d-flex align-items-center justify-content-center ${v.estadoVehiculo.estadoGeneral === 'Al día' ? 'status--pagado' : 'status--vencido'}`}
+                                      className={`status-chip p-2 d-flex align-items-center justify-content-center ${
+                                        v.estadoVehiculo.estadoGeneral === 'Al día' 
+                                          ? 'status--pagado' 
+                                          : v.estadoVehiculo.estadoGeneral === 'Apto para pagar'
+                                          ? 'status--habilitado'
+                                          : 'status--vencido'
+                                      }`}
                                     >
                                       <span className="status-dot" />
                                       <span className="ms-1">
-                                        {v.estadoVehiculo.estadoGeneral === 'Al día' ? 'Al día' : 'Presenta problemas'}
+                                        {v.estadoVehiculo.estadoGeneral === 'Al día' 
+                                          ? 'Al día' 
+                                          : v.estadoVehiculo.estadoGeneral === 'Apto para pagar'
+                                          ? 'Apto para pagar'
+                                          : 'Presenta problemas'
+                                        }
                                       </span>
                                     </span>
                                   </div>
@@ -1128,7 +1161,7 @@ export default function VerVehiculos() {
                       onChange={e => setFiltroEstado(e.target.value as any)}
                     >
                       <option value="todos">Todos los estados</option>
-                      <option value="al-dia">Al día</option>
+                      <option value="al-dia">Al día / Apto para pagar</option>
                       <option value="no-vigente">Presenta problemas</option>
                     </select>
                   </div>
@@ -1187,11 +1220,22 @@ export default function VerVehiculos() {
                                     onClick={() => abrirModal(vehicle.estadoVehiculo!)}
                                   >
                                     <span
-                                      className={`status-chip p-2 d-flex align-items-center justify-content-center ${vehicle.estadoVehiculo.estadoGeneral === 'Al día' ? 'status--pagado' : 'status--vencido'}`}
+                                      className={`status-chip p-2 d-flex align-items-center justify-content-center ${
+                                        vehicle.estadoVehiculo.estadoGeneral === 'Al día' 
+                                          ? 'status--pagado' 
+                                          : vehicle.estadoVehiculo.estadoGeneral === 'Apto para pagar'
+                                          ? 'status--habilitado'
+                                          : 'status--vencido'
+                                      }`}
                                     >
                                       <span className="status-dot" />
                                       <span className="ms-1">
-                                        {vehicle.estadoVehiculo.estadoGeneral === 'Al día' ? 'Al día' : 'Presenta problemas'}
+                                        {vehicle.estadoVehiculo.estadoGeneral === 'Al día' 
+                                          ? 'Al día' 
+                                          : vehicle.estadoVehiculo.estadoGeneral === 'Apto para pagar'
+                                          ? 'Apto para pagar'
+                                          : 'Presenta problemas'
+                                        }
                                       </span>
                                     </span>
                                   </div>

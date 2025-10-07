@@ -436,15 +436,34 @@ function ValidacionesPagoContent() {
     fetchAllData();
   }, [ppu, rutPropietario]); // ✅ Agregar rut como dependencia
 
-  // Verificar si todos los documentos están en estado ideal
+  // Verificar si todos los documentos están en estado ideal - NUEVA LÓGICA
   const documentosNegativosPositivos = ['Encargo por Robo', 'Multas de Tránsito', 'Multas RPI'];
-  const todosDocumentosValidos = documentos
+  
+  // Separar validación del permiso vs otros documentos
+  const otrosDocumentosValidos = documentos
     .filter(doc => doc.nombre !== 'Permiso de Circulación')
     .every(doc => {
       if (doc.estado === 'Desconocido') return false;
       const esDocumentoNegativo = documentosNegativosPositivos.includes(doc.nombre);
       return doc.estado === 'Vigente' || (doc.estado === 'No' && esDocumentoNegativo);
     });
+
+  const permisoVigente = documentos
+    .find(doc => doc.nombre === 'Permiso de Circulación')
+    ?.estado === 'Vigente';
+
+  // Determinar estado del vehículo
+  const estadoVehiculo = (() => {
+    if (permisoVigente && otrosDocumentosValidos) {
+      return 'Al Día';
+    } else if (!permisoVigente && otrosDocumentosValidos) {
+      return 'Apto para pagar';
+    } else {
+      return 'No Apto';
+    }
+  })();
+
+  const todosDocumentosValidos = estadoVehiculo === 'Al Día' || estadoVehiculo === 'Apto para pagar';
 
   // Obtener valor permiso de circulación
   const fetchValorPermiso = async (ppu: string) => {
@@ -588,12 +607,16 @@ function ValidacionesPagoContent() {
               <span 
                 className="badge rounded-pill px-4 py-2 mb-4 text-white fw-medium"
                 style={{ 
-                  backgroundColor: todosDocumentosValidos ? '#2E7D32' : '#CD1E2C',
+                  backgroundColor: estadoVehiculo === 'Al Día' 
+                    ? '#2E7D32' 
+                    : estadoVehiculo === 'Apto para pagar' 
+                    ? '#17a2b8' 
+                    : '#CD1E2C',
                   fontFamily: '"Roboto", sans-serif',
                   fontWeight: '500'
                 }}
               >
-                {todosDocumentosValidos ? 'Vehículo al Día' : 'No Apto'}
+                {estadoVehiculo}
               </span>
               
               <div className="">
@@ -854,6 +877,8 @@ function ValidacionesPagoContent() {
             </div>
           )}
 
+          
+
           <div className="card-like shadow p-4 mb-4">
             <h5 className="mb-3 fw-bold text-dark text-center" style={{ fontFamily: '"Roboto", sans-serif', fontWeight: '600', fontSize: '1.125rem' }}>
               Seleccionar cantidad de cuotas y proceder al pago
@@ -881,7 +906,9 @@ function ValidacionesPagoContent() {
                   className="btn btn-lg py-3 text-white fw-bold" 
                   disabled={!todosDocumentosValidos || permisoAnioActualPagado !== ''}
                   style={{ 
-                    backgroundColor: todosDocumentosValidos && permisoAnioActualPagado === '' ? '#0d6efd' : '#6c757d', 
+                    backgroundColor: todosDocumentosValidos && permisoAnioActualPagado === '' 
+                      ? (estadoVehiculo === 'Al Día' ? '#0d6efd' : '#17a2b8')
+                      : '#6c757d', 
                     border: 'none',
                     fontFamily: '"Roboto", sans-serif',
                     fontWeight: '600',
@@ -944,7 +971,7 @@ function ValidacionesPagoContent() {
                           
                           // Metadatos
                           fechaConsulta: new Date().toISOString(),
-                          todosDocumentosValidos
+                          todosDocumentosValidos: true // Siempre true si llegamos aquí
                         };
                         
                         // ✅ Guardar en sessionStorage
@@ -1013,7 +1040,7 @@ function ValidacionesPagoContent() {
                           
                           // Metadatos
                           fechaConsulta: new Date().toISOString(),
-                          todosDocumentosValidos
+                          todosDocumentosValidos: true // Siempre true si llegamos aquí
                         };
                         
                         // ✅ Guardar en sessionStorage
@@ -1031,7 +1058,7 @@ function ValidacionesPagoContent() {
                     }
                   }}
                 >
-                  Proceder al Pago
+                  {estadoVehiculo === 'Apto para pagar' ? 'Pagar Permiso' : 'Proceder al Pago'}
                   <span className="ms-2">→</span>
                 </button>
               </div>

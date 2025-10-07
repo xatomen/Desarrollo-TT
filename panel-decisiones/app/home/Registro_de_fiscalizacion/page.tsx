@@ -265,23 +265,41 @@ export default function RegistroFiscalizacionPage() {
 
   // (El gráfico de "Vehículos fiscalizados" fue removido a petición del usuario)
 
-  // Datos para gráficos de estado de documentos (Permiso, Revisión, SOAP)
+  // Datos para gráficos de estado de documentos usando datos del endpoint
   const documentStatusCharts = useMemo(() => {
+    if (!apiData?.tables?.vehiculos) {
+      return {
+        permiso: {
+          labels: ['Vigente', 'No Vigente'],
+          datasets: [{ data: [0, 0], backgroundColor: ['#16a34a', '#dc2626'], borderColor: ['#16a34a', '#dc2626'], borderWidth: 1 }],
+        },
+        revision: {
+          labels: ['Vigente', 'No Vigente'],
+          datasets: [{ data: [0, 0], backgroundColor: ['#16a34a', '#dc2626'], borderColor: ['#16a34a', '#dc2626'], borderWidth: 1 }],
+        },
+        soap: {
+          labels: ['Vigente', 'No Vigente'],
+          datasets: [{ data: [0, 0], backgroundColor: ['#16a34a', '#dc2626'], borderColor: ['#16a34a', '#dc2626'], borderWidth: 1 }],
+        },
+      };
+    }
+
     const permisoCount = { vigente: 0, noVigente: 0 };
     const revisionCount = { vigente: 0, noVigente: 0 };
     const soapCount = { vigente: 0, noVigente: 0 };
 
-    tableData.forEach(row => {
+    // Usar directamente los datos del endpoint
+    apiData.tables.vehiculos.forEach(vehicle => {
       // Permiso
-      if (row.permiso === "Vigente") permisoCount.vigente++;
+      if (vehicle.vigencia_permiso) permisoCount.vigente++;
       else permisoCount.noVigente++;
       
       // Revisión
-      if (row.revision === "Vigente") revisionCount.vigente++;
+      if (vehicle.vigencia_revision) revisionCount.vigente++;
       else revisionCount.noVigente++;
       
       // SOAP
-      if (row.soap === "Vigente") soapCount.vigente++;
+      if (vehicle.vigencia_soap) soapCount.vigente++;
       else soapCount.noVigente++;
     });
 
@@ -314,14 +332,27 @@ export default function RegistroFiscalizacionPage() {
         }],
       },
     };
-  }, [tableData]);
+  }, [apiData]);
 
-  // Datos para gráfico de pastel de Encargo
+  // Datos para gráfico de pastel de Encargo usando datos del endpoint
   const encargoChartData = useMemo(() => {
+    if (!apiData?.tables?.vehiculos) {
+      return {
+        labels: ['Sin Encargo', 'Con Encargo'],
+        datasets: [{
+          data: [0, 0],
+          backgroundColor: ['#16a34a', '#dc2626'],
+          borderColor: ['#ffffff'],
+          borderWidth: 2,
+        }],
+      };
+    }
+
     const encargoCount = { si: 0, no: 0 };
     
-    tableData.forEach(row => {
-      if (row.encargo === "SI") encargoCount.si++;
+    // Usar directamente los datos del endpoint
+    apiData.tables.vehiculos.forEach(vehicle => {
+      if (vehicle.encargo_robo) encargoCount.si++;
       else encargoCount.no++;
     });
 
@@ -334,7 +365,7 @@ export default function RegistroFiscalizacionPage() {
         borderWidth: 2,
       }],
     };
-  }, [tableData]);
+  }, [apiData]);
 
   // Datos para gráfico de línea por fecha
   const fechaChartData = useMemo(() => {
@@ -427,27 +458,30 @@ export default function RegistroFiscalizacionPage() {
   // Opciones para gráfico simple
   // (Sin gráfico de barras simple en esta vista)
 
-  // Calcular estadísticas
+  // Calcular estadísticas usando los datos del endpoint
   const stats = useMemo(() => {
-    const total = tableData.length;
-    if (total === 0) return { alDia: 0, conProblemas: 0, pctAlDia: 0, pctConProblemas: 0 };
+    if (!apiData?.charts?.vehiculos_por_condicion) {
+      return { alDia: 0, conProblemas: 0, pctAlDia: 0, pctConProblemas: 0 };
+    }
 
-    const alDia = tableData.filter(r => 
-      r.permiso === "Vigente" && 
-      r.revision === "Vigente" && 
-      r.soap === "Vigente" && 
-      r.encargo === "NO"
-    ).length;
-    
-    const conProblemas = total - alDia;
+    // Sumar todos los vehículos al día y con problemas del período seleccionado
+    const totales = apiData.charts.vehiculos_por_condicion.reduce(
+      (acc, item) => ({
+        alDia: acc.alDia + item.al_dia,
+        conProblemas: acc.conProblemas + item.con_problemas
+      }),
+      { alDia: 0, conProblemas: 0 }
+    );
+
+    const total = totales.alDia + totales.conProblemas;
 
     return {
-      alDia,
-      conProblemas,
-      pctAlDia: total > 0 ? (alDia / total) * 100 : 0,
-      pctConProblemas: total > 0 ? (conProblemas / total) * 100 : 0,
+      alDia: totales.alDia,
+      conProblemas: totales.conProblemas,
+      pctAlDia: apiData.kpi?.documentos_al_dia_pct || 0,
+      pctConProblemas: apiData.kpi?.vencidos_o_encargo_pct || 0,
     };
-  }, [tableData]);
+  }, [apiData]);
 
   // Función para manejar el submit del formulario
   const handleFilterSubmit = (e: React.FormEvent) => {
@@ -622,7 +656,7 @@ export default function RegistroFiscalizacionPage() {
             <div className="card text-center">
               <div className="card-body" style={{ backgroundColor: '#e6f0ff', border: '1px solid #b3d1ff' }}>
                 <h3 className="card-title" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>Total</h3>
-                <h3 className="display-6" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>{tableData.length}</h3>
+                <h3 className="display-6" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>{stats.conProblemas + stats.alDia}</h3>
                 <h4 className="text-muted" style={{ fontFamily: 'Roboto', fontWeight: 'normal' }}>vehículos</h4>
               </div>
             </div>
@@ -639,7 +673,7 @@ export default function RegistroFiscalizacionPage() {
               <div className="card-header bg-light">
                 <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
                   <i className="bi bi-file-earmark-text" style={{ color: palette.success }}></i>
-                  Estado Permiso
+                  Estado Permiso (%)
                 </h6>
               </div>
               <div className="card-body">
@@ -671,7 +705,7 @@ export default function RegistroFiscalizacionPage() {
               <div className="card-header bg-light">
                 <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
                   <i className="bi bi-gear" style={{ color: palette.warning }}></i>
-                  Estado Revisión
+                  Estado Revisión (%)
                 </h6>
               </div>
               <div className="card-body">
@@ -703,7 +737,7 @@ export default function RegistroFiscalizacionPage() {
               <div className="card-header bg-light">
                 <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
                   <i className="bi bi-shield-check" style={{ color: palette.info }}></i>
-                  Estado SOAP
+                  Estado SOAP (%)
                 </h6>
               </div>
               <div className="card-body">
@@ -735,7 +769,7 @@ export default function RegistroFiscalizacionPage() {
               <div className="card-header bg-light">
                 <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
                   <i className="bi bi-pie-chart" style={{ color: palette.danger }}></i>
-                  Distribución Encargo/Robo
+                  Distribución Encargo/Robo (%)
                 </h6>
               </div>
               <div className="card-body">
