@@ -71,7 +71,7 @@ export default function VehicleDetailsScreen() {
       console.log('###### Calculando estado del vehículo con:', { encargoRobo, vigenciaPermiso, revisionTecnica, soap });
       if (encargoRobo === 'Sí') {
         setEstadoVehiculo('Posee Encargo por Robo');
-      } else if (vigenciaPermiso === 'Vencido' || revisionTecnica === 'No Vigente' || soap === 'No Vigente') {
+      } else if (vigenciaPermiso.toLowerCase() === 'vencido' || revisionTecnica.toLowerCase() === 'no vigente' || soap.toLowerCase() === 'no vigente') {
         setEstadoVehiculo('Documentos Vencidos');
       } else {
         setEstadoVehiculo('Vehículo al Día');
