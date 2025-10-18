@@ -115,7 +115,8 @@ export default function WebpayPage() {
 						<div className="row">
 							<div className="col text-left">
 								<p>Estás pagando en:</p>
-								<p style={{ fontWeight: 'bold', fontSize: '1.5rem' }}>TU PERMISO</p>
+								{/* |<p style={{ fontWeight: 'bold', fontSize: '1.5rem' }}>TU PERMISO</p> */}
+								<img src="/img/tgr-logo.png" alt="" />
 							</div>
 							<div className="col text-right">
 								<p>Monto a pagar:</p>
