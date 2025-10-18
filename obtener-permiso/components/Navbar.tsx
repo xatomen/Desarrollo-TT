@@ -55,6 +55,10 @@ const Navbar = () => {
             <a href="/home" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
               Tu Permiso
             </a>
+            {/* Link a preguntas frecuentes */}
+            <a href="/preguntas-frecuentes" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
+              Preguntas Frecuentes
+            </a>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -89,6 +93,10 @@ const Navbar = () => {
           {/* Link a Tu Permiso */}
           <a href="/home" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
             Tu Permiso
+          </a>
+          {/* Link a preguntas frecuentes */}
+          <a href="/preguntas-frecuentes" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
+            Preguntas Frecuentes
           </a>
         </div>
         

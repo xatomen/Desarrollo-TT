@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const publicRoutes = ['/login', '/'];
+  const publicRoutes = ['/login', '/', '/preguntas-frecuentes'];
 
   // Función mejorada para inicializar autenticación
   const initializeAuth = () => {
