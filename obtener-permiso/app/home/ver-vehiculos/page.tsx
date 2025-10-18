@@ -367,7 +367,7 @@ export default function VerVehiculos() {
       let fechaVencimientoPermiso = null;
       const permisoResponse = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${plate}`);
       if (permisoResponse.status === 404) {
-        estadoPermiso = 'Primera obtención';
+        estadoPermiso = 'No vigente';
         fechaVencimientoPermiso = null;
       } else {
         const permisoData = await permisoResponse.json();
@@ -404,7 +404,7 @@ export default function VerVehiculos() {
         estadoRevision === 'Vigente' &&
         estadoSoap === 'Vigente' &&
         estadoMultas === 'No posee multas' &&
-        (estadoPermiso === 'Vigente' || estadoPermiso === 'Primera obtención') &&
+        estadoPermiso === 'Vigente' &&
         estadoEncargo === 'No tiene encargo por robo' &&
         estadoRPI === 'Sin multas'
       ) {
