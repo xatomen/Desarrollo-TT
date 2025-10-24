@@ -83,6 +83,7 @@ class MultasTransitoModel(Base):
     ppu = Column(String(10), nullable=False)
     rol_causa = Column(Integer, nullable=False)
     jpl = Column(String(100), nullable=False)
+    monto_multa = Column(Integer, nullable=False)
 
 # Crear las tablas en la base de datos
 Base.metadata.create_all(bind=engine)
@@ -122,8 +123,7 @@ class MultasTransito(BaseModel):
     ppu: str
     rol_causa: int
     jpl: str
-# Instancia de FastAPI
-app = FastAPI()
+    monto_multa: int
 
 
 # Crear endpoint inicial
@@ -184,3 +184,23 @@ def get_padron_by_ppu(ppu: str, db: Session = Depends(get_db)):
 def get_padron_count(db: Session = Depends(get_db)):
     count = db.query(PadronModel).count()
     return {"count": count}
+
+@app.delete("/delete_multas_transito/", response_model=dict)
+def eliminar_multas_transito(ppu: str, db: Session = Depends(get_db)):
+    if not ppu:
+        raise HTTPException(status_code=400, detail="Debe ingresar un PPU.")
+    if not validar_patente(ppu):
+        raise HTTPException(status_code=400, detail="PPU inválido o con formato incorrecto.")
+
+    try:
+        multas = db.query(MultasTransitoModel).filter(MultasTransitoModel.ppu == ppu).all()
+        if not multas:
+            raise HTTPException(status_code=404, detail="No se encontraron multas para este PPU.")
+
+        for multa in multas:
+            db.delete(multa)
+        db.commit()
+
+        return {"message": f"Se eliminaron {len(multas)} multas para el PPU {ppu}."}
+    finally:
+        db.close()

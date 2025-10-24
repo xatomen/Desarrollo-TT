@@ -172,3 +172,24 @@ def consultar_registro_transporte(ppu: str = Query(..., description="PPU del veh
         )
     finally:
         db.close()
+
+# Endpoint para eliminar todas las multas de un pasajero dado su RUT (En el caso de que se paguen las multas)
+@app.delete("/delete_multas_rpi/", response_model=dict)
+def eliminar_multas_pasajero(rut: str = Query(..., description="RUT del propietario"), db: Session = Depends(get_db)):
+    if not rut:
+        raise HTTPException(status_code=400, detail="Debe ingresar un RUT.")
+    if not validar_rut(rut):
+        raise HTTPException(status_code=400, detail="RUT inválido o con formato incorrecto.")
+    
+    try:
+        multas = db.query(MultaRPI).filter(MultaRPI.rut == rut).all()
+        if not multas:
+            raise HTTPException(status_code=404, detail="No se encontraron multas para este RUT.")
+        
+        for multa in multas:
+            db.delete(multa)
+        db.commit()
+        
+        return {"message": f"Se eliminaron {len(multas)} multas para el RUT {rut}."}
+    finally:
+        db.close()

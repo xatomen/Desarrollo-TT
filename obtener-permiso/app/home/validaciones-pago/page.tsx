@@ -669,7 +669,15 @@ function ValidacionesPagoContent() {
                       // Aquí puedes agregar la lógica para mostrar el documento real si lo tienes
                       onClick={() => setModalDocumento({ open: true, doc })}
                     >
-                      Ver documento
+                      {
+                        doc.estado === 'Vigente' ||
+                        doc.estado === 'No' ||
+                        doc.nombre === 'Permiso de Circulación' ||
+                        doc.nombre === 'Encargo por Robo' ||
+                        doc.nombre === 'Revisión Técnica'
+                        ? 'Ver' :
+                        'Ver y pagar'
+                      }
                     </button>
                   </div>
                 </div>
@@ -730,6 +738,29 @@ function ValidacionesPagoContent() {
                     <p><b>Fecha de emisión:</b> {fechaEmisionSoap}</p>
                     <p><b>Fecha de expiración:</b> {fechaExpiracionSoap}</p>
                     <p><b>Prima:</b> {primaSoap}</p>
+                    {modalDocumento.doc.estado !== 'Vigente' && (
+                      <div className="alert alert-warning text-center" role="alert">
+                        <p className="text-justify">Si deseas puedes realizar el pago de tu SOAP a través de la plataforma. Presiona en el botón para ver los valores del SOAP, seleccionar tu aseguradora y realizar el pago.</p>
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => {
+                            // Cargar información de pago (rut a pagar) y tipo de pago en el session storage
+                            const formatoPago = {
+                              ppu: ppu,
+                              rut: rutPropietario,
+                              nombre: nombrePropietario,
+                              tipo: 'soap',
+                              monto_pago: 0 // El monto se seleccionará en la siguiente página
+                            };
+                            sessionStorage.setItem('formato_pago', JSON.stringify(formatoPago));
+                            // Redirigir a la sección de pago de SOAP
+                            router.push(`/home/pago-soap`);
+                          }}
+                        >
+                          Pagar SOAP
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
                 {/* Detalles Revisión Técnica */}
@@ -792,10 +823,42 @@ function ValidacionesPagoContent() {
                             <td>{multa.rol_causa}</td>
                             <td>{multa.anio_causa}</td>
                             <td>{multa.nombre_jpl}</td>
-                            <td>{multa.monto_multa}</td>
+                            <td>{multa.monto_multa.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}</td>
                           </tr>
                         ))}
                       </tbody>
+                      {detallesMultasRPI.length !== 0 && (
+                          <tfoot>
+                            <tr>
+                              <td colSpan={4} className="text-end">
+                                <strong>Total: {detallesMultasRPI.reduce((acc, multa) => acc + multa.monto_multa, 0).toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}</strong>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colSpan={4} className="text-center">
+                                <p style={{ textAlign: 'justify' }}>Si deseas puedes pagar todas las multas de RPI del RUT {rutPropietario}) directamente desde aquí.<br /></p>
+                                <p>Paga a través de <strong>WebPay</strong></p>
+                                <button
+                                  className="btn btn-primary"
+                                  onClick={() => {
+                                    // Cargar información de pago (rut a pagar) y tipo de pago en el session storage
+                                    const formatoPago = {
+                                      ppu: ppu,
+                                      rut: rutPropietario,
+                                      tipo: 'multas_rpi',
+                                      monto_pago: detallesMultasRPI.reduce((acc, multa) => acc + multa.monto_multa, 0)
+                                    };
+                                    sessionStorage.setItem('formato_pago', JSON.stringify(formatoPago));
+                                    // Redirigir a la pasarela de pagos
+                                    router.push(`/webpay`);
+                                  }}
+                                >
+                                  Pagar Multas
+                                </button>
+                              </td>
+                            </tr>
+                          </tfoot>
+                        )}
                     </table>
                   </div>
                 )}
@@ -807,6 +870,7 @@ function ValidacionesPagoContent() {
                         <tr>
                           <th>Rol Causa</th>
                           <th>Nombre Juzgado</th>
+                          <th>Monto Multa</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -814,9 +878,42 @@ function ValidacionesPagoContent() {
                           <tr key={index}>
                             <td>{multa.rol_causa}</td>
                             <td>{multa.jpl}</td>
+                            <td>{multa.monto_multa.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}</td>
                           </tr>
                         ))}
                       </tbody>
+                        {detallesMultasTransito.length !== 0 && (
+                          <tfoot>
+                            <tr>
+                              <td colSpan={3} className="text-end">
+                                <strong>Total: {detallesMultasTransito.reduce((acc, multa) => acc + multa.monto_multa, 0).toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}</strong>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colSpan={3} className="text-center">
+                                <p style={{ textAlign: 'justify' }}>Si deseas puedes pagar todas las multas de tránsito del vehículo con patente {ppu} (Rut del propietario: {rutPropietario}) directamente desde aquí.<br /></p>
+                                <p>Paga a través de <strong>WebPay</strong></p>
+                                <button
+                                  className="btn btn-primary"
+                                  onClick={() => {
+                                    // Cargar información de pago (rut a pagar) y tipo de pago en el session storage
+                                    const formatoPago = {
+                                      ppu: ppu,
+                                      rut: rutPropietario,
+                                      tipo: 'multas_transito',
+                                      monto_pago: detallesMultasTransito.reduce((acc, multa) => acc + multa.monto_multa, 0)
+                                    };
+                                    sessionStorage.setItem('formato_pago', JSON.stringify(formatoPago));
+                                    // Redirigir a la pasarela de pagos
+                                    router.push(`/webpay`);
+                                  }}
+                                >
+                                  Pagar Multas
+                                </button>
+                              </td>
+                            </tr>
+                          </tfoot>
+                        )}
                     </table>
                   </div>
                 )}
@@ -922,6 +1019,7 @@ function ValidacionesPagoContent() {
                         const formato_pago = {
                           'num_cuotas': numCuotas,
                           'cuota': 1,
+                          'tipo': 'permiso',
                           'monto_pago': valorPermiso || 0
                         };
                         sessionStorage.setItem('formato_pago', JSON.stringify(formato_pago));
@@ -991,6 +1089,7 @@ function ValidacionesPagoContent() {
                         const formato_pago = {
                           'num_cuotas': numCuotas,
                           'cuota': 1,
+                          'tipo': 'permiso',
                           'monto_pago': Math.ceil((valorPermiso || 0) / 2)
                         };
                         sessionStorage.setItem('formato_pago', JSON.stringify(formato_pago));
@@ -1084,6 +1183,7 @@ function ValidacionesPagoContent() {
                     onClick={() => {
                       const formato_pago = {
                         'num_cuotas': 2,
+                        'tipo': 'permiso',
                         'cuota': 2,
                         'monto_pago': pagosRealizados[0].monto_pago || 0,
                       };

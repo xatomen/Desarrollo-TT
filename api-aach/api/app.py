@@ -109,7 +109,8 @@ def get_soap(ppu: str, db: Session = Depends(get_db)):
     # Obtener la fecha actual
     fecha_actual = date.today()
     # Para la Query usamos el modelo de la Base de Datos
-    soap = db.query(Soap).filter(Soap.ppu == ppu).order_by(Soap.rige_hasta).first()
+    # Recuperar el registro con la fecha de rige_hasta más alta para el PPU dado
+    soap = db.query(Soap).filter(Soap.ppu == ppu).order_by(Soap.rige_hasta.desc()).first()
     # Si recuperamos el SOAP, calculamos la vigencia
     if soap:
         # Si la fecha de "rige hasta" es mayor o igual a la fecha actual, el SOAP está vigente
@@ -129,6 +130,33 @@ def get_soap(ppu: str, db: Session = Depends(get_db)):
         rige_hasta=soap.rige_hasta,
         prima=soap.prima,
         vigencia=vigencia
+    )
+
+@app.post("/create_soap/", response_model=SoapModel)
+def create_soap(soap: SoapModel, db: Session = Depends(get_db)):
+    # Validar el formato del PPU
+    if not validar_patente(soap.ppu):
+        raise HTTPException(status_code=400, detail="Formato de PPU inválido")
+    # Crear una nueva instancia del modelo de base de datos
+    new_soap = Soap(
+        ppu=soap.ppu,
+        compania=soap.compania,
+        rige_desde=soap.rige_desde,
+        rige_hasta=soap.rige_hasta,
+        prima=soap.prima
+    )
+    # Agregar a la sesión y hacer commit
+    db.add(new_soap)
+    db.commit()
+    db.refresh(new_soap)
+    # Retornar el nuevo SOAP creado
+    return SoapModel(
+        num_poliza=new_soap.num_poliza,
+        ppu=new_soap.ppu,
+        compania=new_soap.compania,
+        rige_desde=new_soap.rige_desde,
+        rige_hasta=new_soap.rige_hasta,
+        prima=new_soap.prima
     )
 
 #####################################################
