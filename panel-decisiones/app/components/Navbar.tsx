@@ -24,6 +24,10 @@ export default function Navbar() {
       href: "/home/Registro_de_consultas_propietarios",
       label: "Consultas Propietarios",
     },
+    {
+      href: "/home/Campana_correos",
+      label: "Campaña de Correos",
+    },
   ];
 
   const isActive = (href: string) => {
@@ -46,7 +50,7 @@ export default function Navbar() {
         borderBottom: "1px solid #e9ecef",
       }}
     >
-      <div className="container">
+      <div style={{ width: "90%", margin: "0 auto" }}>
         <div
           style={{
             display: "flex",
