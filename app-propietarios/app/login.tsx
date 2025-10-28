@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, ActivityIndicator, Modal, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import Navbar from '@/components/Navbar';
@@ -12,6 +12,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showClaveUnicaHelp, setShowClaveUnicaHelp] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false); // Nuevo estado para el modal de bienvenida
   const { login, isAuthenticated, loading } = useAuth();
 
   // Verificar si el usuario ya está autenticado
@@ -21,6 +23,37 @@ export default function LoginScreen() {
       router.replace('/vehicle-list');
     }
   }, [isAuthenticated, loading]);
+
+  // useEffect para mostrar el modal de bienvenida
+  useEffect(() => {
+    const checkWelcomeModal = () => {
+      try {
+        // Verificar si ya se mostró la bienvenida en esta sesión
+        const hasSeenWelcome = sessionStorage.getItem('hasSeenAppWelcome');
+        
+        if (!hasSeenWelcome && !loading && !isAuthenticated) {
+          // Si no se ha visto y no está autenticado, mostrar después de 800ms
+          const timer = setTimeout(() => {
+            setShowWelcomeModal(true);
+          }, 800);
+          
+          return () => clearTimeout(timer);
+        }
+      } catch (error) {
+        // En caso de que sessionStorage no esté disponible
+        console.log('SessionStorage no disponible, mostrando bienvenida por defecto');
+        if (!loading && !isAuthenticated) {
+          const timer = setTimeout(() => {
+            setShowWelcomeModal(true);
+          }, 800);
+          
+          return () => clearTimeout(timer);
+        }
+      }
+    };
+
+    checkWelcomeModal();
+  }, [loading, isAuthenticated]);
 
   // useEffect para hacer que el mensaje de error desaparezca después de 5 segundos
   useEffect(() => {
@@ -82,6 +115,19 @@ export default function LoginScreen() {
     }
   };
 
+  // Función para manejar cuando el usuario completa la bienvenida
+  const handleWelcomeComplete = () => {
+    try {
+      // Guardar en sessionStorage que ya vio la bienvenida
+      sessionStorage.setItem('hasSeenAppWelcome', 'true');
+    } catch (error) {
+      console.log('No se pudo guardar en sessionStorage');
+    }
+    
+    // Cerrar el modal
+    setShowWelcomeModal(false);
+  };
+
   const handleLogin = async () => {
     setErrorMsg('');
     
@@ -101,7 +147,7 @@ export default function LoginScreen() {
       // };
       
       // await login(mockData.access_token, mockData.user_info, mockData.expires_in);
-      // router.replace('/insert-ppu');
+      // router.replace('/vehicle-list');
       
       
       // Código real para cuando tengas la API
@@ -132,6 +178,137 @@ export default function LoginScreen() {
     }
   };
 
+  // Modal de bienvenida a la aplicación
+  const renderWelcomeModal = () => (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={showWelcomeModal}
+      onRequestClose={() => setShowWelcomeModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={[styles.modalContent, styles.welcomeModalLarge]}>
+          <View style={styles.welcomeHeader}>
+            <Ionicons name="car-sport" size={40} color="#0051A8" />
+            <Text style={styles.welcomeTitle}>¡Bienvenido a TU PERMISO!</Text>
+            <Text style={styles.welcomeSubtitle}>Portal para Propietarios de Vehículos</Text>
+          </View>
+
+          <ScrollView style={styles.welcomeContent}>
+            <Text style={styles.welcomeText}>
+              Con esta aplicación podrás consultar el estado de todos los documentos de tus vehículos de manera rápida y segura.
+            </Text>
+            
+            <View style={styles.featuresContainer}>
+              <Text style={styles.featuresTitle}>¿Qué puedes hacer?</Text>
+              
+              <View style={styles.featureItem}>
+                <Ionicons name="document" size={24} color="#0051A8" />
+                <Text style={styles.featureText}>
+                  Ver tu <Text style={styles.boldText}>Padrón</Text>
+                </Text>
+              </View>
+
+              <View style={styles.featureItem}>
+                <Ionicons name="document-text" size={24} color="#0051A8" />
+                <Text style={styles.featureText}>
+                  Ver tu <Text style={styles.boldText}>Permiso de Circulación</Text>
+                </Text>
+              </View>
+              
+              <View style={styles.featureItem}>
+                <Ionicons name="shield-checkmark" size={24} color="#0051A8" />
+                <Text style={styles.featureText}>
+                  Consultar tu <Text style={styles.boldText}>SOAP (Seguro Obligatorio)</Text>
+                </Text>
+              </View>
+              
+              <View style={styles.featureItem}>
+                <Ionicons name="car" size={24} color="#0051A8" />
+                <Text style={styles.featureText}>
+                  Revisar tu <Text style={styles.boldText}>Revisión Técnica</Text>
+                </Text>
+              </View>
+              
+            </View>
+            
+            <View style={styles.loginInstructions}>
+              <Text style={styles.instructionsTitle}>Para comenzar necesitas:</Text>
+              <View style={styles.instructionItem}>
+                <Ionicons name="person" size={20} color="#0051A8" />
+                <Text style={styles.instructionText}>Tu RUT</Text>
+              </View>
+              <View style={styles.instructionItem}>
+                <Ionicons name="key" size={20} color="#0051A8" />
+                <Text style={styles.instructionText}>Tu Clave Única del Registro Civil</Text>
+              </View>
+            </View>
+            
+            <View style={styles.paymentInfo}>
+              <Ionicons name="card" size={24} color="#28a745" />
+              <Text style={styles.paymentText}>
+                ¿Quieres pagar tus documentos? Visita{' '}
+                <Text style={styles.linkText}>tupermiso.cl</Text>{' '}
+                para realizar pagos de forma segura y al instante.
+              </Text>
+            </View>
+          </ScrollView>
+
+          <TouchableOpacity 
+            style={styles.welcomeButton}
+            onPress={handleWelcomeComplete}
+          >
+            <Text style={styles.welcomeButtonText}>¡Comenzar Ahora!</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  // Modal de ayuda para Clave Única
+  const renderClaveUnicaHelpModal = () => (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={showClaveUnicaHelp}
+      onRequestClose={() => setShowClaveUnicaHelp(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Ionicons name="help-circle" size={24} color="#0051A8" />
+            <Text style={styles.modalTitle}>¿Qué es la Clave Única?</Text>
+            <TouchableOpacity onPress={() => setShowClaveUnicaHelp(false)}>
+              <Ionicons name="close" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.modalText}>
+            <Text style={styles.boldText}>La Clave Única es una contraseña</Text> que se debe obtener en el 
+            <Text style={styles.boldText}> Servicio de Registro Civil e Identificación (SRCeI)</Text>.{'\n\n'}
+            
+            <Text style={styles.boldText}>Es la misma clave que usas para:</Text>{'\n'}
+            • Ver tu Registro Social de Hogares{'\n'}
+            • Realizar trámites virtuales del Estado{'\n'}
+            • Acceder a servicios públicos digitales{'\n\n'}
+            
+            <Text style={styles.boldText}>¿Cómo obtenerla?</Text>{'\n'}
+            • Presencialmente en oficinas del Registro Civil{'\n'}
+            • En línea si ya tienes una clave previa{'\n\n'}
+            
+            <Text style={styles.boldText}>¿Olvidaste tu clave?</Text>{'\n'}
+            Puedes recuperarla en www.claveunica.gob.cl
+          </Text>
+          <TouchableOpacity 
+            style={styles.modalButton}
+            onPress={() => setShowClaveUnicaHelp(false)}
+          >
+            <Text style={styles.modalButtonText}>Entendido</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -148,7 +325,15 @@ export default function LoginScreen() {
 
       {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.title}>Portal Propietarios</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Portal Propietarios</Text>
+          <TouchableOpacity 
+            style={styles.helpIconTitle}
+            onPress={() => setShowWelcomeModal(true)}
+          >
+            <Ionicons name="information-circle-outline" size={24} color="#0051A8" />
+          </TouchableOpacity>
+        </View>
         <View style={{ height: 24 }} />
 
         <View style={styles.inputContainer}>
@@ -170,12 +355,20 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Ingrese su Clave Única</Text>
+          <View style={styles.inputLabelContainer}>
+            <Text style={styles.inputLabel}>Ingrese su Clave Única</Text>
+            <TouchableOpacity 
+              style={styles.helpIcon}
+              onPress={() => setShowClaveUnicaHelp(true)}
+            >
+              <Ionicons name="help-circle-outline" size={20} color="#0051A8" />
+            </TouchableOpacity>
+          </View>
           <View style={styles.inputWrapper}>
             <Ionicons name="lock-closed-outline" size={20} color="#4A4A4A" style={styles.inputIconLeft} />
             <TextInput
               style={styles.textInput}
-              placeholder="Credencial"
+              placeholder="Clave Única"
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
@@ -193,15 +386,20 @@ export default function LoginScreen() {
               />
             </TouchableOpacity>
           </View>
+          <Text style={styles.inputHelp}>Clave obtenida en el Registro Civil (SRCeI)</Text>
         </View>
 
         <TouchableOpacity
           style={styles.backButton}
           onPress={handleLogin}
         >
-          <Text style={styles.backButtonText}>Iniciar Sesión</Text>
+          <Text style={styles.backButtonText}>INICIAR SESIÓN</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Modals */}
+      {renderWelcomeModal()}
+      {renderClaveUnicaHelpModal()}
     </SafeAreaView>
   );
 }
@@ -232,6 +430,11 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: 'center',
   },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
@@ -239,6 +442,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
     fontFamily: 'Roboto',
+    flex: 1,
+  },
+  helpIconTitle: {
+    padding: 8,
+    marginLeft: 8,
   },
   subtitle: {
     fontSize: 16,
@@ -263,7 +471,20 @@ const styles = StyleSheet.create({
     color: '#4A4A4A',
     marginBottom: 8,
     fontFamily: 'Roboto',
+    flex: 1,
   },
+  
+  // Nuevo estilo para el contenedor del label con ícono de ayuda
+  inputLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  helpIcon: {
+    padding: 4,
+    marginLeft: 8,
+  },
+  
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -331,14 +552,210 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 12,
     alignSelf: 'center',
-    // marginHorizontal: 150,
     width: 'auto',
-    maxWidth: '50%',
+    maxWidth: '60%',
+    borderBottomWidth: 3,
+    borderBottomColor: '#003d82',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   backButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
     fontFamily: 'Roboto',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  // Estilos para el modal de ayuda
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 24,
+    margin: 20,
+    maxWidth: '90%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginLeft: 8,
+    flex: 1,
+    fontFamily: 'Roboto',
+  },
+  modalText: {
+    fontSize: 16,
+    color: '#4A4A4A',
+    lineHeight: 24,
+    marginBottom: 20,
+    fontFamily: 'Roboto',
+  },
+  boldText: {
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  modalButton: {
+    backgroundColor: '#0051A8',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 6,
+    alignSelf: 'center',
+  },
+  modalButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: 'Roboto',
+  },
+
+  // Estilos para el modal de bienvenida
+  welcomeModalLarge: {
+    maxWidth: '95%',
+    maxHeight: '90%',
+  },
+  welcomeHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginTop: 12,
+    textAlign: 'center',
+    fontFamily: 'Roboto',
+  },
+  welcomeSubtitle: {
+    fontSize: 16,
+    color: '#6b7280',
+    marginTop: 4,
+    textAlign: 'center',
+    fontFamily: 'Roboto',
+  },
+  welcomeContent: {
+    flex: 1,
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: '#4A4A4A',
+    lineHeight: 24,
+    textAlign: 'center',
+    marginBottom: 20,
+    fontFamily: 'Roboto',
+  },
+  featuresContainer: {
+    marginBottom: 20,
+  },
+  featuresTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 12,
+    textAlign: 'center',
+    fontFamily: 'Roboto',
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 8,
+  },
+  featureText: {
+    fontSize: 15,
+    color: '#4A4A4A',
+    marginLeft: 12,
+    fontFamily: 'Roboto',
+    flex: 1,
+  },
+  loginInstructions: {
+    backgroundColor: '#f8fafc',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  instructionsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 8,
+    textAlign: 'center',
+    fontFamily: 'Roboto',
+  },
+  instructionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  instructionText: {
+    fontSize: 14,
+    color: '#4A4A4A',
+    marginLeft: 8,
+    fontFamily: 'Roboto',
+  },
+  paymentInfo: {
+    backgroundColor: '#f0f9ff',
+    padding: 16,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  paymentText: {
+    fontSize: 15,
+    color: '#4A4A4A',
+    marginLeft: 12,
+    flex: 1,
+    fontFamily: 'Roboto',
+    lineHeight: 22,
+  },
+  linkText: {
+    fontWeight: 'bold',
+    color: '#0051A8',
+  },
+  welcomeButton: {
+    backgroundColor: '#0051A8',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 0,
+    alignSelf: 'center',
+    borderBottomWidth: 3,
+    borderBottomColor: '#003d82',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+    marginTop: 10,
+  },
+  welcomeButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    fontFamily: 'Roboto',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 });

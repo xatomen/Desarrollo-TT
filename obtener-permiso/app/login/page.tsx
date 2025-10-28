@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { FiHelpCircle } from "react-icons/fi";
 
 // Función para validar RUT chileno
 function validarRUT(rut: string): boolean {
@@ -70,6 +71,7 @@ export default function LoginPage() {
     claveUnica: '',
     general: ''
   });
+  const [showClaveUnicaHelp, setShowClaveUnicaHelp] = useState(false);
 
   // Manejar cambios en el input de RUT
   const handleRutChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -232,7 +234,19 @@ export default function LoginPage() {
 
             {/* Clave Única */}
             <div className="form-group">
-              <label htmlFor="claveUnica">Ingrese su Clave Única</label>
+              <label htmlFor="claveUnica" className="d-flex align-items-center">
+                Ingrese su Clave Única
+                <button
+                  type="button"
+                  className="btn btn-link p-0 ml-2"
+                  style={{ lineHeight: 1 }}
+                  tabIndex={-1}
+                  onClick={() => setShowClaveUnicaHelp(true)}
+                  aria-label="¿Qué es la Clave Única?"
+                >
+                  <FiHelpCircle />
+                </button>
+              </label>
               <div className="input-group">
                 <input 
                   id="claveUnica" 
@@ -279,6 +293,38 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          {/* Modal de ayuda Clave Única */}
+          {showClaveUnicaHelp && (
+            <div className="modal fade show" style={{ display: 'block', background: 'rgba(0,0,0,0.5)' }} tabIndex={-1} role="dialog">
+              <div className="modal-dialog modal-dialog-centered" role="document">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <i className="cl cl-help mr-2" style={{ fontSize: 24, color: "#0051A8" }}></i>
+                    <h5 className="modal-title" style={{ fontFamily: "Roboto, sans-serif", fontWeight: 'bold' }}>¿Qué es la Clave Única?</h5>
+                    <button type="button" className="close" onClick={() => setShowClaveUnicaHelp(false)} aria-label="Cerrar">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div className="modal-body">
+                    <p>
+                      <b>La Clave Única</b> es una contraseña personal que se obtiene en el <b>Servicio de Registro Civil e Identificación (SRCeI)</b> y permite acceder a trámites y servicios digitales del Estado.
+                    </p>
+                    <ul style={{ listStyleType: "disc", paddingLeft: "20px" }}>
+                      <li>Es la misma clave que usas para el Registro Social de Hogares, Fonasa, y otros servicios públicos.</li>
+                      <li>Si no la tienes, puedes solicitarla presencialmente en el Registro Civil o en <a href="https://claveunica.gob.cl" target="_blank" rel="noopener noreferrer">claveunica.gob.cl</a>.</li>
+                      <li>Si la olvidaste, puedes recuperarla en el mismo sitio web.</li>
+                    </ul>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-primary" onClick={() => setShowClaveUnicaHelp(false)}>
+                      Entendido
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
       

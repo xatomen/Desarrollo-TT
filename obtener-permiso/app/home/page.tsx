@@ -1,15 +1,21 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
-// Importar iconos de Bootstrap
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { useState } from 'react';
-import { transform } from 'html2canvas/dist/types/css/property-descriptors/transform';
+import {
+  BiStar,
+  BiFile,
+  BiCreditCard,
+  BiWallet,
+  BiEnvelope,
+  BiInfoCircle
+} from 'react-icons/bi';
+import { BsPerson } from 'react-icons/bs';
 
 export default function HomePage() {
-  // Obtener usuario desde user_data en Cookies
   const [user, setUser] = useState({ rut: '', name: '', email: '' });
+  const [showWelcome, setShowWelcome] = useState(false); // Cambia a false por defecto
 
   useEffect(() => {
     const cookieValue = document.cookie.split('user_data=')[1]?.split(';')[0];
@@ -22,10 +28,92 @@ export default function HomePage() {
         email: userData.email || ''
       });
     }
+    // Verifica sessionStorage
+    if (!sessionStorage.getItem('hasSeenWelcomeHome')) {
+      setShowWelcome(true);
+    }
   }, []);
+
+  // Función para cerrar el modal y guardar en sessionStorage
+  const handleCloseWelcome = () => {
+    setShowWelcome(false);
+    sessionStorage.setItem('hasSeenWelcomeHome', 'true');
+  };
+
   const router = useRouter();
   return (
     <ProtectedRoute>
+      {/* Modal de bienvenida */}
+      {showWelcome && (
+        <div className="modal fade show" style={{ display: 'block', background: 'rgba(0,0,0,0.4)' }} tabIndex={-1}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content" style={{ borderRadius: 18 }}>
+              <div className="modal-header" style={{ borderBottom: 'none' }}>
+                <h5 className="modal-title" style={{ display: "flex", fontWeight: 700, color: '#6D2077', fontFamily: 'Roboto, Arial, sans-serif', fontSize: '1.2 rem', textAlign: 'center', justifyContent: 'center', alignItems: 'center' }}>
+                  <BiStar style={{ color: '#0051A8', marginRight: 8, verticalAlign: 'middle' }} size={24} />
+                  ¡Bienvenido{user.name ? `, ${user.name}` : ''}!
+                </h5>
+                <button type="button" className="btn-close" aria-label="Cerrar" onClick={handleCloseWelcome}></button>
+              </div>
+              <div className="modal-body" style={{ fontSize: '1.08rem', color: '#333' }}>
+                <p>
+                  En <b>Tu Permiso</b> puedes:
+                </p>
+                <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
+                  <li className="mb-3">
+                    <div style={{ display: 'flex', alignItems: 'center', fontWeight: 700, fontFamily: 'Roboto, Arial, sans-serif', fontSize: '1.08rem' }}>
+                      <BiFile style={{ color: '#0051A8', fontSize: 22, marginRight: 8 }} />
+                      Ver los documentos de tus vehículos
+                    </div>
+                    <div style={{ marginLeft: 30 }}>
+                      Consulta y descarga tus permisos, SOAP, revisión técnica y más.
+                    </div>
+                  </li>
+                  <li className="mb-3">
+                    <div style={{ display: 'flex', alignItems: 'center', fontWeight: 700, fontFamily: 'Roboto, Arial, sans-serif', fontSize: '1.08rem' }}>
+                      <BiCreditCard style={{ color: '#0051A8', fontSize: 22, marginRight: 8 }} />
+                      Pagar permisos de circulación
+                    </div>
+                    <div style={{ marginLeft: 30 }}>
+                      Realiza el pago de tus permisos de forma rápida y segura.
+                    </div>
+                  </li>
+                  <li>
+                    <div style={{ display: 'flex', alignItems: 'center', fontWeight: 700, fontFamily: 'Roboto, Arial, sans-serif', fontSize: '1.08rem' }}>
+                      <BiWallet style={{ color: '#0051A8', fontSize: 22, marginRight: 8 }} />
+                      Ver el historial de permisos pagados
+                    </div>
+                    <div style={{ marginLeft: 30 }}>
+                      Accede y descarga comprobantes de tus pagos anteriores.
+                    </div>
+                  </li>
+                </ul>
+                <div className="mt-4">
+                  <div
+                    style={{
+                      borderRadius: 12,
+                      padding: '1rem 1.5rem',
+                      background: 'linear-gradient(90deg, #6D2077 0%, #0051A8 100%)',
+                      color: '#fff',
+                      fontWeight: 500,
+                      textAlign: 'center',
+                      fontSize: '1.08rem',
+                      boxShadow: '0 2px 12px #0002'
+                    }}
+                  >
+                    ¡Gestiona todo lo que necesitas para tus vehículos en un solo lugar!
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer" style={{ borderTop: 'none', justifyContent: 'center' }}>
+                <button className="btn btn-primary px-4" onClick={handleCloseWelcome}>
+                  Comenzar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="" style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div
           className="card-like p-4 m-4 shadow"
@@ -37,7 +125,8 @@ export default function HomePage() {
             textAlign: 'center',
             fontFamily: 'Dosis, Roboto, Arial, sans-serif',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            padding: '2.5rem 2.5rem' // Más padding
           }}
         >
           {/* Marca de agua decorativa */}
@@ -95,17 +184,17 @@ export default function HomePage() {
               }}
             >
               <span style={{ color: '#555', fontSize: '1.05rem' }}>
-                <i className="bi bi-person-badge" style={{ color: '#6D2077', marginRight: 6 }}></i>
+                <BsPerson style={{ color: '#6D2077', marginRight: 6, verticalAlign: 'middle' }} />
                 <b>RUT:</b> {user.rut || 'No disponible'}
               </span>
               <span style={{ color: '#555', fontSize: '1.05rem' }}>
-                <i className="bi bi-envelope" style={{ color: '#6D2077', marginRight: 6 }}></i>
+                <BiEnvelope style={{ color: '#6D2077', marginRight: 6, verticalAlign: 'middle' }} />
                 <b>Email:</b> {user.email || 'No disponible'}
               </span>
             </div>
             <hr style={{ margin: '1.5rem 0', borderColor: '#6D2077' }} />
             <div style={{ fontSize: '1.08rem', color: '#333', fontWeight: 500 }}>
-              <i className="bi bi-info-circle" style={{ color: '#00C7B1', marginRight: 6 }}></i>
+              <BiInfoCircle style={{ color: '#00C7B1', marginRight: 6, verticalAlign: 'middle' }} />
               Desde aquí puedes pagar tus permisos, revisar tu historial y acceder a todos los documentos de tus vehículos de forma rápida y segura.
             </div>
           </div>

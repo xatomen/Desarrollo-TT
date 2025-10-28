@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, ScrollView, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
@@ -25,6 +25,7 @@ export default function VehicleListScreen() {
   const [ppu, setPpu] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [showWelcomeHelp, setShowWelcomeHelp] = useState(false); // Nuevo estado para el modal de bienvenida
   
   // Estados para paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,6 +42,38 @@ export default function VehicleListScreen() {
     if (userRut) {
       console.log('👤 RUT del usuario autenticado:', userRut);
       getVehicles();
+    }
+  }, [userRut]);
+
+  // useEffect para mostrar la ayuda de bienvenida
+  useEffect(() => {
+    const checkWelcomeHelp = () => {
+      try {
+        // Verificar si ya se mostró la ayuda en esta sesión
+        const hasSeenVehicleListWelcome = sessionStorage.getItem('hasSeenVehicleListWelcome');
+        
+        if (!hasSeenVehicleListWelcome) {
+          // Si no se ha visto, mostrar después de 1 segundo (para dar tiempo a cargar los vehículos)
+          const timer = setTimeout(() => {
+            setShowWelcomeHelp(true);
+          }, 1000);
+          
+          return () => clearTimeout(timer);
+        }
+      } catch (error) {
+        // En caso de que sessionStorage no esté disponible
+        console.log('SessionStorage no disponible, mostrando ayuda por defecto');
+        const timer = setTimeout(() => {
+          setShowWelcomeHelp(true);
+        }, 1000);
+        
+        return () => clearTimeout(timer);
+      }
+    };
+
+    // Solo mostrar ayuda si ya tenemos el RUT del usuario
+    if (userRut) {
+      checkWelcomeHelp();
     }
   }, [userRut]);
 
@@ -66,6 +99,19 @@ export default function VehicleListScreen() {
     } catch (error: any) {
       setErrorMsg(error.message || 'Error al obtener vehículos del usuario');
     }
+  };
+
+  // Función para manejar cuando el usuario presiona "¡Comenzar!"
+  const handleWelcomeComplete = () => {
+    try {
+      // Guardar en sessionStorage que ya vio la ayuda
+      sessionStorage.setItem('hasSeenVehicleListWelcome', 'true');
+    } catch (error) {
+      console.log('No se pudo guardar en sessionStorage');
+    }
+    
+    // Cerrar el modal
+    setShowWelcomeHelp(false);
   };
 
   // Función para cambiar la página
@@ -139,6 +185,66 @@ export default function VehicleListScreen() {
     }
   };
 
+  // Modal de bienvenida
+  const renderWelcomeModal = () => (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={showWelcomeHelp}
+      onRequestClose={() => setShowWelcomeHelp(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={[styles.modalContent, styles.welcomeModal]}>
+          <View style={styles.welcomeHeader}>
+            <Ionicons name="car-sport" size={36} color="#0051A8" />
+            <Text style={styles.welcomeTitle}>¡Bienvenido a tu Portal de Vehículos!</Text>
+          </View>
+          <Text style={styles.welcomeText}>
+            Aquí podrás ver <Text style={styles.boldText}>todos tus vehículos</Text> asociados a tu RUT y acceder fácilmente a sus documentos más importantes.
+          </Text>
+
+          <View style={styles.instructionsContainer}>
+            <Text style={styles.instructionsTitle}>¿Cómo funciona?</Text>
+
+            <View style={styles.instructionItem}>
+              <View style={styles.instructionIcon}>
+                <Ionicons name="eye" size={20} color="white" />
+              </View>
+              <Text style={styles.instructionText}>
+                Presiona el <Text style={styles.boldText}>botón azul con el ícono de ojo</Text> para ver los documentos de cada vehículo.
+              </Text>
+            </View>
+
+            <View style={styles.instructionItem}>
+              <Ionicons name="document-text-outline" size={20} color="#0051A8" style={{ marginRight: 12 }} />
+              <Text style={styles.instructionText}>
+                Accede a tu <Text style={styles.boldText}>Permiso de Circulación</Text>, <Text style={styles.boldText}>SOAP</Text>, <Text style={styles.boldText}>Revisión Técnica</Text> y <Text style={styles.boldText}>Padrón</Text> en un solo lugar.
+              </Text>
+            </View>
+
+            <View style={styles.instructionItem}>
+              <Ionicons name="card-outline" size={20} color="#0051A8" style={{ marginRight: 12 }} />
+              <Text style={styles.instructionText}>
+                Si necesitas pagar algún documento, te guiaremos para hacerlo de forma segura en <Text style={styles.boldText}>tupermiso.cl</Text>.
+              </Text>
+            </View>
+          </View>
+
+          <Text style={[styles.welcomeText, { marginBottom: 12, marginTop: 8 }]}>
+            <Ionicons name="information-circle-outline" size={16} color="#0051A8" /> Si tienes dudas, puedes volver a ver esta ayuda tocando el ícono <Ionicons name="help-circle-outline" size={16} color="#0051A8" /> en la parte superior.
+          </Text>
+
+          <TouchableOpacity 
+            style={styles.welcomeButton}
+            onPress={handleWelcomeComplete}
+          >
+            <Text style={styles.welcomeButtonText}>¡Comenzar!</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
     <ProtectedRoute>
       <SafeAreaView style={styles.container}>
@@ -155,7 +261,15 @@ export default function VehicleListScreen() {
 
         {/* Content */}
         <View style={styles.content}>
-          <Text style={styles.title}>Vehículos Disponibles</Text>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>Vehículos Disponibles</Text>
+            <TouchableOpacity 
+              style={styles.helpIcon}
+              onPress={() => setShowWelcomeHelp(true)}
+            >
+              <Ionicons name="help-circle-outline" size={24} color="#0051A8" />
+            </TouchableOpacity>
+          </View>
           <Text style={styles.userInfo}>RUT: {userRut}</Text>
 
           {/* Table */}
@@ -204,7 +318,6 @@ export default function VehicleListScreen() {
                         params: { ppu: vehicle.ppu }
                       });
                     }}>
-                      {/* <Text style={styles.mostrarButtonText}>Ver</Text> */}
                       <Ionicons name="eye-outline" size={24} color="white" style={{ marginLeft: 0 }} />
                     </TouchableOpacity>
                   </View>
@@ -287,13 +400,10 @@ export default function VehicleListScreen() {
               </View>
             </View>
           )}
-
-          {/* Botón para refrescar */}
-          {/* <TouchableOpacity style={styles.refreshButton} onPress={getVehicles}>
-            <Ionicons name="refresh-outline" size={20} color="white" />
-            <Text style={styles.refreshButtonText}>Actualizar</Text>
-          </TouchableOpacity> */}
         </View>
+
+        {/* Modal de bienvenida */}
+        {renderWelcomeModal()}
       </SafeAreaView>
     </ProtectedRoute>
   );
@@ -316,52 +426,28 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 		fontWeight: 'bold',
 	},
-  header: {
-    backgroundColor: '#1e3a5f',
-    padding: 32,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    fontFamily: 'Roboto',
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginLeft: 8,
-    fontFamily: 'Roboto',
-  },
-  logoutButton: {
-    backgroundColor: '#006FB3',
-    paddingHorizontal: 32,
-    paddingVertical: 24,
-    borderRadius: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logoutText: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginRight: 8,
-    fontFamily: 'Roboto',
-  },
   content: {
     flex: 1,
     padding: 24,
     justifyContent: 'center',
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
     color: '#1f2937',
     textAlign: 'center',
-    marginBottom: 32,
     fontFamily: 'Roboto',
+    flex: 1,
+  },
+  helpIcon: {
+    padding: 8,
+    marginLeft: 8,
   },
   subtitle: {
     fontSize: 24,
@@ -496,28 +582,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontFamily: 'Roboto',
   },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 16,
-    minWidth: 70,
-    alignItems: 'center',
-  },
-  statusVigente: {
-    backgroundColor: '#10b981',
-  },
-  statusVencido: {
-    backgroundColor: '#ef4444',
-  },
-  statusDesconocido: {
-    backgroundColor: '#6b7280',
-  },
-  statusText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
-    fontFamily: 'Roboto',
-  },
   emptyRow: {
     padding: 20,
     alignItems: 'center',
@@ -529,25 +593,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto',
     textAlign: 'center',
   },
-  // warningAlert: {
-  //   color: 'red',
-  //   textAlign: 'center',
-  //   backgroundColor: '#ffe6e6',
-  //   padding: 16,
-  //   margin: 16,
-  //   borderColor: 'red',
-  //   borderWidth: 2,
-  //   position: 'absolute',
-  //   top: 150,
-  //   left: 16,
-  //   right: 16,
-  //   zIndex: 10,
-  // },
-  // warningAlertText: {
-  //   color: 'red',
-  //   textAlign: 'center',
-  //   fontFamily: 'Roboto',
-  // },
   refreshButton: {
     backgroundColor: '#0051A8',
     flexDirection: 'row',
@@ -564,6 +609,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontFamily: 'Roboto',
   },
+
   // Estilos de paginación
   paginationContainer: {
     // backgroundColor: '#f8f9fa',
@@ -644,5 +690,109 @@ const styles = StyleSheet.create({
   pageButtonTextActive: {
     color: 'white',
     fontWeight: 'bold',
+  },
+
+  // Estilos para el modal de bienvenida
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 24,
+    margin: 20,
+    maxWidth: '90%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  welcomeModal: {
+    maxWidth: '95%',
+  },
+  welcomeHeader: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  welcomeTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginTop: 8,
+    textAlign: 'center',
+    fontFamily: 'Roboto',
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: '#4A4A4A',
+    lineHeight: 24,
+    textAlign: 'center',
+    marginBottom: 20,
+    fontFamily: 'Roboto',
+  },
+  instructionsContainer: {
+    marginBottom: 24,
+  },
+  instructionsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 12,
+    textAlign: 'center',
+    fontFamily: 'Roboto',
+  },
+  instructionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 8,
+  },
+  instructionIcon: {
+    backgroundColor: '#006FB3',
+    borderRadius: 12,
+    padding: 4,
+    marginRight: 12,
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  instructionText: {
+    fontSize: 14,
+    color: '#4A4A4A',
+    flex: 1,
+    fontFamily: 'Roboto',
+  },
+  boldText: {
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  welcomeButton: {
+    backgroundColor: '#0051A8',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    alignSelf: 'center',
+    marginBottom: 12,
+  },
+  welcomeButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: 'Roboto',
+  },
+  showLaterButton: {
+    alignSelf: 'center',
+    padding: 8,
+  },
+  showLaterText: {
+    color: '#0051A8',
+    fontSize: 12,
+    fontFamily: 'Roboto',
+    textAlign: 'center',
   },
 });

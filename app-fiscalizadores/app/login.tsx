@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, ActivityIndicator, Modal, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import Navbar from '@/components/Navbar';
@@ -11,6 +11,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showCredentialHelp, setShowCredentialHelp] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false); // Nuevo estado para el modal de bienvenida
   const { login, isAuthenticated, loading } = useAuth();
 
   // Verificar si el usuario ya está autenticado
@@ -20,6 +22,37 @@ export default function LoginScreen() {
       router.replace('/insert-ppu');
     }
   }, [isAuthenticated, loading]);
+
+  // useEffect para mostrar el modal de bienvenida
+  useEffect(() => {
+    const checkWelcomeModal = () => {
+      try {
+        // Verificar si ya se mostró la bienvenida en esta sesión
+        const hasSeenFiscalizadorWelcome = sessionStorage.getItem('hasSeenFiscalizadorWelcome');
+        
+        if (!hasSeenFiscalizadorWelcome && !loading && !isAuthenticated) {
+          // Si no se ha visto y no está autenticado, mostrar después de 800ms
+          const timer = setTimeout(() => {
+            setShowWelcomeModal(true);
+          }, 800);
+          
+          return () => clearTimeout(timer);
+        }
+      } catch (error) {
+        // En caso de que sessionStorage no esté disponible
+        console.log('SessionStorage no disponible, mostrando bienvenida por defecto');
+        if (!loading && !isAuthenticated) {
+          const timer = setTimeout(() => {
+            setShowWelcomeModal(true);
+          }, 800);
+          
+          return () => clearTimeout(timer);
+        }
+      }
+    };
+
+    checkWelcomeModal();
+  }, [loading, isAuthenticated]);
 
   // useEffect para hacer que el mensaje de error desaparezca después de 5 segundos
   useEffect(() => {
@@ -81,6 +114,19 @@ export default function LoginScreen() {
     }
   };
 
+  // Función para manejar cuando el usuario completa la bienvenida
+  const handleWelcomeComplete = () => {
+    try {
+      // Guardar en sessionStorage que ya vio la bienvenida
+      sessionStorage.setItem('hasSeenFiscalizadorWelcome', 'true');
+    } catch (error) {
+      console.log('No se pudo guardar en sessionStorage');
+    }
+    
+    // Cerrar el modal
+    setShowWelcomeModal(false);
+  };
+
   const handleLogin = async () => {
     setErrorMsg('');
     
@@ -131,6 +177,134 @@ export default function LoginScreen() {
     }
   };
 
+  // Modal de bienvenida para fiscalizadores
+  const renderWelcomeModal = () => (
+    <Modal
+      animationType="fade" // <-- Cambia aquí de "slide" a "fade"
+      transparent={true}
+      visible={showWelcomeModal}
+      onRequestClose={() => setShowWelcomeModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={[styles.modalContent, styles.welcomeModalLarge]}>
+          <View style={styles.welcomeHeader}>
+            <Ionicons name="shield-checkmark" size={40} color="#006FB3" />
+            <Text style={styles.welcomeTitle}>¡Bienvenido, Fiscalizador!</Text>
+            <Text style={styles.welcomeSubtitle}>Sistema de Fiscalización Vehicular</Text>
+          </View>
+          
+          <ScrollView style={styles.welcomeContent}>
+            <Text style={styles.welcomeText}>
+              Con esta aplicación podrás realizar fiscalizaciones de manera rápida y eficiente, 
+              accediendo a toda la información vehicular en segundos.
+            </Text>
+            
+            <View style={styles.featuresContainer}>
+              <Text style={styles.featuresTitle}>¿Qué puedes hacer?</Text>
+              
+              <View style={styles.featureItem}>
+                <Ionicons name="flash" size={24} color="#006FB3" />
+                <Text style={styles.featureText}>
+                  <Text style={styles.boldText}>Fiscalizar en segundos:</Text> Consulta inmediata ingresando solo la PPU
+                </Text>
+              </View>
+              
+              <View style={styles.featureItem}>
+                <Ionicons name="speedometer" size={24} color="#006FB3" />
+                <Text style={styles.featureText}>
+                  <Text style={styles.boldText}>Estado rápido del vehículo:</Text> Información completa al instante
+                </Text>
+              </View>
+              
+              <View style={styles.featureItem}>
+                <Ionicons name="document-text" size={24} color="#006FB3" />
+                <Text style={styles.featureText}>
+                  <Text style={styles.boldText}>Vigencia de documentos:</Text> Permiso, SOAP, Revisión Técnica
+                </Text>
+              </View>
+              
+              <View style={styles.featureItem}>
+                <Ionicons name="car" size={24} color="#006FB3" />
+                <Text style={styles.featureText}>
+                  <Text style={styles.boldText}>Encargo por robo:</Text> Verificación automática de denuncias
+                </Text>
+              </View>
+              
+            </View>
+            
+            <View style={styles.loginInstructions}>
+              <Text style={styles.instructionsTitle}>Para comenzar tu fiscalización:</Text>
+              <View style={styles.instructionItem}>
+                <Ionicons name="person" size={20} color="#006FB3" />
+                <Text style={styles.instructionText}>Ingresa tu RUT</Text>
+              </View>
+              <View style={styles.instructionItem}>
+                <Ionicons name="key" size={20} color="#006FB3" />
+                <Text style={styles.instructionText}>Usa tu credencial otorgada por la TGR</Text>
+              </View>
+            </View>
+            
+            <View style={styles.securityInfo}>
+              <Ionicons name="shield-outline" size={24} color="#28a745" />
+              <Text style={styles.securityText}>
+                <Text style={styles.boldText}>Sistema seguro y confiable</Text> respaldado por la 
+                Tesorería General de la República para garantizar la autenticidad de la información.
+              </Text>
+            </View>
+          </ScrollView>
+
+          <TouchableOpacity 
+            style={styles.welcomeButton}
+            onPress={handleWelcomeComplete}
+          >
+            <Text style={styles.welcomeButtonText}>¡Comenzar Fiscalización!</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  // Modal de ayuda para credenciales
+  const renderCredentialHelpModal = () => (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={showCredentialHelp}
+      onRequestClose={() => setShowCredentialHelp(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Ionicons name="help-circle" size={24} color="#0051A8" />
+            <Text style={styles.modalTitle}>¿Qué es la Credencial?</Text>
+            <TouchableOpacity onPress={() => setShowCredentialHelp(false)}>
+              <Ionicons name="close" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.modalText}>
+            <Text style={styles.boldText}>La credencial es una clave secreta</Text> otorgada por la 
+            <Text style={styles.boldText}> Tesorería General de la República (TGR)</Text> que autoriza 
+            el uso de esta aplicación a los fiscalizadores.{'\n\n'}
+            
+            <Text style={styles.boldText}>Características:</Text>{'\n'}
+            • Es personal e intransferible{'\n'}
+            • Permite acceder al sistema de fiscalización{'\n'}
+            • Solo la TGR puede otorgarla o renovarla{'\n\n'}
+            
+            <Text style={styles.boldText}>¿No tienes credencial?</Text>{'\n'}
+            Contacta a la Tesorería General de la República para obtenerla.
+          </Text>
+          <TouchableOpacity 
+            style={styles.modalButton}
+            onPress={() => setShowCredentialHelp(false)}
+          >
+            <Text style={styles.modalButtonText}>Entendido</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -147,7 +321,15 @@ export default function LoginScreen() {
 
       {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.title}>Portal Fiscalizadores</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Portal Fiscalizadores</Text>
+          <TouchableOpacity 
+            style={styles.helpIconTitle}
+            onPress={() => setShowWelcomeModal(true)}
+          >
+            <Ionicons name="information-circle-outline" size={24} color="#006FB3" />
+          </TouchableOpacity>
+        </View>
         <View style={{ height: 24 }} />
 
         <View style={styles.inputContainer}>
@@ -169,7 +351,15 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Ingrese su Credencial</Text>
+          <View style={styles.inputLabelContainer}>
+            <Text style={styles.inputLabel}>Ingrese su Credencial</Text>
+            <TouchableOpacity 
+              style={styles.helpIcon}
+              onPress={() => setShowCredentialHelp(true)}
+            >
+              <Ionicons name="help-circle-outline" size={20} color="#0051A8" />
+            </TouchableOpacity>
+          </View>
           <View style={styles.inputWrapper}>
             <Ionicons name="lock-closed-outline" size={20} color="#4A4A4A" style={styles.inputIconLeft} />
             <TextInput
@@ -199,9 +389,13 @@ export default function LoginScreen() {
           style={styles.backButton}
           onPress={handleLogin}
         >
-          <Text style={styles.backButtonText}>Iniciar Sesión</Text>
+          <Text style={styles.backButtonText}>INICIAR SESIÓN</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Modals */}
+      {renderWelcomeModal()}
+      {renderCredentialHelpModal()}
     </SafeAreaView>
   );
 }
@@ -232,6 +426,11 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: 'center',
   },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
@@ -239,6 +438,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
     fontFamily: 'Roboto',
+    flex: 1,
+  },
+  helpIconTitle: {
+    padding: 8,
+    marginLeft: 8,
   },
   subtitle: {
     fontSize: 16,
@@ -263,7 +467,20 @@ const styles = StyleSheet.create({
     color: '#4A4A4A',
     marginBottom: 8,
     fontFamily: 'Roboto',
+    flex: 1,
   },
+  
+  // Nuevo estilo para el contenedor del label con ícono de ayuda
+  inputLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  helpIcon: {
+    padding: 4,
+    marginLeft: 8,
+  },
+  
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -324,21 +541,214 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto',
   },
   backButton: {
-    backgroundColor: '#0051A8',
+    backgroundColor: '#006FB3',
     paddingVertical: 24,
     paddingHorizontal: 16,
     borderRadius: 0,
     alignItems: 'center',
     marginTop: 12,
     alignSelf: 'center',
-    // marginHorizontal: 150,
     width: 'auto',
-    maxWidth: '50%',
+    maxWidth: '60%',
+    borderBottomWidth: 3,
+    borderBottomColor: '#004d99',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   backButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
     fontFamily: 'Roboto',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  // Estilos para el modal de ayuda
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 24,
+    margin: 20,
+    maxWidth: '90%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginLeft: 8,
+    flex: 1,
+    fontFamily: 'Roboto',
+  },
+  modalText: {
+    fontSize: 16,
+    color: '#4A4A4A',
+    lineHeight: 24,
+    marginBottom: 20,
+    fontFamily: 'Roboto',
+  },
+  boldText: {
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  modalButton: {
+    backgroundColor: '#0051A8',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 6,
+    alignSelf: 'center',
+  },
+  modalButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: 'Roboto',
+  },
+
+  // Estilos para el modal de bienvenida
+  welcomeModalLarge: {
+    maxWidth: '95%',
+    maxHeight: '90%',
+  },
+  welcomeHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginTop: 12,
+    textAlign: 'center',
+    fontFamily: 'Roboto',
+  },
+  welcomeSubtitle: {
+    fontSize: 16,
+    color: '#6b7280',
+    marginTop: 4,
+    textAlign: 'center',
+    fontFamily: 'Roboto',
+  },
+  welcomeContent: {
+    flex: 1,
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: '#4A4A4A',
+    lineHeight: 24,
+    textAlign: 'center',
+    marginBottom: 20,
+    fontFamily: 'Roboto',
+  },
+  featuresContainer: {
+    marginBottom: 20,
+  },
+  featuresTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 12,
+    textAlign: 'center',
+    fontFamily: 'Roboto',
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+    paddingHorizontal: 8,
+  },
+  featureText: {
+    fontSize: 15,
+    color: '#4A4A4A',
+    marginLeft: 12,
+    fontFamily: 'Roboto',
+    flex: 1,
+    lineHeight: 20,
+  },
+  loginInstructions: {
+    backgroundColor: '#f0f4f8',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  instructionsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 8,
+    textAlign: 'center',
+    fontFamily: 'Roboto',
+  },
+  instructionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  instructionText: {
+    fontSize: 14,
+    color: '#4A4A4A',
+    marginLeft: 8,
+    fontFamily: 'Roboto',
+  },
+  securityInfo: {
+    backgroundColor: '#f0f9ff',
+    padding: 16,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  securityText: {
+    fontSize: 15,
+    color: '#4A4A4A',
+    marginLeft: 12,
+    flex: 1,
+    fontFamily: 'Roboto',
+    lineHeight: 22,
+  },
+  welcomeButton: {
+    backgroundColor: '#006FB3',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 0,
+    alignSelf: 'center',
+    borderBottomWidth: 3,
+    borderBottomColor: '#004d99',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+    marginTop: 10,
+  },
+  welcomeButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    fontFamily: 'Roboto',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 });
