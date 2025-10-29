@@ -177,10 +177,7 @@ export default function VerDocumentosPage() {
           </button>
           <nav aria-label="breadcrumb" className="col">
             <ol className="breadcrumb p-0 m-0">
-              <li className="align-self-center breadcrumb-item" aria-current="page">Vehículos</li>
-              <li className="align-self-center breadcrumb-item active" aria-current="page">Validación documentos</li>
-              <li className="align-self-center breadcrumb-item active" aria-current="page">Detalles de pago</li>
-              <li className="align-self-center breadcrumb-item active" aria-current="page">Confirmación de pago</li>
+              <li className="align-self-center breadcrumb-item" aria-current="page">Ver documentos</li>
             </ol>
           </nav>
         </div>

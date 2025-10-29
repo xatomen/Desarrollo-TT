@@ -642,8 +642,10 @@ export default function VerVehiculos() {
       const brand = data.marca || 'N/A';
       const model = data.modelo || 'N/A';
 
+      const rutPropietario = data.rut || '';
+
       // Si existe, consulta el estado del vehículo
-      const estadoVehiculo = await getVehicleStatus(plate, rut);
+      const estadoVehiculo = await getVehicleStatus(plate, rutPropietario);
       setVehiculoBuscado({
         plate,
         brand,
@@ -799,22 +801,6 @@ export default function VerVehiculos() {
               fontFamily: '"Dosis", "Roboto", sans-serif'
             }}
           >
-            <h1 style={{
-              fontWeight: 700,
-              fontSize: '2rem',
-              marginBottom: '0.5rem',
-              letterSpacing: '1px',
-              fontFamily: 'Roboto',
-            }}>
-              ¡Bienvenido{nombre ? `, ${nombre}` : ''}!
-            </h1>
-            <p style={{
-              fontSize: '1.1rem',
-              marginBottom: '0.5rem',
-              fontWeight: 500
-            }}>
-              RUT: <span style={{ fontWeight: 700 }}>{rut}</span>
-            </p>
             <h2 className="mb-3" style={{
               fontFamily: 'Roboto',
               fontWeight: 'bold',

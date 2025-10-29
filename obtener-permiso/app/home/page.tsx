@@ -47,7 +47,7 @@ export default function HomePage() {
       {showWelcome && (
         <div className="modal fade show" style={{ display: 'block', background: 'rgba(0,0,0,0.4)' }} tabIndex={-1}>
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content" style={{ borderRadius: 18 }}>
+            <div className="modal-content" style={{ borderRadius: 18, padding: '1.5rem' }}>
               <div className="modal-header" style={{ borderBottom: 'none' }}>
                 <h5 className="modal-title" style={{ display: "flex", fontWeight: 700, color: '#6D2077', fontFamily: 'Roboto, Arial, sans-serif', fontSize: '1.2 rem', textAlign: 'center', justifyContent: 'center', alignItems: 'center' }}>
                   <BiStar style={{ color: '#0051A8', marginRight: 8, verticalAlign: 'middle' }} size={24} />
@@ -183,17 +183,17 @@ export default function HomePage() {
                 margin: '1.2rem 0 0.5rem 0'
               }}
             >
-              <span style={{ color: '#555', fontSize: '1.05rem' }}>
+              <span style={{ color: '#555', fontSize: '1.05rem', display: 'flex', alignItems: 'center' }}>
                 <BsPerson style={{ color: '#6D2077', marginRight: 6, verticalAlign: 'middle' }} />
                 <b>RUT:</b> {user.rut || 'No disponible'}
               </span>
-              <span style={{ color: '#555', fontSize: '1.05rem' }}>
+              <span style={{ color: '#555', fontSize: '1.05rem', display: 'flex', alignItems: 'center' }}>
                 <BiEnvelope style={{ color: '#6D2077', marginRight: 6, verticalAlign: 'middle' }} />
                 <b>Email:</b> {user.email || 'No disponible'}
               </span>
             </div>
             <hr style={{ margin: '1.5rem 0', borderColor: '#6D2077' }} />
-            <div style={{ fontSize: '1.08rem', color: '#333', fontWeight: 500 }}>
+            <div style={{ fontSize: '1.08rem', color: '#333', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <BiInfoCircle style={{ color: '#00C7B1', marginRight: 6, verticalAlign: 'middle' }} />
               Desde aquí puedes pagar tus permisos, revisar tu historial y acceder a todos los documentos de tus vehículos de forma rápida y segura.
             </div>
@@ -215,11 +215,12 @@ export default function HomePage() {
                 Accede de manera centralizada y segura a todos los documentos importantes de tus vehículos. Consulta, descarga y verifica la vigencia de cada documento en cualquier momento.
               </p>
               <ul className="mb-3" style={{ paddingLeft: '20px', listStyleType: 'disc' }}>
+                <li>Padrón del vehículo</li>
                 <li>Permiso de Circulación vigente y anteriores</li>
                 <li>Revisión Técnica y fecha de vencimiento</li>
                 <li>Seguro Obligatorio (SOAP)</li>
-                <li>Multas asociadas y su estado</li>
-                <li>Información técnica y legal del vehículo</li>
+                {/* <li>Multas asociadas y su estado</li> */}
+                {/* <li>Información técnica y legal del vehículo</li> */}
               </ul>
               <p>
                 Mantén tus papeles al día y evita sorpresas. Toda la información está disponible en un solo lugar, lista para ser consultada o descargada cuando la necesites.
