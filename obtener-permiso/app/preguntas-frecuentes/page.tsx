@@ -149,7 +149,7 @@ export default function PreguntasFrecuentesPage({
                 color: '#1a2a41',
                 fontWeight: 700,
                 fontSize: '1.15rem',
-                fontFamily: 'Dosis, Roboto, Arial, sans-serif',
+                fontFamily: 'Roboto, Roboto, Arial, sans-serif',
                 marginBottom: '0.5rem'
               }}>
                 ¿Qué es este sitio?
@@ -178,7 +178,7 @@ export default function PreguntasFrecuentesPage({
                 color: '#6D2077',
                 fontWeight: 700,
                 fontSize: '1.15rem',
-                fontFamily: 'Dosis, Roboto, Arial, sans-serif',
+                fontFamily: 'Roboto, Roboto, Arial, sans-serif',
                 marginBottom: '0.5rem'
               }}>
                 ¿Cómo usar la sección?

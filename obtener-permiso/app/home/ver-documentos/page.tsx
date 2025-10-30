@@ -177,7 +177,7 @@ export default function VerDocumentosPage() {
           </button>
           <nav aria-label="breadcrumb" className="col">
             <ol className="breadcrumb p-0 m-0">
-              <li className="align-self-center breadcrumb-item" aria-current="page">Ver documentos</li>
+              <li className="align-self-center breadcrumb-item active" aria-current="page">Ver documentos</li>
             </ol>
           </nav>
         </div>
@@ -210,7 +210,7 @@ export default function VerDocumentosPage() {
               flexDirection: 'column',
               alignItems: 'center',
               textAlign: 'center',
-              fontFamily: 'Dosis, Roboto, Arial, sans-serif',
+              fontFamily: 'Roboto, Roboto, Arial, sans-serif',
               // height: '100%'
             }}>
               <span style={{
@@ -220,7 +220,7 @@ export default function VerDocumentosPage() {
                 borderRadius: '50%',
                 background: '#6D2077',
                 marginBottom: 10,
-                fontFamily: 'Dosis, Roboto, Arial, sans-serif'
+                fontFamily: 'Roboto, Roboto, Arial, sans-serif'
               }} />
               <b>¿Qué puedes hacer aquí?</b>
               <span style={{ fontSize: '1rem', fontWeight: 400 }}>

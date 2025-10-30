@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { useEffect, useState } from 'react';
+import { BiCar, BiCheckShield, BiCreditCard, BiError, BiInfoCircle, BiMoney } from 'react-icons/bi';
 
 interface DatosVehiculo {
   // Datos básicos
@@ -181,6 +182,15 @@ function ValidacionesPagoContent() {
   // Pagos realizados
   const [pagosRealizados, setPagosRealizados] = useState<any[]>([]);
   const [pagoFaltante, setPagoFaltante] = useState<boolean | null>(null);
+
+  // Mostrar modal de bienvenida
+  const [showWelcome, setShowWelcome] = useState<boolean>(true);
+
+  const handleCloseWelcome = () => {
+    setShowWelcome(false);
+    // Guardar en sessionStorage que ya se mostró el aviso
+    sessionStorage.setItem('aviso_bienvenida_pago', 'true');
+  };
 
   useEffect(() => {
     const fetchPagos = async () => {
@@ -1260,6 +1270,85 @@ function ValidacionesPagoContent() {
           ) }
         </div>
       </div>
+
+      {/* Modal de bienvenida */}
+      {showWelcome && (
+        <div className="modal fade show" style={{ display: 'block', background: 'rgba(0,0,0,0.4)' }} tabIndex={-1}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content" style={{ borderRadius: 18, padding: '1rem' }}>
+              <div className="modal-header" style={{ borderBottom: 'none' }}>
+                <h5 className="modal-title" style={{ display: "flex", alignItems: "center", fontWeight: 700, color: '#0d6efd', fontFamily: 'Roboto, Arial, sans-serif', fontSize: '1.2rem' }}>
+                  <BiCreditCard style={{ color: '#0d6efd', marginRight: 8, verticalAlign: 'middle' }} size={24} />
+                  ¡Bienvenido al Pago de Permiso de Circulación!
+                </h5>
+                <button type="button" className="btn-close" aria-label="Cerrar" onClick={handleCloseWelcome}></button>
+              </div>
+              <div className="modal-body" style={{ fontSize: '1.08rem', color: '#333' }}>
+                <p>
+                  Aquí puedes <b>pagar tu permiso de circulación</b> y <b>regularizar situaciones pendientes</b> como:
+                </p>
+                <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
+                  <li className="mb-3">
+                    <div style={{ display: 'flex', alignItems: 'center', fontWeight: 700, fontFamily: 'Roboto, Arial, sans-serif', fontSize: '1.08rem' }}>
+                      <BiError style={{ color: '#CD1E2C', fontSize: 22, marginRight: 8 }} />
+                      Pago de multas de tránsito
+                    </div>
+                    <div style={{ marginLeft: 30 }}>
+                      Regulariza tus multas de tránsito pendientes directamente desde esta plataforma.
+                    </div>
+                  </li>
+                  <li className="mb-3">
+                    <div style={{ display: 'flex', alignItems: 'center', fontWeight: 700, fontFamily: 'Roboto, Arial, sans-serif', fontSize: '1.08rem' }}>
+                      <BiCheckShield style={{ color: '#2E7D32', fontSize: 22, marginRight: 8 }} />
+                      Pago de multas RPI
+                    </div>
+                    <div style={{ marginLeft: 30 }}>
+                      Paga tus multas asociadas al Registro de Pasajeros Infractores (RPI) de manera fácil y segura.
+                    </div>
+                  </li>
+                  <li className="mb-3">
+                    <div style={{ display: 'flex', alignItems: 'center', fontWeight: 700, fontFamily: 'Roboto, Arial, sans-serif', fontSize: '1.08rem' }}>
+                      <BiCar style={{ color: '#0d6efd', fontSize: 22, marginRight: 8 }} />
+                      Pago de SOAP
+                    </div>
+                    <div style={{ marginLeft: 30 }}>
+                      Contrata y paga tu Seguro Obligatorio (SOAP) si lo necesitas para completar tu trámite.
+                    </div>
+                  </li>
+                </ul>
+                <div className="mt-4 mb-3">
+                  <div
+                    style={{
+                      borderRadius: 12,
+                      padding: '1rem 1.5rem',
+                      background: 'linear-gradient(90deg, #0d6efd 0%, #6D2077 100%)',
+                      color: '#fff',
+                      fontWeight: 500,
+                      textAlign: 'center',
+                      fontSize: '1.08rem',
+                      boxShadow: '0 2px 12px #0002'
+                    }}
+                  >
+                    <BiMoney style={{ marginRight: 8, fontSize: 22, verticalAlign: 'middle', textAlign: 'center', display: 'inline-block' }} />
+                    <br />
+                    Puedes pagar tu permiso en <b>un solo pago</b> o en <b>dos cuotas</b>.<br />
+                    Si pagas con tarjeta de crédito a través de WebPay, podrás dividir el monto en las cuotas que desees según tu banco.
+                  </div>
+                </div>
+                <div className="text-center mt-2" style={{ color: '#6D2077', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.08rem' }}>
+                  <BiInfoCircle style={{ marginRight: 6, verticalAlign: 'middle' }} />
+                  ¡Pon al día tu vehículo y realiza todos tus pagos en un solo lugar!
+                </div>
+              </div>
+              <div className="modal-footer" style={{ borderTop: 'none', justifyContent: 'center' }}>
+                <button className="btn btn-primary px-4" onClick={handleCloseWelcome}>
+                  Comenzar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     </ProtectedRoute>
   );

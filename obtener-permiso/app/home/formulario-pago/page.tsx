@@ -217,7 +217,7 @@ export default function FormularioPago() {
 
   return (
     <ProtectedRoute>
-      <div className="container-fluid px-4 py-4" style={{ fontFamily: '"Dosis", sans-serif' }}>
+      <div className="container-fluid px-4 py-4" style={{ fontFamily: '"Roboto", sans-serif' }}>
         {/* Volver atrás y Breadcrumb */}
         <div className="row align-self-center d-flex align-items-center mb-4 px-3">
           <button className="p-2" style={{ backgroundColor: 'white', border: '1px solid #007bff', color: '#007bff', cursor: 'pointer' }} onClick={() => router.back()}>
@@ -285,7 +285,7 @@ export default function FormularioPago() {
           {/* Columna derecha - Formulario */}
           <div className="col-lg-8">
             {/* Información sobre medios de pago */}
-            <div className="alert alert-info d-flex align-items-center mb-4" role="alert" style={{ fontFamily: '"Dosis", sans-serif' }}>
+            <div className="alert alert-info d-flex align-items-center mb-4" role="alert" style={{ fontFamily: '"Roboto", sans-serif' }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0d6efd" className="me-2" viewBox="0 0 16 16">
                 <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 3H1v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
               </svg>
@@ -301,7 +301,7 @@ export default function FormularioPago() {
 
             {/* Alerta de error general */}
             {showGeneralError && (
-              <div className="alert alert-danger alert-dismissible fade show mb-4" role="alert" style={{ fontFamily: '"Dosis", sans-serif' }}>
+              <div className="alert alert-danger alert-dismissible fade show mb-4" role="alert" style={{ fontFamily: '"Roboto", sans-serif' }}>
                 <strong>Formato inválido y/o datos faltantes</strong>
                 <button 
                   type="button" 

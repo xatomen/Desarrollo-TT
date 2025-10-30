@@ -171,7 +171,7 @@ export default function HistorialPermisosPage() {
                 borderRadius: '18px',
                 boxShadow: '0 4px 16px #0002',
                 color: '#222',
-                fontFamily: '"Dosis", "Roboto", Arial, sans-serif',
+                fontFamily: '"Roboto", "Roboto", Arial, sans-serif',
                 padding: '1.5rem 1.2rem',
                 marginBottom: '2rem',
                 display: 'flex',
@@ -185,7 +185,7 @@ export default function HistorialPermisosPage() {
                 borderRadius: '50%',
                 width: 56,
                 height: 56,
-                fontFamily: '"Dosis", "Roboto", Arial, sans-serif',
+                fontFamily: '"Roboto", "Roboto", Arial, sans-serif',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -200,11 +200,11 @@ export default function HistorialPermisosPage() {
                   fontSize: '1.3rem',
                   marginBottom: 6,
                   color: '#6D2077',
-                  fontFamily: '"Dosis", "Roboto", Arial, sans-serif'
+                  fontFamily: '"Roboto", "Roboto", Arial, sans-serif'
                 }}>
                   Historial de Permisos Pagados
                 </h2>
-                <p style={{ fontSize: '1.08rem', marginBottom: 0, fontFamily: '"Dosis", "Roboto", Arial, sans-serif' }}>
+                <p style={{ fontSize: '1.08rem', marginBottom: 0, fontFamily: '"Roboto", "Roboto", Arial, sans-serif' }}>
                   Aquí puedes consultar todos los permisos de circulación que has pagado, revisar su información detallada y descargar cada uno en formato PDF para tus registros o trámites.
                 </p>
               </div>

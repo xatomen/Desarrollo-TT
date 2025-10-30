@@ -123,7 +123,7 @@ export default function HomePage() {
             borderRadius: '22px',
             boxShadow: '0 6px 24px #0002',
             textAlign: 'center',
-            fontFamily: 'Dosis, Roboto, Arial, sans-serif',
+            fontFamily: 'Roboto, Roboto, Arial, sans-serif',
             position: 'relative',
             overflow: 'hidden',
             padding: '2.5rem 2.5rem' // Más padding
@@ -154,10 +154,10 @@ export default function HomePage() {
                 fontWeight: 700,
                 fontSize: '2.3rem',
                 marginTop: '1.5rem',
-                marginBottom: '0.5rem',
+                marginBottom: '1.5rem',
                 letterSpacing: '1px',
                 color: '#6D2077',
-                fontFamily: 'Dosis, Roboto, Arial, sans-serif',
+                fontFamily: 'Roboto, Roboto, Arial, sans-serif',
                 textShadow: '1px 1px 8px #fff'
               }}
             >

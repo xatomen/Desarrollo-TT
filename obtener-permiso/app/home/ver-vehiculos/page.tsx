@@ -124,7 +124,7 @@ function EstadoVehiculoTooltip({ detalle }: { detalle: EstadoVehiculoDetalle }) 
         fontSize: '1em',
         zIndex: 9999,
         color: '#222',
-        fontFamily: '"Dosis", "Roboto", Arial, sans-serif',
+        fontFamily: '"Roboto", "Roboto", Arial, sans-serif',
       }}
     >
       <div className="d-flex" style={{ textAlign: 'center', fontWeight: 700, color: '#6D2077', fontSize: '1.1em', marginBottom: 8 }}>
@@ -798,7 +798,7 @@ export default function VerVehiculos() {
               borderRadius: '18px',
               boxShadow: '0 4px 16px #0002',
               color: '#222',
-              fontFamily: '"Dosis", "Roboto", sans-serif'
+              fontFamily: '"Roboto", "Roboto", sans-serif'
             }}
           >
             <h2 className="mb-3" style={{
@@ -937,17 +937,19 @@ export default function VerVehiculos() {
               <div>
                 <h1 className="p-3 h4 m-0 text-center">Mis Vehículos</h1>
                 <div className="row mb-3">
-                  <div className="col-12 col-md-8 mx-auto d-flex gap-2">
+                  <div className="col-12 col-md-10 mx-auto d-flex gap-2">
+                    <span style={{ color: '#555' }}>Filtros de búsqueda</span>
                     <input
                       type="text"
                       className="form-control"
                       placeholder="Buscar por placa, marca, modelo o nombre..."
                       value={busqueda}
                       onChange={e => setBusqueda(e.target.value)}
+                      style={{ border: '1px solid #ced4da', borderRadius: '6px', height: '40px' }}
                     />
                     <select
                       className="form-select"
-                      style={{ maxWidth: 180 }}
+                      style={{ maxWidth: 180, border: '1px solid #ced4da', borderRadius: '6px', fontSize: '0.9rem', height: '40px' }}
                       value={filtroEstado}
                       onChange={e => setFiltroEstado(e.target.value as any)}
                     >
@@ -1132,17 +1134,19 @@ export default function VerVehiculos() {
               <div>
                 <h1 className="p-3 h4 m-0 text-center">Vehículos Guardados</h1>
                 <div className="row mb-3">
-                  <div className="col-12 col-md-8 mx-auto d-flex gap-2">
+                  <div className="col-12 col-md-10 mx-auto d-flex gap-2">
+                    <span style={{ color: '#555' }}>Filtros de búsqueda</span>
                     <input
                       type="text"
                       className="form-control"
                       placeholder="Buscar por placa, marca, modelo o nombre..."
                       value={busqueda}
                       onChange={e => setBusqueda(e.target.value)}
+                      style={{ border: '1px solid #ced4da', borderRadius: '6px', height: '40px' }}
                     />
                     <select
                       className="form-select"
-                      style={{ maxWidth: 180 }}
+                      style={{ maxWidth: 180, border: '1px solid #ced4da', borderRadius: '6px', fontSize: '0.9rem', height: '40px' }}
                       value={filtroEstado}
                       onChange={e => setFiltroEstado(e.target.value as any)}
                     >
