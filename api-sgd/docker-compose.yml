@@ -1,29 +1,32 @@
-# Docker Compose para API de Carabineros en Python y MySQL
+# Docker Compose para API de la secretaría de gobierno digital en Python y MySQL
 services:
-  # Servicio de la API Carabineros
-  api-carabineros:
+  # Servicio de la API sgd
+  api-sgd:
     build:
       context: ./api
       dockerfile: Dockerfile
     ports:
-      - "5006:8000"
+      - "5004:8000"
     environment:
       - DB_USER=root
       - DB_PASSWORD=root
       - DB_HOST=db
-      - DB_NAME=carabineros_db
+      - DB_NAME=sgd_db
     volumes:
       - ./api:/app
-    depends_on:
+    depends_on: 
       - db
+    command: >
+      sh -c "pip install -r requirements.txt && uvicorn app:app --host 0.0.0.0 --port 8000 --reload"
+      
   db:
     image: mysql:9.4
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: carabineros_db
+      MYSQL_DATABASE: sgd_db
       MYSQL_USER: user
       MYSQL_PASSWORD: password
     ports:
-      - "3006:3306"
+      - "3004:3306"
     volumes:
       - ./db_data/:/var/lib/mysql

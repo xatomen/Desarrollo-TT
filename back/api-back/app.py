@@ -86,6 +86,7 @@ from routers.login_admin import login_admin
 from routers.create_logs import create_logs
 from routers.guardar_vehiculo import guardar_vehiculo
 from routers.mis_permisos_emitidos import mis_permisos_emitidos
+from routers.chatbot import chatbot
 
 app.include_router(calcular_metricas.router)
 app.include_router(consultar_encargo.router)
@@ -108,3 +109,4 @@ app.include_router(login_admin.router)
 app.include_router(create_logs.router)
 app.include_router(guardar_vehiculo.router)
 app.include_router(mis_permisos_emitidos.router)
+app.include_router(chatbot.router)

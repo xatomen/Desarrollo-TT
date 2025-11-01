@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { LuMousePointerClick } from 'react-icons/lu';
+import Chatbot from '@/components/Chatbot';
 
 export default function Home() {
   const router = useRouter();
@@ -431,6 +432,7 @@ export default function Home() {
         
       </div>
       <Footer />
+      <Chatbot />
     </div>
   );
 }

@@ -5,3 +5,4 @@ node_modules/
 .expo/
 db_data/
 expo-env.d.ts
+.env

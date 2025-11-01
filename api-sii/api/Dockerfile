@@ -11,6 +11,6 @@ COPY requirements.txt app.py /app/
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 5005
+EXPOSE 8000
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["sh", "-c", "sleep 15 && uvicorn app:app --host 0.0.0.0 --port 8000 --reload"]

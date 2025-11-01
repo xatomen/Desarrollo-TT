@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Exponer el puerto 8000
 EXPOSE 8000
 # Comando para ejecutar el script api.py con uvicorn en modo de desarrollo
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["sh", "-c", "sleep 15 && uvicorn app:app --host 0.0.0.0 --port 8000 --reload"]

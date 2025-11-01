@@ -12,3 +12,4 @@ rut-chile
 passlib[bcrypt]
 python-jose[cryptography]
 python-multipart
+google-generativeai

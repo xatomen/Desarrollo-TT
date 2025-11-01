@@ -15,7 +15,9 @@ services:
       DB_PASSWORD: root
       DB_HOST: mysql
       DB_NAME: mtt_db
-
+    command: >
+      sh -c "pip install -r requirements.txt && uvicorn app:app --host 0.0.0.0 --port 8000 --reload"
+      
   mysql:
     image: mysql:9.4            # Válido según Docker Hub
     environment:
