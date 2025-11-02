@@ -184,13 +184,24 @@ function ValidacionesPagoContent() {
   const [pagoFaltante, setPagoFaltante] = useState<boolean | null>(null);
 
   // Mostrar modal de bienvenida
-  const [showWelcome, setShowWelcome] = useState<boolean>(true);
-
+  const [showWelcome, setShowWelcome] = useState<boolean>(false);
+  console.log("Estado showWelcome:", showWelcome);
+  // Cerrar modal de bienvenida
   const handleCloseWelcome = () => {
     setShowWelcome(false);
     // Guardar en sessionStorage que ya se mostró el aviso
-    sessionStorage.setItem('aviso_bienvenida_pago', 'true');
+    sessionStorage.setItem('hasSeenWelcomeValidaciones', 'true');
   };
+  // Obtener estado de showWelcome
+  const handleGetShowWelcome = () => {
+    const hasSeenWelcome = sessionStorage.getItem('hasSeenWelcomeValidaciones');
+    if (!hasSeenWelcome) {
+      setShowWelcome(true);
+    }
+  };
+  useEffect(() => {
+    handleGetShowWelcome();
+  }, []);
 
   useEffect(() => {
     const fetchPagos = async () => {
@@ -1272,7 +1283,7 @@ function ValidacionesPagoContent() {
       </div>
 
       {/* Modal de bienvenida */}
-      {showWelcome && (
+      {showWelcome === true && (
         <div className="modal fade show" style={{ display: 'block', background: 'rgba(0,0,0,0.4)' }} tabIndex={-1}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content" style={{ borderRadius: 18, padding: '1rem' }}>

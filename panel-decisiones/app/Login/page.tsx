@@ -264,7 +264,7 @@ export default function LoginPage() {
 
             {/* Clave Única */}
             <div className="form-group">
-              <label htmlFor="password">Ingrese su Clave única</label>
+              <label htmlFor="password">Ingrese su contraseña</label>
               <div className="input-group">
                 <input 
                   id="password" 
