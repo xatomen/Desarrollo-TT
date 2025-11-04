@@ -3,12 +3,14 @@
 """
 Generador automático de datos de prueba para las tablas de la base de datos
 Genera 1000 filas aleatorias para cada tabla con formato PPU AAAA00 y fechas válidas
+Crea archivos SQL separados por tabla
 """
 
 import random
 import string
 from datetime import datetime, timedelta
 from typing import List, Tuple
+import os
 
 class GeneradorDatosPrueba:
     def __init__(self):
@@ -227,79 +229,141 @@ class GeneradorDatosPrueba:
         
         return datos
     
-    def generar_archivo_sql(self, archivo_salida: str, cantidad_filas: int = 10000):
-        """Genera el archivo SQL completo con todas las tablas"""
-        print(f"Generando {cantidad_filas} filas para cada tabla...")
+    def generar_archivo_permiso_circulacion(self, archivo_salida: str, cantidad_filas: int = 10000):
+        """Genera archivo SQL solo para permiso_circulacion"""
+        print(f"Generando {cantidad_filas} filas para permiso_circulacion...")
         
-        # Generar datos para cada tabla
-        datos_permiso = self.generar_datos_permiso_circulacion(cantidad_filas)
-        datos_fiscalizacion = self.generar_datos_log_fiscalizacion(cantidad_filas)
-        datos_consultas = self.generar_datos_log_consultas_propietarios(cantidad_filas)
+        datos = self.generar_datos_permiso_circulacion(cantidad_filas)
         
-        # Escribir archivo SQL
         with open(archivo_salida, 'w', encoding='utf-8') as f:
-            f.write("-- DATOS DE PRUEBA GENERADOS AUTOMÁTICAMENTE\n")
-            f.write(f"-- {cantidad_filas} filas aleatorias por tabla\n")
+            f.write("-- DATOS DE PRUEBA - TABLA: permiso_circulacion\n")
+            f.write(f"-- {cantidad_filas} filas aleatorias\n")
             f.write(f"-- Generado el {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
             f.write("USE back_db;\n\n")
             
-            # Tabla permiso_circulacion
-            f.write(f"-- {cantidad_filas} filas para permiso_circulacion\n")
+            f.write(f"-- Insertando {cantidad_filas} registros en permiso_circulacion\n")
             f.write("INSERT INTO permiso_circulacion (\n")
             f.write("    ppu, rut, nombre, fecha_emision, fecha_expiracion, valor_permiso, motor, chasis,\n")
             f.write("    tipo_vehiculo, color, marca, modelo, anio, carga, tipo_sello, combustible,\n")
             f.write("    cilindrada, transmision, pts, ast, equipamiento, codigo_sii, tasacion\n")
             f.write(") VALUES\n")
             
-            for i, linea in enumerate(datos_permiso):
-                if i < len(datos_permiso) - 1:
-                    f.write(f"{linea},\n")
-                else:
-                    f.write(f"{linea};\n\n")
-            
-            # Tabla log_fiscalizacion
-            f.write(f"-- {cantidad_filas} filas para log_fiscalizacion\n")
-            f.write("INSERT INTO log_fiscalizacion (\n")
-            f.write("    ppu, rut_fiscalizador, fecha, vigencia_permiso, vigencia_revision, vigencia_soap, encargo_robo\n")
-            f.write(") VALUES\n")
-            
-            for i, linea in enumerate(datos_fiscalizacion):
-                if i < len(datos_fiscalizacion) - 1:
-                    f.write(f"{linea},\n")
-                else:
-                    f.write(f"{linea};\n\n")
-            
-            # Tabla log_consultas_propietarios
-            f.write(f"-- {cantidad_filas} filas para log_consultas_propietarios\n")
-            f.write("INSERT INTO log_consultas_propietarios (\n")
-            f.write("    rut, ppu, fecha\n")
-            f.write(") VALUES\n")
-            
-            for i, linea in enumerate(datos_consultas):
-                if i < len(datos_consultas) - 1:
+            for i, linea in enumerate(datos):
+                if i < len(datos) - 1:
                     f.write(f"{linea},\n")
                 else:
                     f.write(f"{linea};\n")
         
-        print(f"Archivo generado exitosamente: {archivo_salida}")
-        print(f"Total de filas generadas: {cantidad_filas * 3}")
+        print(f"✓ Archivo generado: {archivo_salida}")
+    
+    def generar_archivo_log_fiscalizacion(self, archivo_salida: str, cantidad_filas: int = 10000):
+        """Genera archivo SQL solo para log_fiscalizacion"""
+        print(f"Generando {cantidad_filas} filas para log_fiscalizacion...")
+        
+        datos = self.generar_datos_log_fiscalizacion(cantidad_filas)
+        
+        with open(archivo_salida, 'w', encoding='utf-8') as f:
+            f.write("-- DATOS DE PRUEBA - TABLA: log_fiscalizacion\n")
+            f.write(f"-- {cantidad_filas} filas aleatorias\n")
+            f.write(f"-- Generado el {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write("USE back_db;\n\n")
+            
+            f.write(f"-- Insertando {cantidad_filas} registros en log_fiscalizacion\n")
+            f.write("INSERT INTO log_fiscalizacion (\n")
+            f.write("    ppu, rut_fiscalizador, fecha, vigencia_permiso, vigencia_revision, vigencia_soap, encargo_robo\n")
+            f.write(") VALUES\n")
+            
+            for i, linea in enumerate(datos):
+                if i < len(datos) - 1:
+                    f.write(f"{linea},\n")
+                else:
+                    f.write(f"{linea};\n")
+        
+        print(f"✓ Archivo generado: {archivo_salida}")
+    
+    def generar_archivo_log_consultas_propietarios(self, archivo_salida: str, cantidad_filas: int = 10000):
+        """Genera archivo SQL solo para log_consultas_propietarios"""
+        print(f"Generando {cantidad_filas} filas para log_consultas_propietarios...")
+        
+        datos = self.generar_datos_log_consultas_propietarios(cantidad_filas)
+        
+        with open(archivo_salida, 'w', encoding='utf-8') as f:
+            f.write("-- DATOS DE PRUEBA - TABLA: log_consultas_propietarios\n")
+            f.write(f"-- {cantidad_filas} filas aleatorias\n")
+            f.write(f"-- Generado el {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write("USE back_db;\n\n")
+            
+            f.write(f"-- Insertando {cantidad_filas} registros en log_consultas_propietarios\n")
+            f.write("INSERT INTO log_consultas_propietarios (\n")
+            f.write("    rut, ppu, fecha\n")
+            f.write(") VALUES\n")
+            
+            for i, linea in enumerate(datos):
+                if i < len(datos) - 1:
+                    f.write(f"{linea},\n")
+                else:
+                    f.write(f"{linea};\n")
+        
+        print(f"✓ Archivo generado: {archivo_salida}")
+    
+    def generar_archivo_completo(self, directorio_salida: str = ".", cantidad_filas: int = 10000):
+        """Genera todos los archivos SQL separados"""
+        print(f"\n📊 Iniciando generación de {cantidad_filas} filas por tabla...\n")
+        
+        # Crear directorio si no existe
+        if not os.path.exists(directorio_salida):
+            os.makedirs(directorio_salida)
+            print(f"📁 Directorio creado: {directorio_salida}\n")
+        
+        # Generar archivos separados
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        archivo_permiso = os.path.join(directorio_salida, f"01_permiso_circulacion_{cantidad_filas}_{timestamp}.sql")
+        archivo_fiscalizacion = os.path.join(directorio_salida, f"02_log_fiscalizacion_{cantidad_filas}_{timestamp}.sql")
+        archivo_consultas = os.path.join(directorio_salida, f"03_log_consultas_propietarios_{cantidad_filas}_{timestamp}.sql")
+        
+        # Generar cada archivo
+        self.generar_archivo_permiso_circulacion(archivo_permiso, cantidad_filas)
+        self.generar_archivo_log_fiscalizacion(archivo_fiscalizacion, cantidad_filas)
+        self.generar_archivo_log_consultas_propietarios(archivo_consultas, cantidad_filas)
+        
+        # Información final
+        print(f"\n{'='*60}")
+        print(f"✅ GENERACIÓN COMPLETADA CON ÉXITO")
+        print(f"{'='*60}")
+        print(f"\n📁 Ubicación: {os.path.abspath(directorio_salida)}\n")
+        print(f"Archivos generados ({cantidad_filas} filas cada uno):\n")
+        print(f"  1️⃣  {os.path.basename(archivo_permiso)}")
+        print(f"  2️⃣  {os.path.basename(archivo_fiscalizacion)}")
+        print(f"  3️⃣  {os.path.basename(archivo_consultas)}\n")
+        print(f"⏱️  Total de registros: {cantidad_filas * 3:,}")
+        print(f"📅 Timestamp: {timestamp}\n")
+        
+        # Instrucciones de uso
+        print(f"{'='*60}")
+        print(f"📋 INSTRUCCIONES DE USO:")
+        print(f"{'='*60}\n")
+        print(f"En MySQL Workbench o línea de comandos:\n")
+        print(f"  mysql -u root -p back_db < {os.path.basename(archivo_permiso)}")
+        print(f"  mysql -u root -p back_db < {os.path.basename(archivo_fiscalizacion)}")
+        print(f"  mysql -u root -p back_db < {os.path.basename(archivo_consultas)}\n")
+        print(f"O ejecutarlos en orden dentro de MySQL:\n")
+        print(f"  source {archivo_permiso};")
+        print(f"  source {archivo_fiscalizacion};")
+        print(f"  source {archivo_consultas};\n")
 
 def main():
     """Función principal"""
     generador = GeneradorDatosPrueba()
     
-    # Archivo de salida
-    archivo_salida = "datos_prueba_1000_filas.sql"
+    # Directorio de salida
+    directorio_salida = "datos_generados"
     
-    # Generar archivo con 1000 filas por tabla
-    generador.generar_archivo_sql(archivo_salida, 10000)
+    # Cantidad de filas por tabla
+    cantidad_filas = 10000
     
-    print("\n¡Generación completada!")
-    print(f"Archivo creado: {archivo_salida}")
-    print("Contiene 1000 filas para cada una de las 3 tablas:")
-    print("- permiso_circulacion")
-    print("- log_fiscalizacion") 
-    print("- log_consultas_propietarios")
+    # Generar todos los archivos
+    generador.generar_archivo_completo(directorio_salida, cantidad_filas)
 
 if __name__ == "__main__":
     main()
