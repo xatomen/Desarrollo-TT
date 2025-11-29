@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic
+dotenv
+pymysql
+mysql-connector-python
+patentes-vehiculares-chile
+requests

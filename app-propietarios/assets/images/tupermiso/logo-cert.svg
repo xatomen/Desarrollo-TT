@@ -1,0 +1,42 @@
+<svg id="logo-cert" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1000" viewBox="0 0 1000 1000">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+        stroke: #000;
+        stroke-width: 7.33px;
+        stroke-dasharray: 29.32 14.66;
+      }
+
+      .cls-2 {
+        font-size: 50px;
+      }
+
+      .cls-2, .cls-3, .cls-4, .cls-5 {
+        text-anchor: middle;
+      }
+
+      .cls-2, .cls-5 {
+        font-family: FE-Font;
+      }
+
+      .cls-3, .cls-4 {
+        font-size: 104.167px;
+      }
+
+      .cls-4 {
+        font-family: "Franklin Gothic Medium Cond";
+      }
+
+      .cls-5 {
+        font-size: 154.167px;
+      }
+    </style>
+    <path id="text-path"/>
+  </defs>
+  <circle id="Elipse_1" data-name="Elipse 1" class="cls-1" cx="500" cy="500" r="500"/>
+  <text id="c_h_i_l_e" data-name="c h i l e" class="cls-2" x="499" y="643">c h i l e</text>
+  <text class="cls-3"><textPath startOffset="50%" xlink:href="#text-path"><tspan class="cls-4">EMITIDO POR</tspan></textPath></text>
+  <text id="texto" class="cls-5" x="499" y="544">TU PERMIS0</text>
+  <image id="estrella_chile" data-name="estrella chile" x="256" y="484" width="40" height="40" xlink:href="data:img/png;base64,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"/>
+</svg>

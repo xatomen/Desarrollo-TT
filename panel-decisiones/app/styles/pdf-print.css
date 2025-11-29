@@ -1,0 +1,186 @@
+/* styles/pdf-print.css */
+
+/* Estilos específicos para la generación de PDF */
+@media print {
+  body {
+    font-family: 'Helvetica', Arial, sans-serif;
+    color: #000;
+    background: white;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .page-break {
+    page-break-before: always;
+  }
+  
+  .avoid-break {
+    page-break-inside: avoid;
+  }
+}
+
+/* Ocultar elementos específicos solo durante la generación de PDF */
+.generating-pdf .pdf-hide-buttons {
+  display: none !important;
+}
+
+/* Ocultar solo botones durante la generación */
+.generating-pdf .btn {
+  display: none !important;
+}
+
+.generating-pdf .spinner-border,
+.generating-pdf .spinner-border-sm {
+  display: none !important;
+}
+
+/* Estilos generales para cuando se está generando el PDF */
+.generating-pdf {
+  opacity: 1;
+  pointer-events: none;
+}
+
+/* Nota: Los estilos específicos de tabla se aplican dinámicamente durante la captura */
+
+/* Mejorar las tablas para el PDF */
+.generating-pdf .table-responsive {
+  overflow: visible !important;
+  max-width: 100% !important;
+}
+
+.generating-pdf .table {
+  font-size: 11px !important;
+  width: 100% !important;
+  table-layout: fixed !important;
+  margin-bottom: 1rem !important;
+}
+
+.generating-pdf .table th,
+.generating-pdf .table td {
+  padding: 4px 6px !important;
+  vertical-align: middle !important;
+  border: 1px solid #dee2e6 !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  hyphens: auto !important;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+}
+
+.generating-pdf .table th {
+  background-color: #f8f9fa !important;
+  font-weight: bold !important;
+  text-align: center !important;
+}
+
+/* Ajustar anchos específicos de columnas */
+.generating-pdf .table th:nth-child(1),
+.generating-pdf .table td:nth-child(1) {
+  width: 15% !important;
+}
+
+.generating-pdf .table th:nth-child(2),
+.generating-pdf .table td:nth-child(2) {
+  width: 25% !important;
+}
+
+.generating-pdf .table th:nth-child(3),
+.generating-pdf .table td:nth-child(3) {
+  width: 20% !important;
+}
+
+.generating-pdf .table th:nth-child(4),
+.generating-pdf .table td:nth-child(4) {
+  width: 15% !important;
+}
+
+.generating-pdf .table th:nth-child(5),
+.generating-pdf .table td:nth-child(5) {
+  width: 12% !important;
+}
+
+.generating-pdf .table th:nth-child(6),
+.generating-pdf .table td:nth-child(6) {
+  width: 13% !important;
+}
+
+/* Ajustar gráficos */
+.generating-pdf canvas {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* Ajustar cards y contenedores */
+.generating-pdf .card {
+  break-inside: avoid !important;
+  margin-bottom: 15px !important;
+}
+
+.generating-pdf .row {
+  margin: 0 !important;
+}
+
+.generating-pdf .col-12,
+.generating-pdf .col-lg-6 {
+  padding: 5px !important;
+}
+
+/* Mejorar la apariencia de los KPIs en el PDF */
+.generating-pdf .card-body {
+  padding: 1rem;
+}
+
+.generating-pdf .card-title {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+/* Mejorar la legibilidad en el PDF */
+.generating-pdf {
+  background: white;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.generating-pdf h1,
+.generating-pdf h2,
+.generating-pdf h3,
+.generating-pdf h4,
+.generating-pdf h5,
+.generating-pdf h6 {
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.generating-pdf .display-6 {
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* Estilos para los filtros en el PDF */
+.generating-pdf .form-control,
+.generating-pdf .form-select {
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+/* Asegurar que los elementos de Bootstrap se vean correctamente */
+.generating-pdf .row {
+  margin-left: -0.75rem;
+  margin-right: -0.75rem;
+}
+
+.generating-pdf .col-12,
+.generating-pdf .col-md-2,
+.generating-pdf .col-md-3,
+.generating-pdf .col-md-4,
+.generating-pdf .col-md-6,
+.generating-pdf .col-lg-6 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}

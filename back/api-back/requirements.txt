@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic
+dotenv
+pymysql
+mysql-connector-python
+patentes-vehiculares-chile
+httpx
+requests
+rut-chile
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+google-generativeai

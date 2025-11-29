@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Contenedor visual de la sección */
+.card-like {
+  background: #fff;
+  border-radius: .75rem;
+  box-shadow: 0 8px 24px rgba(16,24,40,.06);
+}
+
+/* Etiquetas de estado estilo “tag/badge” con puntito */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .35rem .7rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: .875rem;
+  line-height: 1;
+}
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+
+/* Semáforo */
+.status--pagado    { color:#0b5d2b; background:#e7f6ec; }
+.status--pagado .status-dot { background:#28a745; }
+.status--habilitado{ color:#7a4d00; background:#fff3cd; }
+.status--habilitado .status-dot { background:#ffc107; }
+.status--vencido   { color:#7a1020; background:#ffe1e6; }
+.status--vencido .status-dot { background:#dc3545; }

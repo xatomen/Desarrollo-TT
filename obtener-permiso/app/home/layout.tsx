@@ -1,0 +1,36 @@
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import { relative } from 'path';
+import Chatbot from '@/components/Chatbot';
+
+export default function HomeLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <div 
+      style={{ 
+        minHeight: '100vh',
+        display: 'flex',        // ✅ Agregar display flex
+        flexDirection: 'column', // ✅ Dirección vertical
+      }}
+    >
+      <Navbar />
+      <div style={{ 
+        flex: 1, 
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        // alignItems: 'center',
+        padding: '2rem', // Espaciado para el contenido
+        backgroundColor: '#f3f3f3ff',  // Color de fondo claro
+        // background: 'linear-gradient(135deg, #e4e9e0ff, #e3f5faff, #e5d4ffff)', // Degradado suave
+       }}>
+        {children}
+      </div>
+      <Footer />
+      <Chatbot />
+    </div>
+  );
+}

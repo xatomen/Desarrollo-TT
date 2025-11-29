@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+node_modules/
+.vscode/
+.expo/
+db_data/
+expo-env.d.ts
+.env
