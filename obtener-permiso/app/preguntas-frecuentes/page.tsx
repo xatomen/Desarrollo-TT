@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useState } from 'react';
+import Chatbot from '@/components/Chatbot';
 
 const preguntasFrecuentes = [
   {
@@ -301,6 +302,7 @@ export default function PreguntasFrecuentesPage({
         )}
       </div>
       <Footer />
+      <Chatbot />
     </div>
   );
 }
