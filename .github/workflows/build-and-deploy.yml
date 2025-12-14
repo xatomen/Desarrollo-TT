@@ -108,6 +108,19 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
       
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-options: image=moby/buildkit:latest
+      
+      - name: Verify ECR Login and Docker credentials
+        run: |
+          echo "ECR Registry: ${{ steps.login-ecr.outputs.registry }}"
+          aws ecr describe-repositories --region ${{ env.AWS_REGION }} | head -20
+          echo "Checking Docker authentication..."
+          echo "${{ steps.login-ecr.outputs.docker_username }}" | docker login -u "${{ steps.login-ecr.outputs.docker_username }}" --password-stdin "${{ env.ECR_REGISTRY }}" 2>/dev/null || true
+          echo "✅ ECR and Docker login verified"
+      
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -117,8 +130,9 @@ jobs:
           tags: |
             ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:${{ github.sha }}
             ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=registry,ref=${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:buildcache
+          cache-to: type=registry,ref=${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:buildcache,mode=max
+          build-args: BUILDKIT_INLINE_CACHE=1
       
       - name: Print image details
         run: |
