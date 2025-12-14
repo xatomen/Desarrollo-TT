@@ -1,0 +1,17 @@
+# Git ignore for terraform files
+*.tfstate
+*.tfstate.*
+.terraform/crash
+.terraform.lock.hcl
+.terraform/plugins
+.terraform/modules
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terragrunt-cache/
+*.tfvars
+*.tfvars.json
+*.tfplan
+plan.out
+.terraform/
