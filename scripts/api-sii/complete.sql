@@ -1,7 +1,7 @@
 CREATE DATABASE IF NOT EXISTS sii_db;
 USE sii_db;
 
-CREATE TABLE TASACION_FISCAL (
+CREATE TABLE tasacion_fiscal (
     codigo_sii VARCHAR(20) PRIMARY KEY,
     tipo VARCHAR(50),
     anio INT,
@@ -22,7 +22,7 @@ CREATE TABLE TASACION_FISCAL (
     valor_permiso INT
 );
 
-CREATE TABLE FACTURA_COMPRA (
+CREATE TABLE factura_compra (
     num_factura INT PRIMARY KEY,
     precio_neto INT,
     puertas INT,
@@ -43,7 +43,7 @@ CREATE TABLE FACTURA_COMPRA (
     anio INT
 );
 
-INSERT INTO TASACION_FISCAL (codigo_sii, tipo, anio, marca, modelo, version, combustible, cilindrada, potencia, marchas, transmision, traccion, puertas, pais, equipamiento, tasacion, num_ejes, valor_permiso) VALUES
+INSERT INTO tasacion_fiscal (codigo_sii, tipo, anio, marca, modelo, version, combustible, cilindrada, potencia, marchas, transmision, traccion, puertas, pais, equipamiento, tasacion, num_ejes, valor_permiso) VALUES
 
 -- Sedanes y Hatchbacks
 ('SD428391', 'Sedán', 2023, 'Toyota', 'Corolla', 'XEI', 'Gasolina', 1800, 140, 6, 'Automática', '4x2', 4, 'Japón', 'Aire Acondicionado, ABS', 12500000, 2, 125000),
@@ -83,7 +83,7 @@ INSERT INTO TASACION_FISCAL (codigo_sii, tipo, anio, marca, modelo, version, com
 ('MT953234', 'Motocicleta', 2020, 'Yamaha', 'YZF-R3', 'Standard', 'Gasolina', 321, 42, 6, 'Manual', 'Trasera', 0, 'Japón', 'Frenos Disco', 2700000, 2, 18000),
 ('CA623454', 'Camión', 2021, 'Volvo', 'FH16', 'Globetrotter', 'Diesel', 16000, 750, 12, 'Automática', '6x4', 2, 'Suecia', 'Frenos Aire, ABS', 42000000, 3, 260000);
 
-INSERT INTO FACTURA_COMPRA (
+INSERT INTO factura_compra (
     num_factura, precio_neto, puertas, asientos, combustible, 
     peso, transmision, traccion, cilindrada, carga, tipo_sello, 
     tipo_vehiculo, marca, modelo, num_chasis, num_motor, color, anio

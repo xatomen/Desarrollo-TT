@@ -4,7 +4,7 @@ CREATE DATABASE IF NOT EXISTS sgd_db;
 
 USE sgd_db;
 
-CREATE TABLE IF NOT EXISTS SGD (
+CREATE TABLE IF NOT EXISTS sgd (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     rut VARCHAR(12) NOT NULL,
     contrasena VARCHAR(255) NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS SGD (
     email VARCHAR(100) NOT NULL UNIQUE
 );
 
-INSERT INTO SGD (rut, contrasena, nombre, email) VALUES
+INSERT INTO sgd (rut, contrasena, nombre, email) VALUES
 ('15882609-7', 'ClaveUnica2024!', 'Juan Carlos Pérez', 'juan.perez@sgd.gov.cl'),
 ('14296139-3', 'Segura123*', 'María Elena González', 'maria.gonzalez@sgd.gov.cl'),
 ('21942260-1', 'Digital2024#', 'Pedro Antonio Silva', 'pedro.silva@sgd.gov.cl'),

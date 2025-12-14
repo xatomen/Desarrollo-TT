@@ -4,7 +4,7 @@ CREATE DATABASE IF NOT EXISTS prt_db;
 USE prt_db;
 
 -- Crear tabla REVISION_TECNICA (PRT)
-CREATE TABLE REVISION_TECNICA (
+CREATE TABLE revision_tecnica (
     ID_REV_TECNICA INT AUTO_INCREMENT PRIMARY KEY,
     PPU VARCHAR(10),
     FECHA DATE,
@@ -16,7 +16,7 @@ CREATE TABLE REVISION_TECNICA (
 );
 
 -- Grupo 1: Vencimiento antes de julio 2025
-INSERT INTO REVISION_TECNICA (ppu, fecha, codigo_planta, planta, nom_certificado, fecha_vencimiento, estado) VALUES
+INSERT INTO revision_tecnica (ppu, fecha, codigo_planta, planta, nom_certificado, fecha_vencimiento, estado) VALUES
 -- Vencidas o próximas a vencer
 ('BBCL25', '2024-05-15', 'AB1234', 'PRT Las Condes', 'CERT-2024-001', '2025-05-15', 'aprobada'),
 

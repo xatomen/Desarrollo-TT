@@ -3,7 +3,7 @@ CREATE DATABASE IF NOT EXISTS mtt_db;
 USE mtt_db;
 
 -- Crear la tabla MULTAS_RPI
-CREATE TABLE IF NOT EXISTS MULTAS_RPI (
+CREATE TABLE IF NOT EXISTS multas_rpi (
     id INT AUTO_INCREMENT PRIMARY KEY,
     rut VARCHAR(12) NOT NULL,
     rol_causa VARCHAR(20) NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS MULTAS_RPI (
     monto_multa INT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS REG_TRANSPORTE (
+CREATE TABLE IF NOT EXISTS reg_transporte (
     ppu VARCHAR(10) PRIMARY KEY,
     fecha_entrada_rnt DATE NOT NULL,
     tipo_servicio VARCHAR(30) NOT NULL,
@@ -28,10 +28,10 @@ CREATE TABLE IF NOT EXISTS REG_TRANSPORTE (
 );
 
 -- Índice para búsquedas rápidas por RUT
-CREATE INDEX idx_multa_rut ON MULTAS_RPI (rut);
-CREATE INDEX idx_transporte_ppu ON REG_TRANSPORTE (ppu);
+CREATE INDEX idx_multa_rut ON multas_rpi (rut);
+CREATE INDEX idx_transporte_ppu ON reg_transporte (ppu);
 
-INSERT INTO MULTAS_RPI (rut, rol_causa, anio_causa, nombre_jpl, monto_multa) VALUES
+INSERT INTO multas_rpi (rut, rol_causa, anio_causa, nombre_jpl, monto_multa) VALUES
 
 -- Ana Morales Torres (2 multas)
 ('21942260-1', '1234-5-2025', 2025, 'Juzgado de Policía Local de Las Condes', 35000),
@@ -70,7 +70,7 @@ INSERT INTO MULTAS_RPI (rut, rol_causa, anio_causa, nombre_jpl, monto_multa) VAL
 ('20857826-K', '7890-3-2025', 2025, 'Juzgado de Policía Local de La Florida', 40000),
 ('20857826-K', '6789-4-2025', 2025, 'Juzgado de Policía Local de La Florida', 45000);
 
-INSERT INTO REG_TRANSPORTE (ppu, fecha_entrada_rnt, tipo_servicio, capacidad, estado_vehiculo, fecha_vencimiento_certificado, region, anio_fabricacion, cinturon_obligatorio, antiguedad_vehiculo, marca, modelo) VALUES
+INSERT INTO reg_transporte (ppu, fecha_entrada_rnt, tipo_servicio, capacidad, estado_vehiculo, fecha_vencimiento_certificado, region, anio_fabricacion, cinturon_obligatorio, antiguedad_vehiculo, marca, modelo) VALUES
 ('AB1234', '2025-01-01', 'Transporte de Pasajeros', 50, 'Activo', '2025-12-31', 13, 2020, TRUE, 5, 'Mercedes-Benz', 'Sprinter'),
 ('CD5678', '2025-02-01', 'Transporte de Carga', 20, 'Inactivo', '2025-06-30', 5, 2018, FALSE, 7, 'Volvo', 'FH'),
 ('EF9012', '2025-03-01', 'Transporte Escolar', 30, 'Activo', '2025-12-31', 7, 2021, TRUE, 4, 'Chevrolet', 'Express');
