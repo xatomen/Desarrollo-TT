@@ -210,6 +210,7 @@ jobs:
             --from-literal=SGD_API_URL="http://sgd-api:8000" \
             --from-literal=TGR_API_URL="http://tgr-api:8000" \
             --from-literal=SRCEI_API_URL="http://srcei-api:8000" \
+            --from-literal=SENDGRID_FROM_EMAIL="no-reply@jorgegallardo.studio" \
             -n desarrollo-tt --dry-run=client -o yaml | kubectl apply -f -
       
       - name: Create database names ConfigMap
@@ -237,7 +238,8 @@ jobs:
         run: |
           kubectl create secret generic api-secrets \
             --from-literal=JWT_SECRET=${{ secrets.JWT_SECRET }} \
-            --from-literal=API_KEY=${{ secrets.API_KEY }} \
+            --from-literal=GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
+            --from-literal=SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }} \
             -n desarrollo-tt --dry-run=client -o yaml | kubectl apply -f -
       
       - name: Create ECR pull secret

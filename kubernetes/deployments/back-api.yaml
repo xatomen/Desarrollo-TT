@@ -69,7 +69,11 @@ spec:
             configMapKeyRef:
               name: app-config
               key: LOG_LEVEL
-        resources:
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: GEMINI_API_KEY
           requests:
             memory: "256Mi"
             cpu: "100m"

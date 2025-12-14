@@ -35,7 +35,16 @@ spec:
             configMapKeyRef:
               name: app-config
               key: ENVIRONMENT
-        resources:
+        - name: SENDGRID_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-secrets
+              key: SENDGRID_API_KEY
+        - name: SENDGRID_FROM_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: SENDGRID_FROM_EMAIL
           requests:
             memory: "256Mi"
             cpu: "100m"

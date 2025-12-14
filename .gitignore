@@ -6,3 +6,4 @@ node_modules/
 db_data/
 expo-env.d.ts
 .env
+secrets.txt

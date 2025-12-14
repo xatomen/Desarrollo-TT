@@ -12,8 +12,9 @@
 | `EKS_CLUSTER_NAME` | `desarrollo-tt-cluster` | Nombre del cluster EKS |
 | `DB_USERNAME` | `admin` | Usuario de RDS |
 | `DB_PASSWORD` | `P@ssw0rd123!SecurePassword` | Password de RDS (strong) |
-| `JWT_SECRET` | `your-secret-jwt-key-12345678` | Secret para JWT |
-| `API_KEY` | `sk-1234567890abcdefghijklmnop` | API Key general |
+| `JWT_SECRET` | `your-secret-jwt-key-12345678` | Secret para JWT (tokens de sesión) |
+| `GEMINI_API_KEY` | Tu API key de Google Gemini | Secret para chatbot con IA |
+| `SENDGRID_API_KEY` | `SG.xxxxxxxxxxxxxxxxxxxxx` | Secret para envío de emails |
 | `TERRAFORM_TFVARS` | Ver sección Terraform | Archivo tfvars completo para Terraform |
 
 ## Variables a Agregar (OPCIONALES)
@@ -33,8 +34,9 @@ gh secret set AWS_ROLE_ARN --body "arn:aws:iam::123456789012:role/github-actions
 gh secret set EKS_CLUSTER_NAME --body "desarrollo-tt-cluster"
 gh secret set DB_USERNAME --body "admin"
 gh secret set DB_PASSWORD --body "P@ssw0rd123!SecurePassword"
-gh secret set JWT_SECRET --body "your-secret-jwt-key-12345678"
-gh secret set API_KEY --body "sk-1234567890abcdefghijklmnop"
+gh secret set JWT_SECRET --body "tu-jwt-secret-aleatorio-aqui"
+gh secret set GEMINI_API_KEY --body "tu-gemini-api-key-aqui"
+gh secret set SENDGRID_API_KEY --body "SG.xxxxxxxxxxxxxxxxxxxxx"
 ```
 
 ### Opción 2: GitHub UI
@@ -87,15 +89,16 @@ gh variable set AWS_REGION --body "us-east-1"
 
 ## Checklist Completo
 
-**Secretos (8 REQUERIDOS):**
+**Secretos (9 REQUERIDOS):**
 - [ ] AWS_ACCOUNT_ID
 - [ ] AWS_ROLE_ARN
 - [ ] EKS_CLUSTER_NAME
 - [ ] DB_USERNAME
 - [ ] DB_PASSWORD
-- [ ] JWT_SECRET
-- [ ] API_KEY
-- [ ] TERRAFORM_TFVARS ⭐ (crítico para Infrastructure Management)
+- [ ] JWT_SECRET (token de sesión admin)
+- [ ] GEMINI_API_KEY (chatbot IA)
+- [ ] SENDGRID_API_KEY (envío de emails)
+- [ ] TERRAFORM_TFVARS ⭐ (contenido de env.tfvars)
 
 **Variables (OPCIONAL):**
 - [ ] AWS_REGION (default: us-east-1)
@@ -123,6 +126,8 @@ gh variable list
 
 - `AWS_ACCOUNT_ID`, `AWS_ROLE_ARN`, `EKS_CLUSTER_NAME` → build-and-deploy workflow
 - `DB_USERNAME`, `DB_PASSWORD` → Kubernetes Secret (db-credentials)
-- `JWT_SECRET`, `API_KEY` → Kubernetes Secret (api-secrets)
+- `JWT_SECRET` → Kubernetes Secret (api-secrets) - Autenticación de admin
+- `GEMINI_API_KEY` → Kubernetes Secret (api-secrets) - Chatbot con Google Gemini IA
+- `SENDGRID_API_KEY` → Kubernetes Secret (api-secrets) - Envío de emails
 - `TERRAFORM_TFVARS` → infrastructure-management workflow (Terraform provisioning)
 - `AWS_REGION` → Ambos workflows (fallback a us-east-1)
