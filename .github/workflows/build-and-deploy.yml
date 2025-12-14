@@ -170,17 +170,16 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
       
-      - name: Update kubeconfig
-        run: |
-          aws eks update-kubeconfig \
-            --region ${{ env.AWS_REGION }} \
-            --name ${{ env.EKS_CLUSTER_NAME }} \
-            --role-arn ${{ secrets.AWS_ROLE_ARN }}
-      
       - name: Install kubectl
         uses: azure/setup-kubectl@v3
         with:
           version: 'v1.28.0'
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ env.EKS_CLUSTER_NAME }}
       
       - name: Create namespace
         run: |
