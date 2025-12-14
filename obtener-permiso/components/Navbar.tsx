@@ -1,8 +1,10 @@
 'use client';
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
+  const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { user, logout } = useAuth(); // ✅ Usar el hook de autenticación
 
@@ -64,7 +66,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-4">
             <button
               className="btn btn-primary hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
-              onClick={() => window.location.href = '/login'}
+              onClick={() => router.push('/login')}
             >
               Iniciar Sesión
             </button>

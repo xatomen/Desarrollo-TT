@@ -222,8 +222,10 @@ def validar_clave_unica(credentials: CredencialesLogin, db: Session = Depends(ge
                 and_(
                     text("BINARY rut = :rut"),
                     text("BINARY contrasena = :contrasena")
+                ).params(
+                    {"rut": credentials.rut, "contrasena": credentials.contrasena}
                 )
-            ).params(rut=credentials.rut, contrasena=credentials.contrasena).first()
+            ).first()
         except Exception as db_error:
             print(f"Error de base de datos: {db_error}")
             raise HTTPException(status_code=500, detail="Error interno del servidor")

@@ -82,6 +82,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Helper para rutas que funcione con basePath
+  const getRoute = (path: string) => {
+    // router.push() de Next.js maneja automáticamente el basePath
+    // pero normalizamos para asegurar que funcione
+    return path.startsWith('/') ? path : '/' + path;
+  };
+
   const publicRoutes = ['/login', '/', '/preguntas-frecuentes'];
 
   // Función mejorada para inicializar autenticación
@@ -206,7 +213,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setUser(null);
     setIsAuthenticated(false);
-    router.push('/login');
+    router.push(getRoute('/login'));
   };
 
   // useEffect para actualizar cookies cuando cambie el usuario
@@ -225,9 +232,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const isPublicRoute = publicRoutes.includes(pathname);
       
       if (!isAuthenticated && !isPublicRoute) {
-        router.push('/login');
+        router.push(getRoute('/login'));
       } else if (isAuthenticated && pathname === '/login') {
-        router.push('/home');
+        router.push(getRoute('/home'));
       }
     }
   }, [isAuthenticated, isLoading, pathname]);
