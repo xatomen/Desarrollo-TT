@@ -174,7 +174,8 @@ jobs:
         run: |
           aws eks update-kubeconfig \
             --region ${{ env.AWS_REGION }} \
-            --name ${{ env.EKS_CLUSTER_NAME }}
+            --name ${{ env.EKS_CLUSTER_NAME }} \
+            --role-arn ${{ secrets.AWS_ROLE_ARN }}
       
       - name: Install kubectl
         uses: azure/setup-kubectl@v3
