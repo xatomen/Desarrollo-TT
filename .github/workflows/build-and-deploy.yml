@@ -127,10 +127,9 @@ jobs:
           echo "Image pushed: ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:${{ github.sha }}"
           docker images | grep desarrollo-tt
 
-  push-to-ecr:
+  check-ecr-images:
     needs: build-images
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
     
     permissions:
       contents: read
@@ -154,9 +153,8 @@ jobs:
             --region ${{ env.AWS_REGION }} || echo "Image verification pending"
 
   deploy-to-eks:
-    needs: push-to-ecr
+    needs: check-ecr-images
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     
     permissions:
       contents: read
