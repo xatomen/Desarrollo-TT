@@ -74,6 +74,7 @@ spec:
             secretKeyRef:
               name: api-secrets
               key: GEMINI_API_KEY
+        resources:
           requests:
             memory: "256Mi"
             cpu: "100m"
