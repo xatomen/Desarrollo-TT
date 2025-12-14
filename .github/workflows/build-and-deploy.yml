@@ -115,14 +115,14 @@ jobs:
           file: ${{ matrix.dockerfile }}
           push: true
           tags: |
-            ${{ env.ECR_REGISTRY }}/${{ secrets.AWS_ACCOUNT_ID }}/${{ matrix.image-name }}:${{ github.sha }}
-            ${{ env.ECR_REGISTRY }}/${{ secrets.AWS_ACCOUNT_ID }}/${{ matrix.image-name }}:latest
+            ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:${{ github.sha }}
+            ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
       
       - name: Print image details
         run: |
-          echo "Image pushed: ${{ env.ECR_REGISTRY }}/${{ secrets.AWS_ACCOUNT_ID }}/${{ matrix.image-name }}:${{ github.sha }}"
+          echo "Image pushed: ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:${{ github.sha }}"
 
   push-to-ecr:
     needs: build-images
@@ -146,7 +146,7 @@ jobs:
       - name: Verify images in ECR
         run: |
           aws ecr describe-images \
-            --repository-name ${{ secrets.AWS_ACCOUNT_ID }}/obtener-permiso-app \
+            --repository-name desarrollo-tt/obtener-permiso-app \
             --image-ids imageTag=${{ github.sha }} \
             --region ${{ env.AWS_REGION }} || echo "Image verification pending"
 
@@ -270,7 +270,7 @@ jobs:
           APPS=("obtener-permiso-app" "panel-decisiones-app" "fiscalizadores-app" "propietarios-app" "aach-api" "carabineros-api" "mtt-api" "prt-api" "sgd-api" "sii-api" "srcei-api" "tgr-api" "back-api")
           
           for app in "${APPS[@]}"; do
-            IMAGE="${{ env.ECR_REGISTRY }}/${{ secrets.AWS_ACCOUNT_ID }}/${app}:${{ github.sha }}"
+            IMAGE="${{ env.ECR_REGISTRY }}/desarrollo-tt/${app}:${{ github.sha }}"
             
             echo "Updating $app with image: $IMAGE"
             
