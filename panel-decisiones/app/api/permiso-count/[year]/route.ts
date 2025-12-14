@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import API_CONFIG from '@/config/apis';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { year: string } }
+  { params }: { params: Promise<{ year: string }> }
 ) {
+  let year: string | undefined;
   try {
-    const year = params.year;
+    ({ year } = await params);
     
     // Validar que el año sea un número válido
     if (!year || isNaN(Number(year))) {
@@ -16,7 +18,7 @@ export async function GET(
     }
 
     // Hacer la petición al servicio interno
-    const response = await fetch(`http://localhost:5007/permiso_count/${year}`, {
+    const response = await fetch(`${API_CONFIG.BACKEND}/permiso_count/${year}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -40,7 +42,7 @@ export async function GET(
     });
 
   } catch (error) {
-    console.error(`Error en proxy permiso-count para año ${params.year}:`, error);
+    console.error(`Error en proxy permiso-count para año ${year}:`, error);
     
     // Devolver error real sin fallback
     return NextResponse.json(
