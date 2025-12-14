@@ -66,6 +66,46 @@ spec:
             configMapKeyRef:
               name: app-config
               key: DOCKER_MODE
+        - name: API_AACH
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: API_AACH
+        - name: API_CARABINEROS
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: API_CARABINEROS
+        - name: API_MTT
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: API_MTT
+        - name: API_PRT
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: API_PRT
+        - name: API_SII
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: API_SII
+        - name: API_SGD
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: API_SGD
+        - name: API_TGR
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: API_TGR
+        - name: API_SRCEI
+          valueFrom:
+            configMapKeyRef:
+              name: api-config
+              key: API_SRCEI
         - name: LOG_LEVEL
           valueFrom:
             configMapKeyRef:

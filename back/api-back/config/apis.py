@@ -96,10 +96,10 @@ PADRON_VEHICULO = f"{API_AACH}/padron/vehiculo"
 REVISION_TECNICA = f"{API_CARABINEROS}/revision_tecnica"
 
 # Multas de tránsito
-MULTAS_TRANSITO = f"{API_AACH}/multas_transito"
+MULTAS_TRANSITO = f"{API_SRCEI}/multas_transito"
 
 # SOAP (Multas de tránsito detalladas)
-SOAP = f"{API_MTT}/soap"
+SOAP = f"{API_AACH}/soap"
 
 # RPI (Registro de Pasajero Infractor)
 RPI = f"{API_MTT}/multas_pasajero"
@@ -109,7 +109,7 @@ PERMISO_CIRCULACION = f"{API_TGR}/consultar_permiso"
 PERMISO_CIRCULACION_ID = f"{API_TGR}/consultar_permiso_id"
 
 # Encargo de patente
-ENCARGO_PATENTE = f"{API_SGD}/encargo_patente"
+ENCARGO_PATENTE = f"{API_CARABINEROS}/encargo_patente"
 
 # Tasación fiscal (SII)
 TASACION_FISCAL = f"{API_SII}/tasacion_fiscal"

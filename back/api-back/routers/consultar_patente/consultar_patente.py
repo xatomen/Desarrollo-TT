@@ -5,7 +5,7 @@ from datetime import date
 
 from patentes_vehiculares_chile import validar_patente
 import requests
-from config.apis import API_AACH
+from config.apis import API_SRCEI
 
 # Instanciamos el router
 router = APIRouter()
@@ -43,7 +43,7 @@ async def consultar_patente(ppu: str):
     
     # Consultar patente a la API AACH usando variable de entorno
     try:
-        response = requests.get(f"{API_AACH}/padron/vehiculo/{ppu}")  # Usar variable de entorno
+        response = requests.get(f"{API_SRCEI}/padron/vehiculo/{ppu}")  # Usar variable de entorno
         
         # Si obtuvimos una respuesta exitosa retornamos el padron
         if response.status_code == 200:

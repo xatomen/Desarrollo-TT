@@ -5,7 +5,7 @@ from datetime import date
 
 from patentes_vehiculares_chile import validar_patente
 import requests
-from config.apis import API_CARABINEROS
+from config.apis import API_PRT
 
 # Instanciamos el router
 router = APIRouter()
@@ -29,7 +29,7 @@ async def consultar_revision_tecnica(ppu: str):
     # response = requests.get(f"http://host.docker.internal:5002/revision_tecnica/{ppu}")
     
     # Consultar a el endpoint Carabineros usando variable de entorno
-    response = requests.get(f"{API_CARABINEROS}/revision_tecnica/{ppu}")
+    response = requests.get(f"{API_PRT}/revision_tecnica/{ppu}")
 
     if response.status_code == 200:
         # La respuesta debe entregar el valor de la variable "revision"

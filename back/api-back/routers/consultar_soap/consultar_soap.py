@@ -5,7 +5,7 @@ from datetime import date
 
 from patentes_vehiculares_chile import validar_patente
 import requests
-from config.apis import API_MTT
+from config.apis import API_AACH
 
 # Instanciamos el router
 router = APIRouter()
@@ -27,7 +27,7 @@ async def consultar_soap(ppu: str):
   # [DEPRECATED] response = requests.get(f"http://host.docker.internal:5003/soap/{ppu}")
   
   # Consultar usando variable de entorno
-  response = requests.get(f"{API_MTT}/soap/{ppu}")
+  response = requests.get(f"{API_AACH}/soap/{ppu}")
   
   if response.status_code == 404:
       raise HTTPException(status_code=404, detail="No se encontró información para la patente proporcionada")
