@@ -70,10 +70,12 @@ data:
   BACK_DB_NAME: "back_db"
   
   # APIs Endpoints (for service discovery in Kubernetes)
-  AACH_API_URL: "http://aach-api:5001"
-  CARABINEROS_API_URL: "http://carabineros-api:5004"
-  MTT_API_URL: "http://mtt-api:5003"
-  SII_API_URL: "http://sii-api:5005"
-  SGD_API_URL: "http://sgd-api:5006"
-  TGR_API_URL: "http://tgr-api:5007"
-  SRCEI_API_URL: "http://srcei-api:5001"
+  # Nota: En Kubernetes, los servicios están expuestos en puerto 80
+  # Las rutas coinciden con los root_path de cada FastAPI app
+  AACH_API_URL: "http://aach-api"
+  CARABINEROS_API_URL: "http://carabineros-api"
+  MTT_API_URL: "http://mtt-api"
+  SII_API_URL: "http://sii-api"
+  SGD_API_URL: "http://sgd-api"
+  TGR_API_URL: "http://tgr-api"
+  SRCEI_API_URL: "http://srcei-api"

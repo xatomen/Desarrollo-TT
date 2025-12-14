@@ -17,14 +17,16 @@ DOCKER_MODE = os.getenv("DOCKER_MODE", "true").lower() == "true"
 # ============================================================
 # PUERTOS POR DEFECTO
 # ============================================================
-PORT_AACH = 5001
-PORT_CARABINEROS = 5002
-PORT_MTT = 5003
-PORT_PRT = 5004
-PORT_SII = 5005
-PORT_SGD = 5006
-PORT_TGR = 5007
-PORT_SRCEI = 5001
+# En Kubernetes, los servicios están expuestos en puerto 80 (HTTP)
+# En Docker local, usan host.docker.internal con puertos específicos
+PORT_AACH = 80
+PORT_CARABINEROS = 80
+PORT_MTT = 80
+PORT_PRT = 80
+PORT_SII = 80
+PORT_SGD = 80
+PORT_TGR = 80
+PORT_SRCEI = 80
 
 # ============================================================
 # NOMBRES DE SERVICIO KUBERNETES
@@ -60,28 +62,28 @@ def _build_url(service_name: str, port: int) -> str:
 # ============================================================
 
 # API AACH - Padrón vehicular y multas de tránsito
-API_AACH = os.getenv("API_AACH", _build_url(SERVICE_AACH, PORT_AACH))
+API_AACH = os.getenv("API_AACH", _build_url(SERVICE_AACH, PORT_AACH) + "/aach")
 
 # API Carabineros - Revisión técnica
-API_CARABINEROS = os.getenv("API_CARABINEROS", _build_url(SERVICE_CARABINEROS, PORT_CARABINEROS))
+API_CARABINEROS = os.getenv("API_CARABINEROS", _build_url(SERVICE_CARABINEROS, PORT_CARABINEROS) + "/carabineros")
 
 # API MTT - Multas transito y RPI (Registro de Pasajero Infractor)
-API_MTT = os.getenv("API_MTT", _build_url(SERVICE_MTT, PORT_MTT))
+API_MTT = os.getenv("API_MTT", _build_url(SERVICE_MTT, PORT_MTT) + "/mtt")
 
 # API PRT - (Por definir)
-API_PRT = os.getenv("API_PRT", _build_url(SERVICE_PRT, PORT_PRT))
+API_PRT = os.getenv("API_PRT", _build_url(SERVICE_PRT, PORT_PRT) + "/prt")
 
 # API SII - Tasación fiscal y facturas
-API_SII = os.getenv("API_SII", _build_url(SERVICE_SII, PORT_SII))
+API_SII = os.getenv("API_SII", _build_url(SERVICE_SII, PORT_SII) + "/sii")
 
 # API SGD - Encargo de patente
-API_SGD = os.getenv("API_SGD", _build_url(SERVICE_SGD, PORT_SGD))
+API_SGD = os.getenv("API_SGD", _build_url(SERVICE_SGD, PORT_SGD) + "/sgd")
 
 # API TGR - Permiso de circulación
-API_TGR = os.getenv("API_TGR", _build_url(SERVICE_TGR, PORT_TGR))
+API_TGR = os.getenv("API_TGR", _build_url(SERVICE_TGR, PORT_TGR) + "/tgr")
 
 # API SRCEI - Padrón y multas
-API_SRCEI = os.getenv("API_SRCEI", _build_url(SERVICE_SRCEI, PORT_SRCEI))
+API_SRCEI = os.getenv("API_SRCEI", _build_url(SERVICE_SRCEI, PORT_SRCEI) + "/srcei")
 
 # ============================================================
 # ENDPOINTS ESPECÍFICOS (COMODIDAD)
