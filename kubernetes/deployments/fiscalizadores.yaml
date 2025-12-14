@@ -39,23 +39,27 @@ spec:
               key: ENVIRONMENT
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "100m"
+            memory: "1Gi"
+            cpu: "75m"
           limits:
-            memory: "512Mi"
+            memory: "1Gi"
             cpu: "500m"
         livenessProbe:
           httpGet:
             path: /
             port: 8081
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: 120
+          timeoutSeconds: 5
+          periodSeconds: 15
+          failureThreshold: 10
         readinessProbe:
           httpGet:
             path: /
             port: 8081
-          initialDelaySeconds: 10
-          periodSeconds: 5
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          periodSeconds: 10
+          failureThreshold: 10
 
 ---
 apiVersion: v1

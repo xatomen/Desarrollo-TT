@@ -49,23 +49,27 @@ spec:
               key: SENDGRID_FROM_EMAIL
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "100m"
+            memory: "768Mi"
+            cpu: "75m"
           limits:
-            memory: "512Mi"
+            memory: "768Mi"
             cpu: "500m"
         livenessProbe:
           httpGet:
             path: /
             port: 8001
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: 90
+          timeoutSeconds: 5
+          periodSeconds: 15
+          failureThreshold: 8
         readinessProbe:
           httpGet:
             path: /
             port: 8001
-          initialDelaySeconds: 10
-          periodSeconds: 5
+          initialDelaySeconds: 45
+          timeoutSeconds: 5
+          periodSeconds: 10
+          failureThreshold: 8
 
 ---
 apiVersion: v1

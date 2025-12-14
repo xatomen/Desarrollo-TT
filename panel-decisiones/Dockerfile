@@ -12,4 +12,4 @@ ENV NODE_ENV=production
 
 EXPOSE 8001
 
-CMD ["npm", "start"]
+CMD ["npm", "start", "--", "-p", "8001"]
