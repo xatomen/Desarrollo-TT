@@ -109,7 +109,7 @@ Base = declarative_base()
 #####################################################################
 
 class SGDModel(Base):
-    __tablename__ = 'SGD'
+    __tablename__ = 'sgd'
 
     id = Column(Integer, primary_key=True, index=True)
     rut = Column(String(12), nullable=False)
