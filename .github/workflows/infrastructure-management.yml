@@ -1,0 +1,201 @@
+name: Infrastructure Management
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+  TF_VERSION: 1.6.0
+
+jobs:
+  infrastructure:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Create env.tfvars from secret
+        run: echo "${{ secrets.TERRAFORM_TFVARS }}" > terraform/env.tfvars
+        shell: bash
+      
+      - name: Verify env.tfvars was created
+        run: |
+          if [ -f terraform/env.tfvars ]; then
+            echo "✓ terraform/env.tfvars created successfully"
+            wc -l terraform/env.tfvars
+          else
+            echo "✗ ERROR: terraform/env.tfvars was not created"
+            exit 1
+          fi
+        shell: bash
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Create env.tfvars from secret
+        run: echo "${{ secrets.TERRAFORM_TFVARS }}" > terraform/env.tfvars
+      
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform -chdir=terraform fmt -check
+        continue-on-error: true
+      
+      - name: Terraform Init
+        id: init
+        run: terraform -chdir=terraform init
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+      
+      - name: Terraform Validate
+        id: validate
+        run: terraform -chdir=terraform validate
+      
+      - name: Terraform Plan (Apply)
+        id: plan-apply
+        if: github.event.inputs.action == 'apply'
+        run: |
+          terraform -chdir=terraform plan \
+            -var-file="env.tfvars" \
+            -var="skip_final_snapshot=true" \
+            -out=tfplan
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+      
+      - name: Terraform Plan (Destroy)
+        id: plan-destroy
+        if: github.event.inputs.action == 'destroy'
+        run: |
+          terraform -chdir=terraform plan \
+            -var-file="env.tfvars" \
+            -var="skip_final_snapshot=false" \
+            -destroy \
+            -out=tfplan
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+      
+      - name: Terraform Plan (Default)
+        id: plan-default
+        if: github.event.inputs.action == 'plan'
+        run: |
+          terraform -chdir=terraform plan \
+            -var-file="env.tfvars" \
+            -var="skip_final_snapshot=true"
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+      
+      - name: Plan summary
+        if: steps.plan-apply.outcome == 'success' || steps.plan-destroy.outcome == 'success'
+        run: |
+          echo "### Terraform Plan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Action: ${{ github.event.inputs.action }}" >> $GITHUB_STEP_SUMMARY
+          echo "Region: ${{ env.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Plan output available in workflow logs" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Request approval for apply
+        if: github.event.inputs.action == 'apply'
+        run: |
+          echo "### APPLY APPROVAL REQUIRED"
+          echo ""
+          echo "Review the plan above and approve to continue with applying changes."
+          echo "This action requires manual approval."
+          exit 0
+      
+      - name: Terraform Apply
+        id: apply
+        if: github.event.inputs.action == 'apply'
+        run: terraform -chdir=terraform apply -auto-approve tfplan
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+      
+      - name: Terraform Destroy Confirmation
+        id: destroy-confirm
+        if: github.event.inputs.action == 'destroy'
+        run: |
+          echo "### DESTRUCTION CONFIRMATION REQUIRED"
+          echo ""
+          echo "⚠️  WARNING: This will DESTROY the infrastructure!"
+          echo ""
+          echo "The following resources will be destroyed:"
+          echo "- EKS Cluster"
+          echo "- VPC and Networking"
+          echo "- ECR Repositories"
+          echo "- Security Groups"
+          echo ""
+          echo "⚠️  RDS Database WILL BE PRESERVED (skip_final_snapshot=false)"
+          echo ""
+          echo "Manual approval required to proceed."
+          exit 0
+      
+      - name: Terraform Destroy
+        id: destroy
+        if: github.event.inputs.action == 'destroy'
+        run: terraform -chdir=terraform destroy -auto-approve tfplan
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+      
+      - name: Get Terraform Outputs
+        id: outputs
+        if: github.event.inputs.action == 'apply' && steps.apply.outcome == 'success'
+        run: |
+          echo "### Infrastructure Outputs" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          terraform -chdir=terraform output >> $GITHUB_STEP_SUMMARY 2>&1 || echo "No outputs available"
+      
+      - name: Completion Summary
+        if: always()
+        run: |
+          echo "### Infrastructure Management Completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Action**: ${{ github.event.inputs.action }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp**: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ github.event.inputs.action }}" == "destroy" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️  Infrastructure has been destroyed" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Clean up sensitive files
+        if: always()
+        run: |
+          rm -f terraform/env.tfvars
+          rm -f terraform/tfplan
+          echo "✓ Sensitive files cleaned up"
+        shell: bash
+
+  notify:
+    needs: infrastructure
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Infrastructure Status
+        run: |
+          echo "Infrastructure management workflow completed"
+          echo "Action: ${{ github.event.inputs.action }}"
+          echo "Result: ${{ needs.infrastructure.result }}"

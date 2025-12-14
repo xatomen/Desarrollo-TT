@@ -1,16 +1,16 @@
 # Importamos librerías necesarias
 from fastapi import APIRouter, HTTPException, Depends, Request
 from datetime import date
-import os
 from pydantic import BaseModel
 import httpx
 from typing import List
 import requests 
+from config.apis import API_MTT, RPI
 
 # Instanciamos el router
 router = APIRouter()
 
-MTT_BASE_URL = os.getenv("MTT_API_URL", "http://host.docker.internal:5008/multas_pasajero/?rut={rut}")
+# [DEPRECATED] MTT_BASE_URL = os.getenv("MTT_API_URL", "http://host.docker.internal:5008/multas_pasajero/?rut={rut}")
 
 #####################################################
 # Modelos de respuesta
@@ -39,8 +39,8 @@ async def consultar_multas_rpi(rut: str):
         MultaRPIResponse: Respuesta con la cantidad de multas del RPI
     """
     try:
-        # Usar la URL base definida arriba y reemplazar el placeholder
-        url = MTT_BASE_URL.format(rut=rut)
+        # Usar el endpoint del RPI desde config
+        url = f"{RPI}/?rut={rut}"
         
         # Realizar la petición GET a la API del MTT
         async with httpx.AsyncClient() as client:

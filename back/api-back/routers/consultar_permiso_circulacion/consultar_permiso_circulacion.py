@@ -5,6 +5,7 @@ from datetime import date
 
 from patentes_vehiculares_chile import validar_patente
 import requests
+from config.apis import API_TGR
 
 # Instanciamos el router
 router = APIRouter()
@@ -20,8 +21,11 @@ async def consultar_permiso_circulacion(patente: str):
     if not validar_patente(patente):
         raise HTTPException(status_code=400, detail="Patente inválida")
 
-    # Realizamos la consulta al servicio externo
-    response = requests.get(f"http://host.docker.internal:5007/consultar_permiso/{patente}")
+    # [DEPRECATED] Realizamos la consulta al servicio externo
+    # response = requests.get(f"http://host.docker.internal:5007/consultar_permiso/{patente}")
+    
+    # Realizamos la consulta usando variable de entorno
+    response = requests.get(f"{API_TGR}/consultar_permiso/{patente}")
     if response.status_code == 404:
         raise HTTPException(status_code=404, detail="Permiso de circulación no encontrado")
     if response.status_code != 200:
@@ -67,8 +71,11 @@ async def consultar_permiso_circulacion(patente: str):
 # Consultar permiso de circulación usando el id del permiso
 @router.get("/consultar_permiso_circulacion_id/{id_permiso}")
 async def consultar_permiso_circulacion_id(id_permiso: int):
-    # Realizamos la consulta al servicio externo
-    response = requests.get(f"http://host.docker.internal:5007/consultar_permiso_id/{id_permiso}")
+    # [DEPRECATED] Realizamos la consulta al servicio externo
+    # response = requests.get(f"http://host.docker.internal:5007/consultar_permiso_id/{id_permiso}")
+    
+    # Realizamos la consulta usando variable de entorno
+    response = requests.get(f"{API_TGR}/consultar_permiso_id/{id_permiso}")
     if response.status_code == 404:
         raise HTTPException(status_code=404, detail="Permiso de circulación no encontrado")
     if response.status_code != 200:

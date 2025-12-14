@@ -1,17 +1,17 @@
 # Importamos librerías necesarias
 from datetime import date, timedelta
 from fastapi import APIRouter, HTTPException, Depends, Request
-import os
 from pydantic import BaseModel
 import httpx
 from typing import List
+from config.apis import API_SRCEI, API_TGR, PADRON_VEHICULO, PERMISO_CIRCULACION
 
 # Instanciamos el router
 router = APIRouter()
 
-# Configuración de las APIs
-SRCEI_BASE_URL = os.getenv("SRCEI_API_URL", "http://host.docker.internal:5001/padron/")
-TGR_BASE_URL = os.getenv("TGR_API_URL", "http://host.docker.internal:5007/consultar_permiso/")
+# [DEPRECATED] Configuración de las APIs
+# SRCEI_BASE_URL = os.getenv("SRCEI_API_URL", "http://host.docker.internal:5001/padron/")
+# TGR_BASE_URL = os.getenv("TGR_API_URL", "http://host.docker.internal:5007/consultar_permiso/")
 
 
 #####################################################
@@ -80,7 +80,7 @@ async def obtener_vehiculos_por_rut(rut: str):
         # Consultar vehículos en el padrón por RUT
         async with httpx.AsyncClient() as client:
             padron_response = await client.get(
-                f"{SRCEI_BASE_URL}{rut}",
+                f"{PADRON_VEHICULO}/{rut}",
                 timeout=30.0
             )
             
@@ -113,7 +113,7 @@ async def obtener_vehiculos_por_rut(rut: str):
                 # Consultar permiso de circulación para determinar estado
                 try:
                     permiso_response = await client.get(
-                        f"{TGR_BASE_URL}{ppu}",
+                        f"{PERMISO_CIRCULACION}/{ppu}",
                         timeout=30.0
                     )
                     

@@ -1,0 +1,101 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: main-ingress
+  namespace: desarrollo-tt
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    # AWS ALB hostname automático (sin certificado SSL personalizado)
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:123456789:certificate/xxxxx
+    # alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS-1-2-2017-01
+    # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    # alb.ingress.kubernetes.io/ssl-redirect: '443'
+spec:
+  rules:
+  # Panel de Decisiones (rutas por path)
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: panel-decisiones-app
+            port:
+              number: 80
+  
+  # API Backend y Servicios (rutas por path)
+  - http:
+      paths:
+      - path: /aach
+        pathType: Prefix
+        backend:
+          service:
+            name: aach-api
+            port:
+              number: 80
+      
+      - path: /carabineros
+        pathType: Prefix
+        backend:
+          service:
+            name: carabineros-api
+            port:
+              number: 80
+      
+      - path: /mtt
+        pathType: Prefix
+        backend:
+          service:
+            name: mtt-api
+            port:
+              number: 80
+      
+      - path: /prt
+        pathType: Prefix
+        backend:
+          service:
+            name: prt-api
+            port:
+              number: 80
+      
+      - path: /sgd
+        pathType: Prefix
+        backend:
+          service:
+            name: sgd-api
+            port:
+              number: 80
+      
+      - path: /sii
+        pathType: Prefix
+        backend:
+          service:
+            name: sii-api
+            port:
+              number: 80
+      
+      - path: /srcei
+        pathType: Prefix
+        backend:
+          service:
+            name: srcei-api
+            port:
+              number: 80
+      
+      - path: /tgr
+        pathType: Prefix
+        backend:
+          service:
+            name: tgr-api
+            port:
+              number: 80
+      
+      - path: /back
+        pathType: Prefix
+        backend:
+          service:
+            name: back-api
+            port:
+              number: 80

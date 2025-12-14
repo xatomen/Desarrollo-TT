@@ -1,16 +1,17 @@
 # Importamos librerías necesarias
 from datetime import date
 from fastapi import APIRouter, HTTPException, Depends, Request
-import os
 from pydantic import BaseModel
 import httpx
 from typing import List
 
+from config.apis import MULTAS_TRANSITO
+
 # Instanciamos el router
 router = APIRouter()
 
-# Configuración de las APIs
-SRCEI_BASE_URL = os.getenv("SRCEI_API_URL", "http://host.docker.internal:5001/multas_transito/{ppu}")
+# [DEPRECATED] Configuración de las APIs
+# SRCEI_BASE_URL = os.getenv("SRCEI_API_URL", "http://host.docker.internal:5001/multas_transito/{ppu}")
 
 #####################################################
 # Definimos los endpoints del router
@@ -35,7 +36,7 @@ async def consultar_multas(ppu: str):
     
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(SRCEI_BASE_URL.format(ppu=ppu))
+            response = await client.get(f"{MULTAS_TRANSITO}/{ppu}")
             
             if response.status_code == 200:
                 data = response.json()
