@@ -27,7 +27,7 @@ from patentes_vehiculares_chile import (
     generar_rut
 )
 
-# Instanciamos la clase FastAPI
+app = FastAPI(root_path="/back")
 
 app = FastAPI()
 

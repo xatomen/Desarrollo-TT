@@ -21,7 +21,7 @@ from datetime import datetime
 # Instancia de FastAPI
 ##############################
 
-app = FastAPI()
+app = FastAPI(root_path="/carabineros")
 
 #########################################################
 # Configurar Middleware CORS

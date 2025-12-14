@@ -7,7 +7,7 @@ metadata:
     app: carabineros-api
     version: v1
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: carabineros-api
@@ -20,7 +20,7 @@ spec:
       - name: ecr-secret
       containers:
       - name: carabineros-api
-        image: 123456789.dkr.ecr.us-east-1.amazonaws.com/desarrollo-tt/carabineros-api:latest
+        image: 892797891584.dkr.ecr.us-east-1.amazonaws.com/desarrollo-tt/carabineros-api:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
@@ -61,7 +61,7 @@ spec:
             memory: "256Mi"
             cpu: "100m"
           limits:
-            memory: "512Mi"
+            memory: "256Mi"
             cpu: "500m"
         livenessProbe:
           httpGet:

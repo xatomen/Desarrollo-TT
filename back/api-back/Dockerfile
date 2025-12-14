@@ -9,6 +9,9 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 # Copiar el archivo requirements.txt y el script app.py al contenedor
 COPY requirements.txt app.py /app/
+# Copiar la carpeta routers y config
+COPY routers /app/routers/
+COPY config /app/config/
 # Instalar las dependencias de Python
 RUN pip install --no-cache-dir -r requirements.txt
 # Exponer el puerto 8000

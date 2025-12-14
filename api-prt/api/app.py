@@ -13,6 +13,8 @@ from sqlalchemy.exc import SQLAlchemyError
 # Librerías de validación de patente
 from patentes_vehiculares_chile import validar_patente, limpiar_patente
 
+app = FastAPI(root_path="/prt")
+
 # Cargar variables de entorno
 load_dotenv()
 db_user = os.getenv("DB_USER")

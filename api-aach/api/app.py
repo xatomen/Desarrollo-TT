@@ -18,7 +18,7 @@ from patentes_vehiculares_chile import validar_patente, detectar_tipo_patente, l
 # Instancia de FastAPI
 #########################################################
 
-app = FastAPI()
+app = FastAPI(root_path="/aach")
 
 #########################################################
 # Configurar Middleware CORS

@@ -23,7 +23,7 @@ import re
 # Instancia de FastAPI
 ##############################
 
-app = FastAPI()
+app = FastAPI(root_path="/srcei")
 
 #########################################################
 # Configurar Middleware CORS

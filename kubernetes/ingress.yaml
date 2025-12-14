@@ -14,18 +14,6 @@ metadata:
     # alb.ingress.kubernetes.io/ssl-redirect: '443'
 spec:
   rules:
-  # Panel de Decisiones (rutas por path)
-  - http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: panel-decisiones-app
-            port:
-              number: 80
-  
-  # API Backend y Servicios (rutas por path)
   - http:
       paths:
       - path: /aach
@@ -97,5 +85,12 @@ spec:
         backend:
           service:
             name: back-api
+            port:
+              number: 80      
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: panel-decisiones-app
             port:
               number: 80

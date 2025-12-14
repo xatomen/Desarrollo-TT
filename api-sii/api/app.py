@@ -8,6 +8,8 @@ from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
 
+app = FastAPI(root_path="/sii")
+
 # Cargar variables de entorno
 load_dotenv()
 db_user = os.getenv("DB_USER")

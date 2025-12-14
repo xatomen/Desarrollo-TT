@@ -28,6 +28,9 @@ from patentes_vehiculares_chile import (
     validar_patente,
     generar_patente_vehiculo_antiguo,
     generar_patente_vehiculo_nuevo,
+)
+
+app = FastAPI(root_path="/tgr")
     generar_patente_motocicleta_antigua,
     generar_patente_motocicleta_nueva,
     generar_rut

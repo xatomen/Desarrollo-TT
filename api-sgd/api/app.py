@@ -14,6 +14,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from rut_chile import rut_chile
 import re
 
+app = FastAPI(root_path="/sgd")
+
 # Librerías para manejo de seguridad y autenticación
 from jose import JWTError, jwt
 from passlib.context import CryptContext

@@ -15,6 +15,8 @@ from itertools import cycle
 import re
 from patentes_vehiculares_chile import validar_patente
 
+app = FastAPI(root_path="/mtt")
+
 #validar formato de rut o cambiar por la librería chilena discutir con mis compañeros
 # ---- Utilidad para validar RUT ---- 
 def validar_rut(rut: str) -> bool:
