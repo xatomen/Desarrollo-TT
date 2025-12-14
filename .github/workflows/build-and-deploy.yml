@@ -27,6 +27,71 @@ on:
         options:
           - 'false'
           - 'true'
+      build_obtener_permiso:
+        description: 'Build obtener-permiso'
+        required: false
+        default: true
+        type: boolean
+      build_panel_decisiones:
+        description: 'Build panel-decisiones'
+        required: false
+        default: true
+        type: boolean
+      build_fiscalizadores:
+        description: 'Build app-fiscalizadores'
+        required: false
+        default: true
+        type: boolean
+      build_propietarios:
+        description: 'Build app-propietarios'
+        required: false
+        default: true
+        type: boolean
+      build_aach:
+        description: 'Build api-aach'
+        required: false
+        default: true
+        type: boolean
+      build_carabineros:
+        description: 'Build api-carabineros'
+        required: false
+        default: true
+        type: boolean
+      build_mtt:
+        description: 'Build api-mtt'
+        required: false
+        default: true
+        type: boolean
+      build_prt:
+        description: 'Build api-prt'
+        required: false
+        default: true
+        type: boolean
+      build_sgd:
+        description: 'Build api-sgd'
+        required: false
+        default: true
+        type: boolean
+      build_sii:
+        description: 'Build api-sii'
+        required: false
+        default: true
+        type: boolean
+      build_srcei:
+        description: 'Build api-srcei'
+        required: false
+        default: true
+        type: boolean
+      build_tgr:
+        description: 'Build api-tgr'
+        required: false
+        default: true
+        type: boolean
+      build_back:
+        description: 'Build back-api'
+        required: false
+        default: true
+        type: boolean
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
@@ -44,66 +109,79 @@ jobs:
             context: ./obtener-permiso
             dockerfile: ./obtener-permiso/Dockerfile
             image-name: obtener-permiso-app
+            build-input: build_obtener_permiso
           
           - app-name: panel-decisiones
             context: ./panel-decisiones
             dockerfile: ./panel-decisiones/Dockerfile
             image-name: panel-decisiones-app
+            build-input: build_panel_decisiones
           
           - app-name: app-fiscalizadores
             context: ./app-fiscalizadores
             dockerfile: ./app-fiscalizadores/Dockerfile
             image-name: fiscalizadores-app
+            build-input: build_fiscalizadores
           
           - app-name: app-propietarios
             context: ./app-propietarios
             dockerfile: ./app-propietarios/Dockerfile
             image-name: propietarios-app
+            build-input: build_propietarios
           
           - app-name: api-aach
             context: ./api-aach/api
             dockerfile: ./api-aach/api/Dockerfile
             image-name: aach-api
+            build-input: build_aach
           
           - app-name: api-carabineros
             context: ./api-carabineros/api
             dockerfile: ./api-carabineros/api/Dockerfile
             image-name: carabineros-api
+            build-input: build_carabineros
           
           - app-name: api-mtt
             context: ./api-mtt/api
             dockerfile: ./api-mtt/api/Dockerfile
             image-name: mtt-api
+            build-input: build_mtt
           
           - app-name: api-prt
             context: ./api-prt/api
             dockerfile: ./api-prt/api/Dockerfile
             image-name: prt-api
+            build-input: build_prt
           
           - app-name: api-sgd
             context: ./api-sgd/api
             dockerfile: ./api-sgd/api/Dockerfile
             image-name: sgd-api
+            build-input: build_sgd
           
           - app-name: api-sii
             context: ./api-sii/api
             dockerfile: ./api-sii/api/Dockerfile
             image-name: sii-api
+            build-input: build_sii
           
           - app-name: api-srcei
             context: ./api-srcei/api
             dockerfile: ./api-srcei/api/Dockerfile
             image-name: srcei-api
+            build-input: build_srcei
           
           - app-name: api-tgr
             context: ./api-tgr/api
             dockerfile: ./api-tgr/api/Dockerfile
             image-name: tgr-api
+            build-input: build_tgr
           
           - app-name: back
             context: ./back/api-back
             dockerfile: ./back/api-back/Dockerfile
             image-name: back-api
+            build-input: build_back
     
     permissions:
       contents: read
@@ -127,6 +205,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
       
       - name: Build Docker image
+        if: ${{ github.event.inputs[matrix.build-input] != 'false' }}
         run: |
           docker build -f ${{ matrix.dockerfile }} \
             -t ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:${{ github.sha }} \
@@ -134,6 +213,7 @@ jobs:
             ${{ matrix.context }}
       
       - name: Push Docker image to ECR
+        if: ${{ github.event.inputs[matrix.build-input] != 'false' }}
         run: |
           echo "Pushing image: ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:${{ github.sha }}"
           docker push ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:${{ github.sha }}
@@ -141,6 +221,7 @@ jobs:
           echo "✅ Image successfully pushed"
       
       - name: Print image details
+        if: ${{ github.event.inputs[matrix.build-input] != 'false' }}
         run: |
           echo "Image pushed: ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:${{ github.sha }}"
           docker images | grep desarrollo-tt
