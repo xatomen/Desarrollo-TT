@@ -130,6 +130,9 @@ def create_tables():
         print(f"Error creating tables: {e}")
         # Don't crash the app if database is not available
 
+# Crear las tablas al iniciar la aplicación
+create_tables()
+
 #########################################################
 # Dependencia para obtener la sesión de la base de datos
 #########################################################
