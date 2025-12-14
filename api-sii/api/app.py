@@ -8,8 +8,6 @@ from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
 
-app = FastAPI(root_path="/sii")
-
 # Cargar variables de entorno
 load_dotenv()
 db_user = os.getenv("DB_USER")
@@ -107,7 +105,7 @@ class FacturaCompraResponse(BaseModel):
     color: str
     anio: int
 
-app = FastAPI(title="API SII - Tasación y Factura Vehículos")
+app = FastAPI(title="API SII - Tasación y Factura Vehículos", root_path="/sii")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Permitir todas las orígenes

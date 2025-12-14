@@ -14,8 +14,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from rut_chile import rut_chile
 import re
 
-app = FastAPI(root_path="/sgd")
-
 # Librerías para manejo de seguridad y autenticación
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -76,7 +74,7 @@ def verify_token(token: str, credentials_exception):
 # Instancia de FastAPI
 ##############################
 
-app = FastAPI()
+app = FastAPI(root_path="/sgd")
 
 #########################################################
 # Configurar Middleware CORS

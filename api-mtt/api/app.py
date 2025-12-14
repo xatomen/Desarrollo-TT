@@ -15,8 +15,6 @@ from itertools import cycle
 import re
 from patentes_vehiculares_chile import validar_patente
 
-app = FastAPI(root_path="/mtt")
-
 #validar formato de rut o cambiar por la librería chilena discutir con mis compañeros
 # ---- Utilidad para validar RUT ---- 
 def validar_rut(rut: str) -> bool:
@@ -104,7 +102,7 @@ class RegistroTransporteResponse(BaseModel):
     marca: str
     modelo: str
 
-app = FastAPI(title="API MTT - Registro de Pasajeros Infractores")
+app = FastAPI(title="API MTT - Registro de Pasajeros Infractores", root_path="/mtt")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # ✅ Corregido de [""] a ["*"]

@@ -13,8 +13,6 @@ from sqlalchemy.exc import SQLAlchemyError
 # Librerías de validación de patente
 from patentes_vehiculares_chile import validar_patente, limpiar_patente
 
-app = FastAPI(root_path="/prt")
-
 # Cargar variables de entorno
 load_dotenv()
 db_user = os.getenv("DB_USER")
@@ -60,7 +58,7 @@ class RevisionTecnicaModel(BaseModel):
     vigencia: str
 
 # FastAPI app
-app = FastAPI(title="API PRT - Revisión Técnica")
+app = FastAPI(title="API PRT - Revisión Técnica", root_path="/prt")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Permitir todas las orígenes

@@ -19,6 +19,14 @@ on:
         options:
           - 'false'
           - 'true'
+      skip_deploy:
+        description: 'Skip deployment to EKS (only build and push images)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
@@ -163,7 +171,7 @@ jobs:
             --region ${{ env.AWS_REGION }} || echo "Image verification pending"
 
   deploy-to-eks:
-    if: always()
+    if: always() && github.event.inputs.skip_deploy != 'true'
     needs: [build-images]
     runs-on: ubuntu-latest
     

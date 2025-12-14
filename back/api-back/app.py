@@ -29,8 +29,6 @@ from patentes_vehiculares_chile import (
 
 app = FastAPI(root_path="/back")
 
-app = FastAPI()
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
