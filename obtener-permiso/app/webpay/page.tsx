@@ -8,6 +8,7 @@ import { FaRegCreditCard } from "react-icons/fa";
 import { PiBankLight } from "react-icons/pi";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Img } from "@/components/Img";
 import API_CONFIG from "@/config/api";
 
 // Colores webpay
@@ -104,7 +105,7 @@ export default function WebpayPage() {
 				</div>
 				{/* Logo webpay */}
 				<div>
-					<img src="/img/webpay-logo.png" alt="Logo Webpay" style={{ height: '10vh' }} />
+					<Img src="/img/webpay-logo.png" alt="Logo Webpay" style={{ height: '10vh' }} />
 				</div>
 			</nav>
       {/* Contenido principal de pago */}
@@ -116,7 +117,7 @@ export default function WebpayPage() {
 							<div className="col text-left">
 								<p>Estás pagando en:</p>
 								{/* |<p style={{ fontWeight: 'bold', fontSize: '1.5rem' }}>TU PERMISO</p> */}
-								<img src="/img/tgr-logo.png" alt="" />
+								<Img src="/img/tgr-logo.png" alt="" />
 							</div>
 							<div className="col text-right">
 								<p>Monto a pagar:</p>
@@ -167,7 +168,7 @@ export default function WebpayPage() {
 										</div>
 										<div className="col text-left">
 											<div>
-												<img src="/img/logo-onepay/SVG_Onepay/_FondoBlanco_SVG/_300px/1.Onepay_FB_300px.svg" alt="Logo Onepay" style={{ height: '2rem' }} />
+												<Img src="/img/logo-onepay/SVG_Onepay/_FondoBlanco_SVG/_300px/1.Onepay_FB_300px.svg" alt="Logo Onepay" style={{ height: '2rem' }} />
 												<p className="text-muted mb-0 mt-3">y otras billeteras digitales</p>
 											</div>
 										</div>
@@ -318,7 +319,7 @@ export default function WebpayPage() {
 						</form>
 						{/* Medios de pago */}
 						<div className="text-center mt-4 d-flex flex-column align-items-center">
-							<img src="/img/medios-pago.png" alt="Medios de pago" style={{ width: '50%' }} />
+							<Img src="/img/medios-pago.png" alt="Medios de pago" style={{ width: '50%' }} />
 						</div>
 					</div>
 				</div>

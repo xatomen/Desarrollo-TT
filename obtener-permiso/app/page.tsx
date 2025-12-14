@@ -4,6 +4,8 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { LuMousePointerClick } from 'react-icons/lu';
 import Chatbot from '@/components/Chatbot';
+import { getAssetPath } from '@/lib/getAssetPath';
+import { Img } from '@/components/Img';
 
 export default function Home() {
   const router = useRouter();
@@ -316,7 +318,7 @@ export default function Home() {
                 <span style={{ color: '#6D2077', fontWeight: 500 }}>Rápido, seguro y sin complicaciones.</span>
               </p>
               <div className="justify-content-center d-flex">
-                <img src="/img/medios-pago.png" className="" style={{ maxWidth: '100%', height: '30px', marginTop: '1rem' }} />
+                <Img src="/img/medios-pago.png" className="" style={{ maxWidth: '100%', height: '30px', marginTop: '1rem' }} />
               </div>
             </div>
             {/* Columna imagen cuotas */}
@@ -350,7 +352,7 @@ export default function Home() {
         >
           <div className="col-12 col-md-6 mb-4 mb-md-0 text-center align-items-center d-flex justify-content-center">
             <img
-              src="/img/tupermiso/logo-tupermisomovil.png"
+              src={getAssetPath('/img/tupermiso/logo-tupermisomovil.png')}
               alt="App móvil Tu Permiso"
               style={{
                 maxWidth: '260px',
@@ -372,10 +374,10 @@ export default function Home() {
             </p>
             <div className="d-flex justify-content-center justify-content-center gap-3 mt-3">
               <a href="#" style={{ display: 'inline-block' }}>
-                <img src="/img/badge-googleplay.png" alt="Disponible en Google Play" style={{ height: 48 }} />
+                <Img src="/img/badge-googleplay.png" alt="Disponible en Google Play" style={{ height: 48 }} />
               </a>
               <a href="#" style={{ display: 'inline-block' }}>
-                <img src="/img/badge-appstore.png" alt="Disponible en App Store" style={{ height: 48 }} />
+                <Img src="/img/badge-appstore.png" alt="Disponible en App Store" style={{ height: 48 }} />
               </a>
             </div>
           </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import "@gobdigital-cl/gob.cl/dist/css/gob.cl.css";
+import { Img } from "@/components/Img";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +30,7 @@ export default function LoginPageLayout({
       <nav className="navbar navbar-light navbar-expand-lg">
         <div className="container">
           <a className="navbar-brand" href="/">
-            <img src="/img/gob-header.svg" alt="Gobierno de Chile" />
+            <Img src="/img/gob-header.svg" alt="Gobierno de Chile" />
           </a>
           <div className="navbar-collapse">
             <ul className="navbar-nav ml-auto">

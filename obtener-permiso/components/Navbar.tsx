@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAssetPath } from '@/lib/getAssetPath';
 
 const Navbar = () => {
   const router = useRouter();
@@ -47,7 +48,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-2">
             {/* Imagen link Inicio */}
             <a href="/">
-              <img src="/img/tupermiso/logo-tupermiso.png" alt="" style={{ width: '150px', height: 'auto' }} />
+              <img src={getAssetPath('/img/tupermiso/logo-tupermiso.png')} alt="" style={{ width: '150px', height: 'auto' }} />
             </a>
             {/* Link a Inicio */}
             <a href="/" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
@@ -86,7 +87,7 @@ const Navbar = () => {
         <div className="flex items-center space-x-2">
           {/* Imagen link Inicio */}
           <a href="/">
-            <img src="/img/tupermiso/logo-tupermiso.png" alt="" style={{ width: '150px', height: 'auto' }} />
+            <img src={getAssetPath('/img/tupermiso/logo-tupermiso.png')} alt="" style={{ width: '150px', height: 'auto' }} />
           </a>
           {/* Link a Inicio */}
           <a href="/" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>

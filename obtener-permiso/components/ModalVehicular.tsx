@@ -1,5 +1,6 @@
 // ModalVehicular.tsx
 import React, { useRef } from 'react';
+import { Img } from './Img';
 
 export default function ModalVehicular({ show, onClose, title, data }: {
   show: boolean;
@@ -216,7 +217,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                             </div>
                             <div><b>Código Verificación:</b> <span style={{ fontWeight: 700 }}>{data.codigo_verificacion || '-'}</span></div>
                             <div style={{ marginTop: 12, alignItems: 'center', gap: 8, textAlign: 'center' }}>
-                              <img src="/img/barcode.png" alt="" />
+                              <Img src="/img/barcode.png" alt="" />
                               <span style={{ fontWeight: 'bold', textAlign: 'center' }}>{Math.floor(Math.random() * 1000000)}</span>
                             </div>
                             
@@ -225,8 +226,8 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                     
                     <div className="row mt-4">
                         <div className="row d-flex">
-                            <img src="/img/qrcode.png" alt="" style={{ width: 120, height: 120 }} />
-                            <img src="/img/imagenes_padron.png" alt="" style={{ width: 'auto', height: 120 }} />
+                            <Img src="/img/qrcode.png" alt="" style={{ width: 120, height: 120 }} />
+                            <Img src="/img/imagenes_padron.png" alt="" style={{ width: 'auto', height: 120 }} />
                         </div>
                         {/* <div className="col"></div>
                         <div className="col"></div> */}
@@ -261,7 +262,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                 }}
               >
                 <div style={{ paddingBottom: 12 }}>
-                  <img src="/img/tupermiso/logo-texto-permiso.png" style={{ height: 25 }} alt="Logo Permiso" />
+                  <Img src="/img/tupermiso/logo-texto-permiso.png" style={{ height: 25 }} alt="Logo Permiso" />
                 </div>
                 <div
                   style={{
@@ -338,7 +339,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                             <div><b>Fecha Vencimiento:</b> {permiso?.fecha_expiracion}</div>
                           </div>
                           <div className="col" style={{ textAlign: 'center', marginTop: 16 }}>
-                            <img src="/img/tupermiso/logo-cert.png" style={{ width: '75%', height: 'auto' }} alt="Certificado" />
+                            <Img src="/img/tupermiso/logo-cert.png" style={{ width: '75%', height: 'auto' }} alt="Certificado" />
                           </div>
                         </div>
                       </div>
@@ -490,7 +491,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                           </div>
                           <div className="col-8">
                             <div className="row">
-                              <img src="/img/aseguradoras/timbre.png" alt="" style={{ height: '50px', objectFit: 'contain', flex: 1 }} />
+                              <Img src="/img/aseguradoras/timbre.png" alt="" style={{ height: '50px', objectFit: 'contain', flex: 1 }} />
                             </div>
                             <div className="row">
                               <div className="col text-center" style={{ borderTop: '2px solid #222', margin: '0px 50px 0px 50px' }}><b>Firma apoderado compañía</b></div>
@@ -555,7 +556,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                     <div className="col-4">
                       <div className="row" style={{ borderBottom: '2px solid #222', textAlign: 'center' }}>
                         <div className="col">
-                          <img src="/img/qrcode.png" alt="" style={{ height: '200px', objectFit: 'contain' }} />
+                          <Img src="/img/qrcode.png" alt="" style={{ height: '200px', objectFit: 'contain' }} />
                         </div>
                       </div>
                       <div className="row">

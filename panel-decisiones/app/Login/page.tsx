@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { Img } from '@/components/Img';
 
 // Función para validar RUT chileno
 function validarRUT(rut: string): boolean {
@@ -222,7 +223,7 @@ export default function LoginPage() {
       <main className="container flex-grow-1 d-flex justify-content-center align-items-center">
         <div className="card shadow-sm p-4 mb-5" style={{ maxWidth: "480px", width: "100%" }}>
           <div className="text-center mb-4">
-            <img src="/img/gob-header.svg" alt="Gobierno de Chile" height={70} />
+            <Img src="/img/gob-header.svg" alt="Gobierno de Chile" height={70} />
             <h1 className="h4 mt-3 font-weight-bold">Dashboard</h1>
           </div>
 
