@@ -1,0 +1,317 @@
+name: Build and Deploy to EKS
+
+on:
+  # push:
+  #   branches:
+  #     - main
+  #     - develop
+  # pull_request:
+  #   branches:
+  #     - main
+  #     - develop
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION || 'us-east-1' }}.amazonaws.com
+  EKS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - app-name: obtener-permiso
+            context: ./obtener-permiso
+            dockerfile: ./obtener-permiso/Dockerfile
+            image-name: obtener-permiso-app
+          
+          - app-name: panel-decisiones
+            context: ./panel-decisiones
+            dockerfile: ./panel-decisiones/Dockerfile
+            image-name: panel-decisiones-app
+          
+          - app-name: app-fiscalizadores
+            context: ./app-fiscalizadores
+            dockerfile: ./app-fiscalizadores/Dockerfile
+            image-name: fiscalizadores-app
+          
+          - app-name: app-propietarios
+            context: ./app-propietarios
+            dockerfile: ./app-propietarios/Dockerfile
+            image-name: propietarios-app
+          
+          - app-name: api-aach
+            context: ./api-aach/api
+            dockerfile: ./api-aach/api/Dockerfile
+            image-name: aach-api
+          
+          - app-name: api-carabineros
+            context: ./api-carabineros/api
+            dockerfile: ./api-carabineros/api/Dockerfile
+            image-name: carabineros-api
+          
+          - app-name: api-mtt
+            context: ./api-mtt/api
+            dockerfile: ./api-mtt/api/Dockerfile
+            image-name: mtt-api
+          
+          - app-name: api-prt
+            context: ./api-prt/api
+            dockerfile: ./api-prt/api/Dockerfile
+            image-name: prt-api
+          
+          - app-name: api-sgd
+            context: ./api-sgd/api
+            dockerfile: ./api-sgd/api/Dockerfile
+            image-name: sgd-api
+          
+          - app-name: api-sii
+            context: ./api-sii/api
+            dockerfile: ./api-sii/api/Dockerfile
+            image-name: sii-api
+          
+          - app-name: api-srcei
+            context: ./api-srcei/api
+            dockerfile: ./api-srcei/api/Dockerfile
+            image-name: srcei-api
+          
+          - app-name: api-tgr
+            context: ./api-tgr/api
+            dockerfile: ./api-tgr/api/Dockerfile
+            image-name: tgr-api
+          
+          - app-name: back
+            context: ./back/api-back
+            dockerfile: ./back/api-back/Dockerfile
+            image-name: back-api
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY }}/${{ secrets.AWS_ACCOUNT_ID }}/${{ matrix.image-name }}:${{ github.sha }}
+            ${{ env.ECR_REGISTRY }}/${{ secrets.AWS_ACCOUNT_ID }}/${{ matrix.image-name }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Print image details
+        run: |
+          echo "Image pushed: ${{ env.ECR_REGISTRY }}/${{ secrets.AWS_ACCOUNT_ID }}/${{ matrix.image-name }}:${{ github.sha }}"
+
+  push-to-ecr:
+    needs: build-images
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Verify images in ECR
+        run: |
+          aws ecr describe-images \
+            --repository-name ${{ secrets.AWS_ACCOUNT_ID }}/obtener-permiso-app \
+            --image-ids imageTag=${{ github.sha }} \
+            --region ${{ env.AWS_REGION }} || echo "Image verification pending"
+
+  deploy-to-eks:
+    needs: push-to-ecr
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ env.AWS_REGION }} \
+            --name ${{ env.EKS_CLUSTER_NAME }}
+      
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+      
+      - name: Create namespace
+        run: |
+          kubectl create namespace desarrollo-tt --dry-run=client -o yaml | kubectl apply -f -
+      
+      - name: Update ConfigMap with RDS endpoint and backend configuration
+        run: |
+          # Get RDS endpoint from DB instance
+          RDS_ENDPOINT=$(aws rds describe-db-instances \
+            --query 'DBInstances[0].Endpoint.Address' \
+            --output text \
+            --region ${{ env.AWS_REGION }})
+          
+          # Create or update main app config
+          kubectl create configmap app-config \
+            --from-literal=DB_HOST=${RDS_ENDPOINT} \
+            --from-literal=DB_PORT=3306 \
+            --from-literal=API_PORT=8000 \
+            --from-literal=API_WORKERS=4 \
+            --from-literal=LOG_LEVEL=info \
+            --from-literal=ENVIRONMENT=production \
+            --from-literal=K8S_MODE=true \
+            --from-literal=DOCKER_MODE=false \
+            --from-literal=NEXT_PUBLIC_APP_NAME="Desarrollo TT" \
+            --from-literal=AACH_API_URL="http://aach-api:8000" \
+            --from-literal=CARABINEROS_API_URL="http://carabineros-api:8000" \
+            --from-literal=MTT_API_URL="http://mtt-api:8000" \
+            --from-literal=SII_API_URL="http://sii-api:8000" \
+            --from-literal=SGD_API_URL="http://sgd-api:8000" \
+            --from-literal=TGR_API_URL="http://tgr-api:8000" \
+            --from-literal=SRCEI_API_URL="http://srcei-api:8000" \
+            -n desarrollo-tt --dry-run=client -o yaml | kubectl apply -f -
+      
+      - name: Create database names ConfigMap
+        run: |
+          kubectl create configmap api-config \
+            --from-literal=AACH_DB_NAME=aach_db \
+            --from-literal=CARABINEROS_DB_NAME=carabineros_db \
+            --from-literal=MTT_DB_NAME=mtt_db \
+            --from-literal=PRT_DB_NAME=prt_db \
+            --from-literal=SGD_DB_NAME=sgd_db \
+            --from-literal=SII_DB_NAME=sii_db \
+            --from-literal=SRCEI_DB_NAME=srcei_db \
+            --from-literal=TGR_DB_NAME=tgr_db \
+            --from-literal=BACK_DB_NAME=back_db \
+            -n desarrollo-tt --dry-run=client -o yaml | kubectl apply -f -
+      
+      - name: Create database credentials secret
+        run: |
+          kubectl create secret generic db-credentials \
+            --from-literal=DB_USER=${{ secrets.DB_USERNAME }} \
+            --from-literal=DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            -n desarrollo-tt --dry-run=client -o yaml | kubectl apply -f -
+      
+      - name: Create API secrets
+        run: |
+          kubectl create secret generic api-secrets \
+            --from-literal=JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            --from-literal=API_KEY=${{ secrets.API_KEY }} \
+            -n desarrollo-tt --dry-run=client -o yaml | kubectl apply -f -
+      
+      - name: Create ECR pull secret
+        run: |
+          kubectl create secret docker-registry ecr-secret \
+            --docker-server=${{ env.ECR_REGISTRY }} \
+            --docker-username=AWS \
+            --docker-password=$(aws ecr get-login-password --region ${{ env.AWS_REGION }}) \
+            -n desarrollo-tt --dry-run=client -o yaml | kubectl apply -f -
+      
+      - name: Apply Kubernetes manifests
+        run: |
+          # Apply deployments
+          kubectl apply -f kubernetes/deployments/ -n desarrollo-tt
+          
+          # Apply ingress
+          kubectl apply -f kubernetes/ingress.yaml -n desarrollo-tt
+      
+      - name: Verify ConfigMap
+        run: |
+          echo "=== Verifying ConfigMap app-config ==="
+          kubectl get configmap app-config -n desarrollo-tt -o yaml | grep -E "(K8S_MODE|DOCKER_MODE|LOG_LEVEL|API_URL|DB_HOST)" || echo "ConfigMap variables not found"
+          echo ""
+          echo "=== ConfigMap created successfully ==="
+      
+      - name: Update image tags
+        run: |
+          APPS=("obtener-permiso-app" "panel-decisiones-app" "fiscalizadores-app" "propietarios-app" "aach-api" "carabineros-api" "mtt-api" "prt-api" "sgd-api" "sii-api" "srcei-api" "tgr-api" "back-api")
+          
+          for app in "${APPS[@]}"; do
+            IMAGE="${{ env.ECR_REGISTRY }}/${{ secrets.AWS_ACCOUNT_ID }}/${app}:${{ github.sha }}"
+            
+            echo "Updating $app with image: $IMAGE"
+            
+            kubectl set image deployment/${app} \
+              ${app}=${IMAGE} \
+              --record \
+              -n desarrollo-tt || echo "Deployment $app not found, will be created with latest tag"
+          done
+      
+      - name: Wait for rollout
+        run: |
+          APPS=("obtener-permiso-app" "panel-decisiones-app" "fiscalizadores-app" "propietarios-app" "aach-api" "carabineros-api" "mtt-api" "prt-api" "sgd-api" "sii-api" "srcei-api" "tgr-api" "back-api")
+          
+          for app in "${APPS[@]}"; do
+            echo "Waiting for rollout of $app..."
+            kubectl rollout status deployment/${app} \
+              -n desarrollo-tt \
+              --timeout=5m || echo "Rollout of $app did not complete in time"
+          done
+      
+      - name: Verify deployment
+        run: |
+          echo "=== Deployment Status ==="
+          kubectl get deployments -n desarrollo-tt
+          echo ""
+          echo "=== Pod Status ==="
+          kubectl get pods -n desarrollo-tt
+          echo ""
+          echo "=== Service Status ==="
+          kubectl get svc -n desarrollo-tt
+          echo ""
+          echo "=== Ingress Status ==="
+          kubectl get ingress -n desarrollo-tt
+
+  notify:
+    needs: [build-images, push-to-ecr, deploy-to-eks]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Print deployment summary
+        run: |
+          echo "Deployment workflow completed!"
+          echo "Branch: ${{ github.ref }}"
+          echo "Commit SHA: ${{ github.sha }}"
+          echo "Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"

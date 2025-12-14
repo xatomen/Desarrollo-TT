@@ -5,6 +5,7 @@ from datetime import date
 
 from patentes_vehiculares_chile import validar_patente
 import requests
+from config.apis import API_AACH
 
 # Instanciamos el router
 router = APIRouter()
@@ -36,9 +37,13 @@ async def consultar_patente(ppu: str):
     if not validar_patente(ppu):
         raise HTTPException(status_code=400, detail="Formato de patente inválido")
 
-    # Consultar patente a la API http://localhost:5001/padron/vehiculo
+    # [DEPRECATED] Consultar patente a la API http://localhost:5001/padron/vehiculo
+    # try:
+    #     response = requests.get(f"http://host.docker.internal:5001/padron/vehiculo/{ppu}")  # Usar el parámetro ppu
+    
+    # Consultar patente a la API AACH usando variable de entorno
     try:
-        response = requests.get(f"http://host.docker.internal:5001/padron/vehiculo/{ppu}")  # Usar el parámetro ppu
+        response = requests.get(f"{API_AACH}/padron/vehiculo/{ppu}")  # Usar variable de entorno
         
         # Si obtuvimos una respuesta exitosa retornamos el padron
         if response.status_code == 200:

@@ -1,19 +1,20 @@
 # Importamos librerías necesarias
 from fastapi import APIRouter, HTTPException, Depends, Request
 from datetime import date
-import os
 from pydantic import BaseModel
 import httpx
 from typing import List, Optional
 import requests 
+from config.apis import API_SII, API_TGR, API_SRCEI, TASACION_FISCAL, FACTURA_VENTA, PERMISO_CIRCULACION, PADRON_VEHICULO
 
 # Instanciamos el router
 router = APIRouter()
 
-SII_BASE_URL = os.getenv("SII_API_URL", "http://host.docker.internal:5005/tasacion_fiscal/?codigo_sii={codigo_sii}")
-SII_Factura_URL = os.getenv("SII_FACTURA_URL", "http://host.docker.internal:5005/factura_venta_num_chasis/?num_chasis={num_chasis}")
-TGR_BASE_URL = os.getenv("TGR_API_URL", "http://host.docker.internal:5007/consultar_permiso/{ppu}")
-SRCEI_BASE_URL = os.getenv("SRCEI_API_URL", "http://host.docker.internal:5001/padron/vehiculo/{ppu}")
+# [DEPRECATED] Usar directamente desde config.apis
+# SII_BASE_URL = os.getenv("SII_API_URL", "http://host.docker.internal:5005/tasacion_fiscal/?codigo_sii={codigo_sii}")
+# SII_Factura_URL = os.getenv("SII_FACTURA_URL", "http://host.docker.internal:5005/factura_venta_num_chasis/?num_chasis={num_chasis}")
+# TGR_BASE_URL = os.getenv("TGR_API_URL", "http://host.docker.internal:5007/consultar_permiso/{ppu}")
+# SRCEI_BASE_URL = os.getenv("SRCEI_API_URL", "http://host.docker.internal:5001/padron/vehiculo/{ppu}")
 
 #####################################################
 # Modelos de respuesta
@@ -125,7 +126,7 @@ async def consultar_valor_permiso(ppu: str):
     equipamiento = None
     tasacion = None
 
-    response = requests.get(TGR_BASE_URL.format(ppu=ppu))
+    response = requests.get(f"{PERMISO_CIRCULACION}/{ppu}")
     if response.status_code == 200:
         estado_permiso = "renovación"
         permiso = response.json()
@@ -137,7 +138,7 @@ async def consultar_valor_permiso(ppu: str):
     # Si es renovación obtener código desde permiso de circulación anterior
     if estado_permiso == "renovación":
         codigo_sii = permiso.get("codigo_sii")
-        response = requests.get(SII_BASE_URL.format(codigo_sii=codigo_sii))
+        response = requests.get(f"{TASACION_FISCAL}/?codigo_sii={codigo_sii}")
         if response.status_code == 200:
             valor_permiso = tiene_tasa_fija(permiso.get("tipo_vehiculo"), permiso.get("carga", 0))
             sii_data = response.json()
@@ -173,7 +174,7 @@ async def consultar_valor_permiso(ppu: str):
     # Si es primera obtención, obtener el valor del vehiculo desde la factura y calcular el valor del permiso    
     if estado_permiso == "primera obtención":
         # Consultar Padrón
-        response = requests.get(SRCEI_BASE_URL.format(ppu=ppu))
+        response = requests.get(f"{PADRON_VEHICULO}/{ppu}")
         if response.status_code == 200:
             padron = response.json()
             num_chasis = padron.get("num_chasis")
@@ -182,7 +183,7 @@ async def consultar_valor_permiso(ppu: str):
         else:
             raise HTTPException(status_code=500, detail="Error al consultar el Padrón")
         # Consultar Factura
-        response = requests.get(SII_Factura_URL.format(num_chasis=num_chasis))
+        response = requests.get(f"{FACTURA_VENTA}/?num_chasis={num_chasis}")
         if response.status_code == 200:
             factura = response.json()
             valor_permiso = tiene_tasa_fija(factura.get("tipo_vehiculo"), factura.get("carga", 0))

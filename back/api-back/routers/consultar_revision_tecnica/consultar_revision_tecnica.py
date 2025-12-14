@@ -5,6 +5,7 @@ from datetime import date
 
 from patentes_vehiculares_chile import validar_patente
 import requests
+from config.apis import API_CARABINEROS
 
 # Instanciamos el router
 router = APIRouter()
@@ -24,8 +25,11 @@ async def consultar_revision_tecnica(ppu: str):
     if not validar_patente(ppu):
         raise HTTPException(status_code=400, detail="Formato de PPU inválido")
 
-    # Consultar a el endpoint http://host.docker.internal:5002/revision_tecnica/{ppu}
-    response = requests.get(f"http://host.docker.internal:5002/revision_tecnica/{ppu}")
+    # [DEPRECATED] Consultar a el endpoint http://host.docker.internal:5002/revision_tecnica/{ppu}
+    # response = requests.get(f"http://host.docker.internal:5002/revision_tecnica/{ppu}")
+    
+    # Consultar a el endpoint Carabineros usando variable de entorno
+    response = requests.get(f"{API_CARABINEROS}/revision_tecnica/{ppu}")
 
     if response.status_code == 200:
         # La respuesta debe entregar el valor de la variable "revision"

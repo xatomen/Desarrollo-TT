@@ -1,5 +1,26 @@
+// Obtener URL base según el ambiente
+// En Kubernetes (AWS ALB): window.location.origin devuelve http://alb-hostname
+// En desarrollo: http://localhost:3000
+// En producción local: usa variable de entorno NEXT_PUBLIC_API_BASE_URL
+const getApiBase = (): string => {
+  // Si hay variable de entorno NEXT_PUBLIC_API_BASE_URL, usar esa
+  if (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL;
+  }
+  
+  // En browser, usar origin automáticamente
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  
+  // Fallback
+  return 'http://localhost:3000';
+};
+
+const API_BASE = getApiBase();
+
 const API_CONFIG = {
-  // Desarrollo
+  // Desarrollo local (comentado)
   // SRCEI: `http://localhost:5001/`,
   // PRT: `http://localhost:5002/`,
   // AACH: `http://localhost:5003/`,
@@ -10,27 +31,17 @@ const API_CONFIG = {
   // MTT: `http://localhost:5008/`,
   // BACKEND: `http://localhost:8000/`,
 
-  // Local
-  // SRCEI: `http://190.20.60.239:5001/`,
-  // PRT: `http://190.20.60.239:5002/`,
-  // AACH: `http://190.20.60.239:5003/`,
-  // SGD: `http://190.20.60.239:5004/`,
-  // SII: `http://190.20.60.239:5005/`,
-  // CARABINEROS: `http://190.20.60.239:5006/`,
-  // TGR: `http://190.20.60.239:5007/`,
-  // MTT: `http://190.20.60.239:5008/`,
-  // BACKEND: `http://190.20.60.239:8000/`,
-  
-  // Internet
-  SRCEI: `https://api-srcei.jorgegallardo.studio/`,
-  PRT: `https://api-prt.jorgegallardo.studio/`,
-  AACH: `https://api-aach.jorgegallardo.studio/`,
-  SGD: `https://api-sgd.jorgegallardo.studio/`,
-  SII: `https://api-sii.jorgegallardo.studio/`,
-  CARABINEROS: `https://api-carabineros.jorgegallardo.studio/`,
-  TGR: `https://api-tgr.jorgegallardo.studio/`,
-  MTT: `https://api-mtt.jorgegallardo.studio/`,
-  BACKEND: `https://backend.jorgegallardo.studio/`,
+  // AWS ALB (Kubernetes) - Rutas por PATH
+  // El ALB hostname es automático (ej: desarrollo-tt-alb-123456789.us-east-1.elb.amazonaws.com)
+  SRCEI: `${API_BASE}/srcei/`,
+  PRT: `${API_BASE}/prt/`,
+  AACH: `${API_BASE}/aach/`,
+  SGD: `${API_BASE}/sgd/`,
+  SII: `${API_BASE}/sii/`,
+  CARABINEROS: `${API_BASE}/carabineros/`,
+  TGR: `${API_BASE}/tgr/`,
+  MTT: `${API_BASE}/mtt/`,
+  BACKEND: `${API_BASE}/back/`,
 };
 
 export default API_CONFIG;
