@@ -307,7 +307,7 @@ jobs:
           kubectl get ingress -n desarrollo-tt
 
   notify:
-    needs: [build-images, push-to-ecr, deploy-to-eks]
+    needs: [build-images, check-ecr-images, deploy-to-eks]
     runs-on: ubuntu-latest
     if: always()
     
