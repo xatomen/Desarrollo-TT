@@ -16,6 +16,8 @@ spec:
       labels:
         app: panel-decisiones-app
     spec:
+      imagePullSecrets:
+      - name: ecr-secret
       containers:
       - name: panel-decisiones-app
         image: 123456789.dkr.ecr.us-east-1.amazonaws.com/desarrollo-tt/panel-decisiones-app:latest

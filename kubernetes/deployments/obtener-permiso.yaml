@@ -16,6 +16,8 @@ spec:
       labels:
         app: obtener-permiso-app
     spec:
+      imagePullSecrets:
+      - name: ecr-secret
       containers:
       - name: obtener-permiso-app
         image: 123456789.dkr.ecr.us-east-1.amazonaws.com/desarrollo-tt/obtener-permiso-app:latest

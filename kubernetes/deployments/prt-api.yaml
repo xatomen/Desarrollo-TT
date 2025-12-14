@@ -16,6 +16,8 @@ spec:
       labels:
         app: prt-api
     spec:
+      imagePullSecrets:
+      - name: ecr-secret
       containers:
       - name: prt-api
         image: 123456789.dkr.ecr.us-east-1.amazonaws.com/desarrollo-tt/prt-api:latest

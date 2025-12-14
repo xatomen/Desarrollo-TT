@@ -16,6 +16,8 @@ spec:
       labels:
         app: propietarios-app
     spec:
+      imagePullSecrets:
+      - name: ecr-secret
       containers:
       - name: propietarios-app
         image: 123456789.dkr.ecr.us-east-1.amazonaws.com/desarrollo-tt/propietarios-app:latest

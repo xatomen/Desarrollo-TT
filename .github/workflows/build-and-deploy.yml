@@ -10,6 +10,15 @@ on:
   #     - main
   #     - develop
   workflow_dispatch:
+    inputs:
+      skip_build:
+        description: 'Skip Docker build and ECR push (use existing images)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
@@ -18,6 +27,7 @@ env:
 
 jobs:
   build-images:
+    if: ${{ github.event.inputs.skip_build != 'true' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -153,7 +163,8 @@ jobs:
             --region ${{ env.AWS_REGION }} || echo "Image verification pending"
 
   deploy-to-eks:
-    needs: check-ecr-images
+    if: always()
+    needs: [build-images]
     runs-on: ubuntu-latest
     
     permissions:

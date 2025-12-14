@@ -16,6 +16,8 @@ spec:
       labels:
         app: srcei-api
     spec:
+      imagePullSecrets:
+      - name: ecr-secret
       containers:
       - name: srcei-api
         image: 123456789.dkr.ecr.us-east-1.amazonaws.com/desarrollo-tt/srcei-api:latest

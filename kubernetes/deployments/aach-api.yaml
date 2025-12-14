@@ -16,6 +16,8 @@ spec:
       labels:
         app: aach-api
     spec:
+      imagePullSecrets:
+      - name: ecr-secret
       containers:
       - name: aach-api
         image: 123456789.dkr.ecr.us-east-1.amazonaws.com/desarrollo-tt/aach-api:latest
