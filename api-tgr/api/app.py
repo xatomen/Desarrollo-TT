@@ -24,7 +24,6 @@ from patentes_vehiculares_chile import (
     validar_patente,
     detectar_tipo_patente,
     limpiar_patente,
-    validar_rut,
     validar_patente,
     generar_patente_vehiculo_antiguo,
     generar_patente_vehiculo_nuevo,
