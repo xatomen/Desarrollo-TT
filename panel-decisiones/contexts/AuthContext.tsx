@@ -64,27 +64,77 @@ const deleteCookie = (name: string) => {
   document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/`;
 };
 
+// Funciones para manejar localStorage
+const setLocalStorage = (name: string, value: string) => {
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(name, value);
+    }
+  } catch (error) {
+    console.error('Error guardando en localStorage:', error);
+  }
+};
+
+const getLocalStorage = (name: string): string | null => {
+  try {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(name);
+    }
+  } catch (error) {
+    console.error('Error obteniendo de localStorage:', error);
+  }
+  return null;
+};
+
+const deleteLocalStorage = (name: string) => {
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(name);
+    }
+  } catch (error) {
+    console.error('Error eliminando de localStorage:', error);
+  }
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar si hay token guardado en cookies al inicializar
-    const savedToken = getCookie('access_token');
-    const savedUser = getCookie('user_info');
-    const tokenExpiry = getCookie('token_expiry');
+    // Verificar si hay token guardado en cookies o localStorage al inicializar
+    const savedTokenCookie = getCookie('access_token');
+    const savedTokenStorage = getLocalStorage('access_token');
+    const savedToken = savedTokenCookie || savedTokenStorage;
+    
+    const savedUserCookie = getCookie('user_info');
+    const savedUserStorage = getLocalStorage('user_info');
+    const savedUser = savedUserCookie || savedUserStorage;
+    
+    const tokenExpiryCookie = getCookie('token_expiry');
+    const tokenExpiryStorage = getLocalStorage('token_expiry');
+    const tokenExpiry = tokenExpiryCookie || tokenExpiryStorage;
 
     if (savedToken && savedUser && tokenExpiry) {
       const expiryTime = parseInt(tokenExpiry);
       if (Date.now() < expiryTime) {
         setToken(savedToken);
         setUser(JSON.parse(decodeURIComponent(savedUser)));
+        // Asegurar que esté en ambos lados
+        setCookie('access_token', savedToken, 1);
+        setCookie('user_info', savedUser, 1);
+        setCookie('token_expiry', tokenExpiry, 1);
+        setLocalStorage('access_token', savedToken);
+        setLocalStorage('user_info', savedUser);
+        setLocalStorage('token_expiry', tokenExpiry);
       } else {
-        // Token expirado, limpiar cookies
+        // Token expirado, limpiar cookies y localStorage
         deleteCookie('access_token');
         deleteCookie('user_info');
         deleteCookie('token_expiry');
+        deleteLocalStorage('access_token');
+        deleteLocalStorage('user_info');
+        deleteLocalStorage('token_expiry');
       }
     }
     setIsLoading(false);
@@ -111,10 +161,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const expiryTime = Date.now() + (data.expires_in * 1000);
       const expiryDays = data.expires_in / (24 * 60 * 60); // convertir segundos a días
       
-      // Guardar en cookies
+      // Guardar en cookies y localStorage
       setCookie('access_token', data.access_token, expiryDays);
       setCookie('user_info', encodeURIComponent(JSON.stringify(data.user_info)), expiryDays);
       setCookie('token_expiry', expiryTime.toString(), expiryDays);
+      
+      setLocalStorage('access_token', data.access_token);
+      setLocalStorage('user_info', encodeURIComponent(JSON.stringify(data.user_info)));
+      setLocalStorage('token_expiry', expiryTime.toString());
 
       // Actualizar estado
       setToken(data.access_token);
@@ -130,10 +184,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
-    // Limpiar cookies
+    // Limpiar cookies y localStorage
     deleteCookie('access_token');
     deleteCookie('user_info');
     deleteCookie('token_expiry');
+    deleteLocalStorage('access_token');
+    deleteLocalStorage('user_info');
+    deleteLocalStorage('token_expiry');
     
     // Limpiar estado
     setToken(null);

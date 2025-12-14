@@ -46,7 +46,7 @@ function isTokenExpired(token: string): boolean {
   }
 }
 
-// Funciones para manejar datos del usuario en cookies
+// Funciones para manejar datos del usuario en cookies Y localStorage
 function saveUserToCookies(userData: UserData) {
   try {
     Cookies.set('user_data', JSON.stringify(userData), {
@@ -60,6 +60,26 @@ function saveUserToCookies(userData: UserData) {
   }
 }
 
+function saveUserToLocalStorage(userData: UserData) {
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user_data', JSON.stringify(userData));
+    }
+  } catch (error) {
+    console.error('Error guardando datos del usuario en localStorage:', error);
+  }
+}
+
+function saveTokenToLocalStorage(token: string) {
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token);
+    }
+  } catch (error) {
+    console.error('Error guardando token en localStorage:', error);
+  }
+}
+
 function getUserFromCookies(): UserData | null {
   try {
     const userData = Cookies.get('user_data');
@@ -70,9 +90,45 @@ function getUserFromCookies(): UserData | null {
   }
 }
 
+function getUserFromLocalStorage(): UserData | null {
+  try {
+    if (typeof window !== 'undefined') {
+      const userData = localStorage.getItem('user_data');
+      return userData ? JSON.parse(userData) : null;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error obteniendo datos del usuario desde localStorage:', error);
+    return null;
+  }
+}
+
+function getTokenFromLocalStorage(): string | null {
+  try {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('auth_token');
+    }
+    return null;
+  } catch (error) {
+    console.error('Error obteniendo token desde localStorage:', error);
+    return null;
+  }
+}
+
 function clearUserCookies() {
   Cookies.remove('auth_token');
   Cookies.remove('user_data');
+}
+
+function clearUserLocalStorage() {
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_data');
+    }
+  } catch (error) {
+    console.error('Error limpiando localStorage:', error);
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -97,20 +153,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('Inicializando autenticación...');
       
-      const savedToken = Cookies.get('auth_token');
-      const savedUserData = getUserFromCookies();
+      // Intentar obtener del localStorage primero (más rápido), luego de cookies
+      const savedTokenStorage = getTokenFromLocalStorage();
+      const savedTokenCookie = Cookies.get('auth_token');
+      const savedToken = savedTokenCookie || savedTokenStorage;
+      
+      const savedUserDataStorage = getUserFromLocalStorage();
+      const savedUserDataCookie = getUserFromCookies();
+      const savedUserData = savedUserDataCookie || savedUserDataStorage;
       
       console.log('Token encontrado:', !!savedToken);
       console.log('Datos de usuario encontrados:', !!savedUserData);
       
       if (savedToken && !isTokenExpired(savedToken) && savedUserData) {
-        // Usar datos guardados en cookies
+        // Usar datos guardados
         setToken(savedToken);
         setUser(savedUserData);
         setIsAuthenticated(true);
-        console.log('Usuario restaurado desde cookies:', savedUserData);
+        // Asegurar que esté en ambos lados
+        saveTokenToLocalStorage(savedToken);
+        saveUserToLocalStorage(savedUserData);
+        console.log('Usuario restaurado:', savedUserData);
       } else if (savedToken && !isTokenExpired(savedToken)) {
-        // Fallback: obtener datos del token si no hay datos en cookies
+        // Fallback: obtener datos del token si no hay datos guardados
         const userData = decodeJWT(savedToken);
         if (userData && userData.rut) {
           const userInfo = {
@@ -123,16 +188,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(userInfo);
           setIsAuthenticated(true);
           
-          // Guardar en cookies para la próxima vez
+          // Guardar en ambos lados
           saveUserToCookies(userInfo);
-          console.log('Usuario restaurado desde token y guardado en cookies:', userInfo);
+          saveUserToLocalStorage(userInfo);
+          saveTokenToLocalStorage(savedToken);
+          console.log('Usuario restaurado desde token:', userInfo);
         } else {
           console.log('Token no contiene datos válidos del usuario');
           clearUserCookies();
+          clearUserLocalStorage();
         }
       } else {
         console.log('Token no encontrado, expirado o datos incompletos');
         clearUserCookies();
+        clearUserLocalStorage();
         setToken(null);
         setUser(null);
         setIsAuthenticated(false);
@@ -140,6 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Error inicializando autenticación:', error);
       clearUserCookies();
+      clearUserLocalStorage();
       setToken(null);
       setUser(null);
       setIsAuthenticated(false);
@@ -174,13 +244,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       
       if (data.access_token) {
-        // Guardar token
+        // Guardar token en cookies y localStorage
         Cookies.set('auth_token', data.access_token, { 
           expires: 1,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
           path: '/'
         });
+        saveTokenToLocalStorage(data.access_token);
 
         // Preparar y guardar datos del usuario
         const userData = decodeJWT(data.access_token);
@@ -190,11 +261,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: data.user_info?.email || userData?.email,
         };
         
-        // Guardar en estado y cookies
+        // Guardar en estado, cookies y localStorage
         setToken(data.access_token);
         setUser(userInfo);
         setIsAuthenticated(true);
         saveUserToCookies(userInfo);
+        saveUserToLocalStorage(userInfo);
         
         console.log('Login exitoso. Usuario guardado:', userInfo);
         return true;
@@ -212,6 +284,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Función de logout actualizada
   const logout = () => {
     clearUserCookies();
+    clearUserLocalStorage();
     setToken(null);
     setUser(null);
     setIsAuthenticated(false);
