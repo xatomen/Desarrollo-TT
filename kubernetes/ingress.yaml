@@ -86,7 +86,24 @@ spec:
           service:
             name: back-api
             port:
-              number: 80      
+              number: 80
+
+      - path: /obtener-permiso
+        pathType: Prefix
+        backend:
+          service:
+            name: obtener-permiso-app
+            port:
+              number: 80
+
+      - path: /panel-decisiones
+        pathType: Prefix
+        backend:
+          service:
+            name: panel-decisiones-app
+            port:
+              number: 80
+
       - path: /
         pathType: Prefix
         backend:
