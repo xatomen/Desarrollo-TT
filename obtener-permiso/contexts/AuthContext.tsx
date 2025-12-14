@@ -52,7 +52,8 @@ function saveUserToCookies(userData: UserData) {
     Cookies.set('user_data', JSON.stringify(userData), {
       expires: 1, // 1 día
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict'
+      sameSite: 'lax',
+      path: '/'
     });
   } catch (error) {
     console.error('Error guardando datos del usuario en cookies:', error);
@@ -177,7 +178,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         Cookies.set('auth_token', data.access_token, { 
           expires: 1,
           secure: process.env.NODE_ENV === 'production',
-          sameSite: 'strict'
+          sameSite: 'lax',
+          path: '/'
         });
 
         // Preparar y guardar datos del usuario
