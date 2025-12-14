@@ -108,35 +108,24 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
       
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver-options: image=moby/buildkit:latest
-      
-      - name: Verify ECR Login and Docker credentials
+      - name: Build Docker image
         run: |
-          echo "ECR Registry: ${{ steps.login-ecr.outputs.registry }}"
-          aws ecr describe-repositories --region ${{ env.AWS_REGION }} | head -20
-          echo "Checking Docker authentication..."
-          echo "${{ steps.login-ecr.outputs.docker_username }}" | docker login -u "${{ steps.login-ecr.outputs.docker_username }}" --password-stdin "${{ env.ECR_REGISTRY }}" 2>/dev/null || true
-          echo "✅ ECR and Docker login verified"
+          docker build -f ${{ matrix.dockerfile }} \
+            -t ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:${{ github.sha }} \
+            -t ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:latest \
+            ${{ matrix.context }}
       
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.dockerfile }}
-          push: true
-          tags: |
-            ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:${{ github.sha }}
-            ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:latest
-          cache-from: type=registry,ref=${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:buildcache
-          cache-to: type=registry,ref=${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:buildcache,mode=max
-          build-args: BUILDKIT_INLINE_CACHE=1
+      - name: Push Docker image to ECR
+        run: |
+          echo "Pushing image: ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:${{ github.sha }}"
+          docker push ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:${{ github.sha }}
+          docker push ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:latest
+          echo "✅ Image successfully pushed"
       
       - name: Print image details
         run: |
           echo "Image pushed: ${{ env.ECR_REGISTRY }}/desarrollo-tt/${{ matrix.image-name }}:${{ github.sha }}"
+          docker images | grep desarrollo-tt
 
   push-to-ecr:
     needs: build-images
