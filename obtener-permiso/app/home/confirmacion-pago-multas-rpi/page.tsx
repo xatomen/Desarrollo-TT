@@ -1,10 +1,13 @@
 'use client';
+import { useEffect, useState } from 'react';
+
 export default function ConfirmacionPagoMultasRPIPage() {
+  const [rut, setRut] = useState<string | null>(null);
 
   // Recuperar el RUT desde el local storage
-  const rut = localStorage.getItem('rut');
-  
-  // Lógica de uso de endpoint que elimina las multas RPI del RUT
+  useEffect(() => {
+    setRut(localStorage.getItem('rut'));
+  }, []);
 
 
 

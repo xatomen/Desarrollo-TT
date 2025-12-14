@@ -1057,9 +1057,11 @@ export default function VerVehiculos() {
                                   type="button"
                                   className="btn btn-sm px-3 text-decoration-none btn-primary"
                                   onClick={() => {
-                                    sessionStorage.setItem('ppu', v.plate);
-                                    sessionStorage.setItem('rut', rut);
-                                    window.location.href = `/home/validaciones-pago`;
+                                    if (v.plate) {
+                                      sessionStorage.setItem('ppu', v.plate);
+                                      sessionStorage.setItem('rut', rut);
+                                      window.location.href = `/home/validaciones-pago`;
+                                    }
                                   }}
                                 >
                                   Ver

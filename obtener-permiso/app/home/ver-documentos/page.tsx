@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import ModalVehicular from '@/components/ModalVehicular';
 import React from 'react';
 
-export default function VerDocumentosPage() {
+function VerDocumentosContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -341,5 +341,13 @@ export default function VerDocumentosPage() {
         />
       </div>
     </ProtectedRoute>
+  );
+}
+
+export default function VerDocumentosPage() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <VerDocumentosContent />
+    </Suspense>
   );
 }

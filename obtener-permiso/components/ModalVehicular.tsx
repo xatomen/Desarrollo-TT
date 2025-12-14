@@ -25,8 +25,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
           margin: 0,
           filename: `${title.replace(/\s/g, '_').toLowerCase()}_${data?.padron?.ppu || 'documento'}.pdf`,
           html2canvas: { scale: 2 },
-          jsPDF: { unit: 'pt', format: [rect.width, rect.height], orientation: 'landscape' },
-          pagebreak: { mode: ['avoid-all'] }
+          jsPDF: { unit: 'pt', format: [rect.width, rect.height], orientation: 'landscape' }
         })
         .from(docRef.current)
         .save();

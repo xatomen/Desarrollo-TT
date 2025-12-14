@@ -95,7 +95,6 @@ export default function TablaVehiculos({ vehicles, rut, onPagar }: TablaVehiculo
                       </p>
                     </td>
                     <td className="align-middle"><EstadoTag estado={v.estado} /></td>
-                    <td className="align-middle"><EstadoTag estado={v.estadoDocumentos} /></td>
                     <td className="text-center align-middle">
                       <button
                       type="button"

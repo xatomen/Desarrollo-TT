@@ -56,7 +56,7 @@ interface DatosVehiculo {
   todosDocumentosValidos: boolean;
 }
 
-type EstadoValidacion = 'Vigente' | 'No' | 'Si' | 'Desconocido';
+type EstadoValidacion = 'Vigente' | 'No' | 'No Vigente' | 'Si' | 'Desconocido';
 type DocumentoValidacion = {
   nombre: string;
   estado: EstadoValidacion;
