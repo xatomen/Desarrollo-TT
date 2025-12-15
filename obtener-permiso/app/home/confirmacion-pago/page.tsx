@@ -300,7 +300,7 @@ export default function ConfirmacionPago() {
       setNumeroComprobante(data.transactionId ? data.transactionId.toString() : `${timestamp}${random}`);
     } else {
       // Si no hay datos de pago, redirigir al home
-      router.push('/obtener-permiso/home/ver-vehiculos');
+      router.push('/home/ver-vehiculos');
     }
   }, [router]);
 

@@ -191,7 +191,7 @@ export default function ConfirmacionPagoMultasTransitoPage() {
                       }}
                       onClick={() => {
                         // Redirigir a /home/validaciones-pago
-                        router.push("/obtener-permiso/home/validaciones-pago");
+                        router.push("/home/validaciones-pago");
                       }}
                     >
                       Continuar con el pago del permiso

@@ -213,7 +213,7 @@ export default function FormularioPago() {
     sessionStorage.setItem('nombre_pago', formData.nombre);
     sessionStorage.setItem('correo_pago', formData.correo);
     // Redirigir a Webpay
-    router.push('/obtener-permiso/webpay');
+    router.push('/webpay');
   };
 
   return (

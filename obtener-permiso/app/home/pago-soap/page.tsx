@@ -210,7 +210,7 @@ export default function ConfirmacionPagoSoapPage() {
                 sessionStorage.setItem('soap', JSON.stringify(soap));
                 sessionStorage.setItem('formato_pago', JSON.stringify(formatoPago));
                 // Aquí iría la lógica para pagar con Webpay
-                router.push(`/obtener-permiso/webpay`);
+                router.push(`/webpay`);
               }}
             >
               Pagar con Webpay

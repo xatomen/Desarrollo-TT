@@ -106,7 +106,7 @@ export default function LoginBancoPage() {
       if (data && data.user_info) {
         sessionStorage.setItem('user_info', JSON.stringify(data.user_info));
         // Redirigir o mostrar éxito según tu flujo
-        router.push('/obtener-permiso/webpay/pago-banco');
+        router.push('/webpay/pago-banco');
       } else {
         setError('Respuesta inesperada del servidor');
       }

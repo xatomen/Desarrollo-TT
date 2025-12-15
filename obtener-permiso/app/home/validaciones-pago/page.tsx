@@ -775,7 +775,7 @@ function ValidacionesPagoContent() {
                             };
                             sessionStorage.setItem('formato_pago', JSON.stringify(formatoPago));
                             // Redirigir a la sección de pago de SOAP
-                            router.push(`/obtener-permiso/home/pago-soap`);
+                            router.push(`/home/pago-soap`);
                           }}
                         >
                           Pagar SOAP
@@ -871,7 +871,7 @@ function ValidacionesPagoContent() {
                                     };
                                     sessionStorage.setItem('formato_pago', JSON.stringify(formatoPago));
                                     // Redirigir a la pasarela de pagos
-                                    router.push(`/obtener-permiso/webpay`);
+                                    router.push(`/webpay`);
                                   }}
                                 >
                                   Pagar Multas
@@ -926,7 +926,7 @@ function ValidacionesPagoContent() {
                                     };
                                     sessionStorage.setItem('formato_pago', JSON.stringify(formatoPago));
                                     // Redirigir a la pasarela de pagos
-                                    router.push(`/obtener-permiso/webpay`);
+                                    router.push(`/webpay`);
                                   }}
                                 >
                                   Pagar Multas
