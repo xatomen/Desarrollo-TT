@@ -21,7 +21,7 @@ from datetime import datetime
 # Instancia de FastAPI
 ##############################
 
-app = FastAPI(root_path="/carabineros")
+app = FastAPI()
 
 #########################################################
 # Configurar Middleware CORS
@@ -56,7 +56,7 @@ Base = declarative_base()
 ####################################################
 
 class EncargoPatenteModel(Base):
-    __tablename__ = 'ENCARGO_PATENTE' 
+    __tablename__ = 'encargo_patente' 
 
     ID = Column(Integer, primary_key=True, index=True)
     PPU = Column(String(10), nullable=False)

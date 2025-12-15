@@ -22,7 +22,7 @@ Base = declarative_base()
 
 # --- Modelos SQLAlchemy ---
 class TasacionFiscal(Base):
-    __tablename__ = "TASACION_FISCAL"
+    __tablename__ = "tasacion_fiscal"
     codigo_sii = Column(String(20), primary_key=True)
     tipo = Column(String(50))
     anio = Column(Integer)
@@ -43,7 +43,7 @@ class TasacionFiscal(Base):
     valor_permiso = Column(Integer)
 
 class FacturaCompra(Base):
-    __tablename__ = "FACTURA_COMPRA"
+    __tablename__ = "factura_compra"
     num_factura = Column(Integer, primary_key=True)
     precio_neto = Column(Integer)
     puertas = Column(Integer)

@@ -29,7 +29,7 @@ Base = declarative_base()
 
 # Modelo SQLAlchemy (tabla REVISION_TECNICA)
 class RevisionTecnica(Base):
-    __tablename__ = 'REVISION_TECNICA'
+    __tablename__ = 'revision_tecnica'
     id_rev_tecnica = Column(Integer, primary_key=True, autoincrement=True)
     ppu = Column(String(10), nullable=False)
     fecha = Column(Date)

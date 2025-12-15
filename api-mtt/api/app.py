@@ -57,7 +57,7 @@ Base = declarative_base()
 
 # --- Modelos SQLAlchemy ---
 class MultaRPI(Base):
-    __tablename__ = "MULTAS_RPI"
+    __tablename__ = "multas_rpi"
     id = Column(Integer, primary_key=True, autoincrement=True)
     rut = Column(String(12), index=True)
     rol_causa = Column(String(20))
@@ -66,7 +66,7 @@ class MultaRPI(Base):
     monto_multa = Column(Integer)
 
 class RegistroTransporte(Base):
-    __tablename__ = "REG_TRANSPORTE"
+    __tablename__ = "reg_transporte"
     ppu = Column(String(10), primary_key=True)
     fecha_entrada_rnt = Column(DateTime, nullable=False)  # ✅ Cambiado a DateTime
     tipo_servicio = Column(String(30), nullable=False)
