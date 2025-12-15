@@ -90,10 +90,10 @@ API_SRCEI = os.getenv("API_SRCEI", _build_url(SERVICE_SRCEI, PORT_SRCEI) + "/src
 # ============================================================
 
 # Padrón vehicular
-PADRON_VEHICULO = f"{API_AACH}/padron/vehiculo"
+PADRON_VEHICULO = f"{API_SRCEI}/padron/vehiculo"
 
 # Revisión técnica
-REVISION_TECNICA = f"{API_CARABINEROS}/revision_tecnica"
+REVISION_TECNICA = f"{API_PRT}/revision_tecnica"
 
 # Multas de tránsito
 MULTAS_TRANSITO = f"{API_SRCEI}/multas_transito"
