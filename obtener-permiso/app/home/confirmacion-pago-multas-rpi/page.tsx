@@ -18,7 +18,7 @@ export default function ConfirmacionPagoMultasRPIPage() {
         className="btn btn-primary"
         onClick={() => {
           // Redirigir a /home/validaciones-pago
-            window.location.href = '/home/validaciones-pago';
+            window.location.href = '/obtener-permiso/home/validaciones-pago';
         }}
       >
         Continuar con el pago del permiso

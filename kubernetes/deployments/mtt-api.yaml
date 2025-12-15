@@ -40,7 +40,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: api-config
-              key: MTT_DB_NAME
+              key: DB_NAME_MTT
         - name: DB_USER
           valueFrom:
             secretKeyRef:

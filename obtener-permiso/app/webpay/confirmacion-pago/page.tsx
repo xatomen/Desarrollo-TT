@@ -186,21 +186,21 @@ export default function ConfirmacionPagoLayout({ children }: { children: React.R
               className="col m-2 p-4"
               style={{ backgroundColor: selectedBank.color, color: 'white', borderRadius: '30px', fontWeight: 'bold', fontSize: '0.8rem' }}
               onClick={() => {
-                // Si el tipo de pago es "permiso", redirigir a /home/confirmacion-pago
+                // Si el tipo de pago es "permiso", redirigir a /obtener-permiso/home/confirmacion-pago
                 if (tipoPago === 'permiso') {
-                  window.location.href = '/home/confirmacion-pago';
+                  window.location.href = '/obtener-permiso/home/confirmacion-pago';
                 }
-                // Si el tipo de pago es "multas_rpi", redirigir a /home/confirmacion-pago-multas-rpi
+                // Si el tipo de pago es "multas_rpi", redirigir a /obtener-permiso/home/confirmacion-pago-multas-rpi
                 else if (tipoPago === 'multas_rpi') {
-                  window.location.href = '/home/confirmacion-pago-multas-rpi';
+                  window.location.href = '/obtener-permiso/home/confirmacion-pago-multas-rpi';
                 }
-                // Si el tipo de pago es "multas_transito", redirigir a /home/confirmacion-pago-multas-transito
+                // Si el tipo de pago es "multas_transito", redirigir a /obtener-permiso/home/confirmacion-pago-multas-transito
                 else if (tipoPago === 'multas_transito') {
-                  window.location.href = '/home/confirmacion-pago-multas-transito';
+                  window.location.href = '/obtener-permiso/home/confirmacion-pago-multas-transito';
                 }
-                // Si el tipo de pago es "soap", redirigir a /home/confirmacion-pago-soap
+                // Si el tipo de pago es "soap", redirigir a /obtener-permiso/home/confirmacion-pago-soap
                 else if (tipoPago === 'soap') {
-                  window.location.href = '/home/confirmacion-pago-soap';
+                  window.location.href = '/obtener-permiso/home/confirmacion-pago-soap';
                 }
               }}
             >

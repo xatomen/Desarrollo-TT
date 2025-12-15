@@ -40,7 +40,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: api-config
-              key: SRCEI_DB_NAME
+              key: DB_NAME_SRCEI
         - name: DB_USER
           valueFrom:
             secretKeyRef:

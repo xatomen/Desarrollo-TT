@@ -79,7 +79,7 @@ export default function Home() {
                     padding: '12px 32px',
                     boxShadow: '0 2px 8px #0002'
                   }}
-                  onClick={() => router.push('/home')}
+                  onClick={() => router.push('/obtener-permiso/home')}
                 >
                   <span className="d-flex align-items-center gap-2">
                     <span>Paga tu permiso aquí</span>

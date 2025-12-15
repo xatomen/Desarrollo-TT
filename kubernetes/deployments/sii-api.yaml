@@ -40,7 +40,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: api-config
-              key: SII_DB_NAME
+              key: DB_NAME_SII
         - name: DB_USER
           valueFrom:
             secretKeyRef:

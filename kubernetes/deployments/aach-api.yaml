@@ -40,7 +40,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: api-config
-              key: AACH_DB_NAME
+              key: DB_NAME_AACH
         - name: DB_USER
           valueFrom:
             secretKeyRef:

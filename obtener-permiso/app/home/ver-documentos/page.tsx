@@ -69,7 +69,7 @@ function VerDocumentosContent() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/');
+      router.push('/obtener-permiso');
     }
   }, [isLoading, isAuthenticated, router]);
 
@@ -172,7 +172,7 @@ function VerDocumentosContent() {
         
         {/* Volver atrás y Breadcrumb */}
         <div className="row align-self-center d-flex align-items-center mb-4 px-3">
-          <button className="p-2" style={{ backgroundColor: 'white', border: '1px solid #007bff', color: '#007bff', cursor: 'pointer' }} onClick={() => router.push('/home')}>
+          <button className="p-2" style={{ backgroundColor: 'white', border: '1px solid #007bff', color: '#007bff', cursor: 'pointer' }} onClick={() => router.push('/obtener-permiso/home')}>
             <span>← Volver</span>
           </button>
           <nav aria-label="breadcrumb" className="col">

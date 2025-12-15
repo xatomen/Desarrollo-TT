@@ -40,7 +40,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: api-config
-              key: TGR_DB_NAME
+              key: DB_NAME_TGR
         - name: DB_USER
           valueFrom:
             secretKeyRef:

@@ -776,7 +776,7 @@ export default function VerVehiculos() {
       <section className="" style={{ fontFamily: '"Roboto", Arial, sans-serif', minHeight: 'max-content', width: '100%' }}>
         {/* Volver atrás y Breadcrumb */}
         <div className="row align-self-center d-flex align-items-center mb-4 px-3">
-          <button className="p-2" style={{ backgroundColor: 'white', border: '1px solid #007bff', color: '#007bff', cursor: 'pointer' }} onClick={() => router.push('/home')}>
+          <button className="p-2" style={{ backgroundColor: 'white', border: '1px solid #007bff', color: '#007bff', cursor: 'pointer' }} onClick={() => router.push('/obtener-permiso/home')}>
             <span>← Volver</span>
           </button>
           <nav aria-label="breadcrumb" className="col">
@@ -1060,7 +1060,7 @@ export default function VerVehiculos() {
                                     if (v.plate) {
                                       sessionStorage.setItem('ppu', v.plate);
                                       sessionStorage.setItem('rut', rut);
-                                      window.location.href = `/home/validaciones-pago`;
+                                      window.location.href = `/obtener-permiso/home/validaciones-pago`;
                                     }
                                   }}
                                 >
@@ -1260,7 +1260,7 @@ export default function VerVehiculos() {
                                   onClick={() => {
                                     sessionStorage.setItem('ppu', vehicle.ppu || '');
                                     sessionStorage.setItem('rut', rut);
-                                    window.location.href = `/home/validaciones-pago`;
+                                    window.location.href = `/obtener-permiso/home/validaciones-pago`;
                                   }}
                                 >
                                   Ver
@@ -1481,7 +1481,7 @@ export default function VerVehiculos() {
                           onClick={() => {
                             sessionStorage.setItem('ppu', vehiculoBuscado.plate);
                             sessionStorage.setItem('rut', rut);
-                            window.location.href = `/home/validaciones-pago`;
+                            window.location.href = `/obtener-permiso/home/validaciones-pago`;
                           }}
                         >
                           Pagar

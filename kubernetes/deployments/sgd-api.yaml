@@ -40,7 +40,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: api-config
-              key: SGD_DB_NAME
+              key: DB_NAME_SGD
         - name: DB_USER
           valueFrom:
             secretKeyRef:

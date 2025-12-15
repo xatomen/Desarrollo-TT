@@ -83,7 +83,7 @@ export default function WebpayPage() {
 				// Guardar datos en sessionStorage
 				sessionStorage.setItem('rutTarjeta', rutLimpio);
 				sessionStorage.setItem('banco', data.banco);
-                router.push('/webpay/login-banco');
+                router.push('/obtener-permiso/webpay/login-banco');
             } else {
                 setError('Datos incorrectos o banco no encontrado.');
             }
@@ -179,7 +179,7 @@ export default function WebpayPage() {
 						{/* Anular compra y volver */}
 						<div className="row mt-4">
 							<div className="col text-center m-4">
-								<a href="/home/formulario-pago" style={{ textDecoration: 'none', color: '#447feeff', fontWeight: 'bold' }}>Anular compra y volver</a>
+								<a href="/obtener-permiso/home/formulario-pago" style={{ textDecoration: 'none', color: '#447feeff', fontWeight: 'bold' }}>Anular compra y volver</a>
 							</div>
 						</div>
 					</div>
