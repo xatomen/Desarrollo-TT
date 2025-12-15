@@ -241,7 +241,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                     
                     <div style={{ margin: '10px 0' }}>
                       {data.qr_url && (
-                        <img src={data.qr_url} alt="QR" style={{ width: 80, height: 80 }} />
+                        <Img src={data.qr_url} alt="QR" style={{ width: 80, height: 80 }} />
                       )}
                     </div>
                   </div>
@@ -391,7 +391,7 @@ export default function ModalVehicular({ show, onClose, title, data }: {
                         <div className="row text-center">
                           <div className="col"><b>CERTIFICADO SEGURO OBLIGATORIO ACCIDENTES PERSONALES ELECTRONICO LEY 18.490</b></div>
                             <div className="col" style={{ alignContent: 'center', justifyContent: 'center', display: 'flex' }}>
-                              <img
+                              <Img
                                 src={
                                   soap.compania === 'Consorcio'
                                     ? '/img/aseguradoras/consorcio.png'

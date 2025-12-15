@@ -1,6 +1,7 @@
 // Página de pago banco
 'use client';
 import API_CONFIG from "@/config/api";
+import { Img } from "@/components/Img";
 import { useState, useEffect } from "react";
 
 // Bancos
@@ -260,7 +261,7 @@ export default function PagoBancoPage() {
         <div className="col p-4 m-4 mx-4">
           {/* Logo banco */}
           <div className="text-center mb-4 d-flex justify-content-center">
-            <img src={selectedBank.logo} alt={`Logo ${selectedBank.nombre}`} style={{ maxHeight: '50px' }} />
+            <Img src={selectedBank.logo} alt={`Logo ${selectedBank.nombre}`} style={{ maxHeight: '50px' }} />
           </div>
           {/* Mensaje de bienvenida */}
           <div className="text-center mb-4">

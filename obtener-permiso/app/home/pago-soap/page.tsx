@@ -1,5 +1,6 @@
 'use client';
 
+import { Img } from '@/components/Img';
 import { useRouter } from 'next/navigation';
 import { useState } from "react";
 import { useEffect } from "react";
@@ -100,7 +101,7 @@ export default function ConfirmacionPagoSoapPage() {
               justifyContent: 'center',
               alignItems: 'center',
               marginBottom: '10px'}}>
-              <img src={aseguradora.logo} alt={aseguradora.nombre} style={{ maxHeight: '100px' }} />
+              <Img src={aseguradora.logo} alt={aseguradora.nombre} style={{ maxHeight: '100px' }} />
             </div>
             <p className="p-2 text-center">Precio</p>
             <p className="p-2 text-center" style={{ fontSize: '1.4rem', fontWeight: 'bold', fontFamily: 'Roboto, sans-serif' }}>${aseguradora.precio.toLocaleString()}</p>

@@ -29,7 +29,7 @@ export default function LoginPageLayout({
       {/* Login mantiene su propio navbar simple */}
       <nav className="navbar navbar-light navbar-expand-lg">
         <div className="container">
-          <a className="navbar-brand" href="/">
+          <a className="navbar-brand" href="/panel-decisiones">
             <Img src="/img/gob-header.svg" alt="Gobierno de Chile" />
           </a>
           <div className="navbar-collapse">

@@ -46,6 +46,7 @@ export default function RootLayout({
         ></script>
         <script 
           src="https://cdn.jsdelivr.net/npm/@gobdigital-cl/gob.cl@1.6.0/dist/js/gob.cl.min.js"
+          crossOrigin="anonymous"
           async
         ></script>
     </html>

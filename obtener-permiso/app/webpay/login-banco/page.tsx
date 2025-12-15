@@ -1,6 +1,7 @@
 // Página en blanco sencilla
 'use client';
 import API_CONFIG from "@/config/api";
+import { Img } from "@/components/Img";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
@@ -143,7 +144,7 @@ export default function LoginBancoPage() {
           <div className="col p-4 mx-4">
             {/* Logo banco */}
             <div className="text-center mb-4 d-flex justify-content-center">
-              <img src={selectedBank.logo} alt={`Logo ${selectedBank.nombre}`} style={{ maxHeight: '50px' }} />
+              <Img src={selectedBank.logo} alt={`Logo ${selectedBank.nombre}`} style={{ maxHeight: '50px' }} />
             </div>
             {/* Mensaje de bienvenida */}
             <p className="text-center mb-5" style={{ fontSize: '1.25rem' }}>{selectedBank.mensajeBienvenida}</p>

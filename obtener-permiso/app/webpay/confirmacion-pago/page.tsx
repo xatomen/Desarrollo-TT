@@ -2,6 +2,7 @@
 // que muestra detalles del pago realizado
 
 'use client';
+import { Img } from "@/components/Img";
 import { useEffect, useState } from "react";
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
@@ -131,7 +132,7 @@ export default function ConfirmacionPagoLayout({ children }: { children: React.R
         <div className="col p-4">
           {/* Logo Banco */}
           <div className="text-center mb-4 justify-content-center d-flex">
-            <img src={selectedBank.logo} alt={`${selectedBank.nombre} Logo`} style={{ height: '50px', width: 'auto', margin: '10px' }} />
+            <Img src={selectedBank.logo} alt={`${selectedBank.nombre} Logo`} style={{ height: '50px', width: 'auto', margin: '10px' }} />
           </div>
           <p className="text-center" style={{ fontWeight: 'bold', fontSize: '1.5rem' }}>Confirmación de Pago</p>
           {/* Resultado del pago */}

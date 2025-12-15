@@ -5,6 +5,7 @@ import { useSearchParams, useRouter, redirect } from 'next/navigation';
 import { useAuth, getRutFromCookies } from '@/contexts/AuthContext';
 import API_CONFIG from '@/config/api';
 import { FaCcVisa, FaCcMastercard, FaCcAmex, FaCreditCard, FaMoneyCheckAlt } from 'react-icons/fa';
+import { Img } from '@/components/Img';
 
 interface DatosVehiculo {
   // Datos básicos
@@ -403,7 +404,7 @@ export default function FormularioPago() {
                       }}
                     >
                       Pagar con
-                      <img
+                      <Img
                         src="/img/webpay-logo-nofondo.png"
                         alt="Pagar con OnePay"
                         className="img-fluid"

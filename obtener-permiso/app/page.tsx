@@ -292,7 +292,7 @@ export default function Home() {
             {/* Columna WebPay */}
             <div className="col-12 col-md-6 d-flex flex-column align-items-center justify-content-center mb-4 mb-md-0">
               <div className="mb-3">
-                <img
+                <Img
                   src="/img/webpay-logo-nofondo.png"
                   alt="WebPay"
                   style={{ height: 48, marginBottom: 8 }}
@@ -323,7 +323,7 @@ export default function Home() {
             </div>
             {/* Columna imagen cuotas */}
             <div className="col-12 col-md-6 d-flex justify-content-center align-items-center">
-              <img
+              <Img
                 src="/img/pago_cuotas.png"
                 alt="Pago en cuotas"
                 style={{
@@ -351,8 +351,8 @@ export default function Home() {
           }}
         >
           <div className="col-12 col-md-6 mb-4 mb-md-0 text-center align-items-center d-flex justify-content-center">
-            <img
-              src={getAssetPath('/img/tupermiso/logo-tupermisomovil.png')}
+            <Img
+              src="/img/tupermiso/logo-tupermisomovil.png"
               alt="App móvil Tu Permiso"
               style={{
                 maxWidth: '260px',
@@ -396,7 +396,7 @@ export default function Home() {
           }}
         >
           <div className="col-12 col-md-6 text-center mb-4 mb-md-0">
-            <img
+            <Img
               src="/img/logo-claveunica.svg"
               alt="ClaveÚnica"
               style={{

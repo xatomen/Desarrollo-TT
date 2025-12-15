@@ -1,5 +1,6 @@
 'use client';
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { Img } from "@/components/Img";
 import { useState, useEffect, useRef, forwardRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -159,7 +160,7 @@ const PermisoCirculacionPDF = forwardRef<HTMLDivElement, PermisoCirculacionPDFPr
       }}
     >
       <div className="pb-3">
-        <img src="/img/tupermiso/logo-texto-permiso.png" style={{ height: '25px' }} />
+        <Img src="/img/tupermiso/logo-texto-permiso.png" style={{ height: '25px' }} />
       </div>
       <div
         style={{
@@ -233,7 +234,7 @@ const PermisoCirculacionPDF = forwardRef<HTMLDivElement, PermisoCirculacionPDFPr
                   <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Fecha Vencimiento</strong> {datos?.fecha_expiracion}</p>
                 </div>
                 <div className="col m-0 p-2 text-center justify-content-center align-items-center">
-                  <img src="/img/tupermiso/logo-cert.png" style={{ width: '75%', height: 'auto', marginLeft: 'auto', marginRight: 'auto' }} className="d-flex text-center justify-content-center align-items-center" />
+                  <Img src="/img/tupermiso/logo-cert.png" style={{ width: '75%', height: 'auto', marginLeft: 'auto', marginRight: 'auto' }} className="d-flex text-center justify-content-center align-items-center" />
                 </div>
               </div>
             </div>

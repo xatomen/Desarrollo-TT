@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { FiHelpCircle } from "react-icons/fi";
+import { Img } from "@/components/Img";
 
 // Función para validar RUT chileno
 function validarRUT(rut: string): boolean {
@@ -188,7 +189,7 @@ export default function LoginPage() {
       <main className="container flex-grow-1 d-flex justify-content-center align-items-center">
         <div className="card shadow-sm p-4 mb-5" style={{ maxWidth: "480px", width: "100%" }}>
           <div className="text-center mb-4">
-            <img src="/img/gob-header.svg" alt="Gobierno de Chile" height={70} />
+            <Img src="/img/gob-header.svg" alt="Gobierno de Chile" height={70} />
             <h1 className="h4 mt-3 font-weight-bold">Permiso de Circulación</h1>
           </div>
 
@@ -333,10 +334,10 @@ export default function LoginPage() {
           <div className="line"></div>
           <div className="row">
             <div className="col-md-3 a11y-fonts-col-12">
-              <img className="mw-100 mb-3" src="/img/favicon/ms-icon-150x150.png"/>
+              <Img className="mw-100 mb-3" src="/img/favicon/ms-icon-150x150.png"/>
               <p>La alternativa para digitalizar los trámites de la ciudadanía.</p>
               <p>Esta plataforma es administrada:</p>
-              <img className="mw-100 mb-3" src="/img/gob-footer.svg"/>
+              <Img className="mw-100 mb-3" src="/img/gob-footer.svg"/>
               <a className="py-0" href="www.digital.gob.cl">www.digital.gob.cl</a>
             </div>
             <div className="col-md-3 a11y-fonts-col-12">

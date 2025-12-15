@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAssetPath } from '@/lib/getAssetPath';
+import { Img } from './Img';
 
 const Navbar = () => {
   const router = useRouter();
@@ -47,11 +47,11 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             {/* Imagen link Inicio */}
-            <a href="/">
-              <img src={getAssetPath('/img/tupermiso/logo-tupermiso.png')} alt="" style={{ width: '150px', height: 'auto' }} />
+            <a href="/obtener-permiso">
+              <Img src="/img/tupermiso/logo-tupermiso.png" alt="" style={{ width: '150px', height: 'auto' }} />
             </a>
             {/* Link a Inicio */}
-            <a href="/" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
+            <a href="/obtener-permiso" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
               Inicio
             </a>
             {/* Link a Tu Permiso */}
@@ -86,11 +86,11 @@ const Navbar = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           {/* Imagen link Inicio */}
-          <a href="/">
-            <img src={getAssetPath('/img/tupermiso/logo-tupermiso.png')} alt="" style={{ width: '150px', height: 'auto' }} />
+          <a href="/obtener-permiso">
+            <Img src="/img/tupermiso/logo-tupermiso.png" alt="" style={{ width: '150px', height: 'auto' }} />
           </a>
           {/* Link a Inicio */}
-          <a href="/" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
+          <a href="/obtener-permiso" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
             Inicio
           </a>
           {/* Link a Tu Permiso */}
