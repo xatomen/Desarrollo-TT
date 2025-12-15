@@ -42,32 +42,17 @@ metadata:
   name: api-config
   namespace: desarrollo-tt
 data:
-  # AACH API
-  AACH_DB_NAME: "aach_db"
-  
-  # Carabineros API
-  CARABINEROS_DB_NAME: "carabineros_db"
-  
-  # MTT API
-  MTT_DB_NAME: "mtt_db"
-  
-  # PRT API
-  PRT_DB_NAME: "prt_db"
-  
-  # SGD API
-  SGD_DB_NAME: "sgd_db"
-  
-  # SII API
-  SII_DB_NAME: "sii_db"
-  
-  # SRCEI API
-  SRCEI_DB_NAME: "srcei_db"
-  
-  # TGR API
-  TGR_DB_NAME: "tgr_db"
-  
-  # Back API
-  BACK_DB_NAME: "back_db"
+  # Database names for each API
+  # Each API will receive DB_NAME pointing to its corresponding database
+  DB_NAME_AACH: "aach_db"
+  DB_NAME_CARABINEROS: "carabineros_db"
+  DB_NAME_MTT: "mtt_db"
+  DB_NAME_PRT: "prt_db"
+  DB_NAME_SGD: "sgd_db"
+  DB_NAME_SII: "sii_db"
+  DB_NAME_SRCEI: "srcei_db"
+  DB_NAME_TGR: "tgr_db"
+  DB_NAME_BACK: "back_db"
   
   # APIs Endpoints (for service discovery in Kubernetes)
   # Las URLs apuntan al ALB para pasar por el Ingress con rutas correctas

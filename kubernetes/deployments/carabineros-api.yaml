@@ -40,7 +40,7 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: api-config
-              key: CARABINEROS_DB_NAME
+              key: DB_NAME_CARABINEROS
         - name: DB_USER
           valueFrom:
             secretKeyRef:
