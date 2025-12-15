@@ -80,7 +80,7 @@ async def obtener_vehiculos_por_rut(rut: str):
         # Consultar vehículos en el padrón por RUT
         async with httpx.AsyncClient() as client:
             padron_response = await client.get(
-                f"{PADRON_VEHICULO}/{rut}",
+                f"{API_SRCEI}/vehiculos_rut/{rut}",
                 timeout=30.0
             )
             
