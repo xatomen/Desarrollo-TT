@@ -1099,7 +1099,7 @@ function ValidacionesPagoContent() {
                           console.log('Datos guardados en sessionStorage:', datosVehiculo);
                           
                           // ✅ Redirigir sin parámetros en la URL
-                          window.location.href = '/obtener-permiso/home/formulario-pago';
+                          window.location.href = '/home/formulario-pago';
                         } catch (error) {
                           console.error('Error guardando datos en sessionStorage:', error);
                           alert('Error al preparar los datos. Intente nuevamente.');
@@ -1169,7 +1169,7 @@ function ValidacionesPagoContent() {
                           console.log('Datos guardados en sessionStorage:', datosVehiculo);
                           
                           // ✅ Redirigir sin parámetros en la URL
-                          window.location.href = '/obtener-permiso/home/formulario-pago';
+                          window.location.href = '/home/formulario-pago';
                         } catch (error) {
                           console.error('Error guardando datos en sessionStorage:', error);
                           alert('Error al preparar los datos. Intente nuevamente.');
@@ -1264,7 +1264,7 @@ function ValidacionesPagoContent() {
                         console.log('Datos guardados en sessionStorage:', datosVehiculo);
                         
                         // ✅ Redirigir sin parámetros en la URL
-                        window.location.href = '/obtener-permiso/home/formulario-pago';
+                        window.location.href = '/home/formulario-pago';
                       } catch (error) {
                         console.error('Error guardando datos en sessionStorage:', error);
                         alert('Error al preparar los datos. Intente nuevamente.');

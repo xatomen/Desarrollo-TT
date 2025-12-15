@@ -183,16 +183,16 @@ export default function PagoBancoPage() {
           resultadoPago: 'exitoso'
         };
         sessionStorage.setItem('pago_info', JSON.stringify(pagoInfo));
-        window.location.href = '/obtener-permiso/webpay/confirmacion-pago';
+        window.location.href = '/webpay/confirmacion-pago';
       } else {
         // Redirigir a confirmación de pago fallido
         sessionStorage.setItem('resultado_pago', 'fallido');
-        window.location.href = '/obtener-permiso/webpay/confirmacion-pago';
+        window.location.href = '/webpay/confirmacion-pago';
       }
     } catch (err) {
       console.error(err);
       sessionStorage.setItem('resultado_pago', 'fallido');
-      window.location.href = '/obtener-permiso/webpay/confirmacion-pago';
+      window.location.href = '/webpay/confirmacion-pago';
     }
   };
 

@@ -1060,7 +1060,7 @@ export default function VerVehiculos() {
                                     if (v.plate) {
                                       sessionStorage.setItem('ppu', v.plate);
                                       sessionStorage.setItem('rut', rut);
-                                      window.location.href = `/obtener-permiso/home/validaciones-pago`;
+                                      window.location.href = `/home/validaciones-pago`;
                                     }
                                   }}
                                 >
@@ -1260,7 +1260,7 @@ export default function VerVehiculos() {
                                   onClick={() => {
                                     sessionStorage.setItem('ppu', vehicle.ppu || '');
                                     sessionStorage.setItem('rut', rut);
-                                    window.location.href = `/obtener-permiso/home/validaciones-pago`;
+                                    window.location.href = `/home/validaciones-pago`;
                                   }}
                                 >
                                   Ver
@@ -1481,7 +1481,7 @@ export default function VerVehiculos() {
                           onClick={() => {
                             sessionStorage.setItem('ppu', vehiculoBuscado.plate);
                             sessionStorage.setItem('rut', rut);
-                            window.location.href = `/obtener-permiso/home/validaciones-pago`;
+                            window.location.href = `/home/validaciones-pago`;
                           }}
                         >
                           Pagar

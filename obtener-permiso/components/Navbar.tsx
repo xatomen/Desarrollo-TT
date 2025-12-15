@@ -55,7 +55,7 @@ const Navbar = () => {
               Inicio
             </a>
             {/* Link a Tu Permiso */}
-            <a href="/home" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
+            <a href="/obtener-permiso/home" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
               Tu Permiso
             </a>
             {/* Link a preguntas frecuentes */}
@@ -94,7 +94,7 @@ const Navbar = () => {
             Inicio
           </a>
           {/* Link a Tu Permiso */}
-          <a href="/home" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
+          <a href="/obtener-permiso/home" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
             Tu Permiso
           </a>
           {/* Link a preguntas frecuentes */}
