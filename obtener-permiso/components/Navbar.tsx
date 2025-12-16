@@ -47,15 +47,15 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             {/* Imagen link Inicio */}
-            <a href="/obtener-permiso">
+            <a href="/">
               <Img src="/img/tupermiso/logo-tupermiso.png" alt="" style={{ width: '150px', height: 'auto' }} />
             </a>
             {/* Link a Inicio */}
-            <a href="/obtener-permiso" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
+            <a href="/" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
               Inicio
             </a>
             {/* Link a Tu Permiso */}
-            <a href="/obtener-permiso/home" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
+            <a href="/home" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
               Tu Permiso
             </a>
             {/* Link a preguntas frecuentes */}
@@ -86,15 +86,15 @@ const Navbar = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           {/* Imagen link Inicio */}
-          <a href="/obtener-permiso">
+          <a href="/">
             <Img src="/img/tupermiso/logo-tupermiso.png" alt="" style={{ width: '150px', height: 'auto' }} />
           </a>
           {/* Link a Inicio */}
-          <a href="/obtener-permiso" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
+          <a href="/" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
             Inicio
           </a>
           {/* Link a Tu Permiso */}
-          <a href="/obtener-permiso/home" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
+          <a href="/home" className="text-lg font-semibold hover:underline p-2" style={{ color: 'white' }}>
             Tu Permiso
           </a>
           {/* Link a preguntas frecuentes */}

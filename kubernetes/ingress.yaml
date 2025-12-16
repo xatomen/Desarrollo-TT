@@ -15,81 +15,10 @@ metadata:
     # alb.ingress.kubernetes.io/ssl-redirect: '443'
 spec:
   rules:
-  - http:
+  - host: demo.jorgegallardo.studio
+    http:
       paths:
-      - path: /aach
-        pathType: Prefix
-        backend:
-          service:
-            name: aach-api
-            port:
-              number: 80
-      
-      - path: /carabineros
-        pathType: Prefix
-        backend:
-          service:
-            name: carabineros-api
-            port:
-              number: 80
-      
-      - path: /mtt
-        pathType: Prefix
-        backend:
-          service:
-            name: mtt-api
-            port:
-              number: 80
-      
-      - path: /prt
-        pathType: Prefix
-        backend:
-          service:
-            name: prt-api
-            port:
-              number: 80
-      
-      - path: /sgd
-        pathType: Prefix
-        backend:
-          service:
-            name: sgd-api
-            port:
-              number: 80
-      
-      - path: /sii
-        pathType: Prefix
-        backend:
-          service:
-            name: sii-api
-            port:
-              number: 80
-      
-      - path: /srcei
-        pathType: Prefix
-        backend:
-          service:
-            name: srcei-api
-            port:
-              number: 80
-      
-      - path: /tgr
-        pathType: Prefix
-        backend:
-          service:
-            name: tgr-api
-            port:
-              number: 80
-      
-      - path: /back
-        pathType: Prefix
-        backend:
-          service:
-            name: back-api
-            port:
-              number: 80
-
-      - path: /obtener-permiso
+      - path: /
         pathType: Prefix
         backend:
           service:
@@ -97,14 +26,9 @@ spec:
             port:
               number: 80
 
-      - path: /panel-decisiones
-        pathType: Prefix
-        backend:
-          service:
-            name: panel-decisiones-app
-            port:
-              number: 80
-
+  - host: panel.jorgegallardo.studio
+    http:
+      paths:
       - path: /
         pathType: Prefix
         backend:
