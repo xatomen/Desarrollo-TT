@@ -130,7 +130,7 @@ INSERT INTO  tarjetas (numero_tarjeta, titular, rut, clave, fecha_vencimiento, t
 -- Datos de prueba para tarjetas y credenciales
 -- ###########################################################################
 
-('4345591084215296', 'Jorge Gallardo', '20961960-1', '123456', '2025-12-01', 'Débito', 'Banco Chile', 123, 1000000.00),
+('4345591084215296', 'Jorge Gallardo', '20961960-1', '123456', '2026-12-01', 'Débito', 'Banco Chile', 123, 1000000.00),
 ('6011514433546201', 'Felipe Vera', '20857826-K', '123456', '2024-11-01', 'Débito', 'Banco Estado', 456, 1500000.00),
 ('3530111333300000', 'Luis Caro', '20595210-1', '123456', '2026-06-01', 'Crédito', 'Banco Santander', 789, 1000.00);
 

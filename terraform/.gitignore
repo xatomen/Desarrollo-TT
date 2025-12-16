@@ -1,17 +1,32 @@
 # Git ignore for terraform files
+
+# Terraform state files
 *.tfstate
 *.tfstate.*
-.terraform/crash
+.terraform.tfstate
+.terraform.tfstate.backup
+
+# Terraform directories
+.terraform/
 .terraform.lock.hcl
-.terraform/plugins
-.terraform/modules
+.terragrunt-cache/
+
+# Terraform overrides
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
-.terragrunt-cache/
+
+# Terraform variable files
 *.tfvars
 *.tfvars.json
+!*.tfvars.example
+
+# Terraform plans and logs
 *.tfplan
 plan.out
-.terraform/
+crash.log
+
+# Backend configuration (sensible)
+.env.local
+terraform.tfvars.local
