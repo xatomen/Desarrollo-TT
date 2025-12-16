@@ -1,16 +1,15 @@
 // Obtener URL base según el ambiente
-// En Kubernetes (AWS ALB): window.location.origin devuelve http://alb-hostname
+// En Kubernetes (AWS ALB): usa variable de entorno NEXT_PUBLIC_API_BASE_URL
 // En desarrollo: http://localhost:3000
-// En producción local: usa variable de entorno NEXT_PUBLIC_API_BASE_URL
 const getApiBase = (): string => {
   // Si hay variable de entorno NEXT_PUBLIC_API_BASE_URL, usar esa
   if (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_BASE_URL) {
     return process.env.NEXT_PUBLIC_API_BASE_URL;
   }
   
-  // En browser, usar origin automáticamente
+  // En browser y desarrollo local
   if (typeof window !== 'undefined') {
-    return window.location.origin;
+    return 'http://localhost:3000';
   }
   
   // Fallback

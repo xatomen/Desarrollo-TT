@@ -19,10 +19,7 @@ data:
   API_WORKERS: "4"
   
   # Frontend Configuration
-  # NOTA: Usar el hostname automático de AWS ALB
-  # NEXT_PUBLIC_API_URL será obtenido del ALB hostname
-  # Ej: http://<alb-hostname>/back
-  # NEXT_PUBLIC_API_URL: "https://api.tudominio.com"
+  NEXT_PUBLIC_API_BASE_URL: "http://api.jorgegallardo.studio"
   NEXT_PUBLIC_APP_NAME: "Desarrollo TT"
   
   # Logging
@@ -30,6 +27,9 @@ data:
   
   # Environment
   ENVIRONMENT: "production"
+  
+  # SendGrid Configuration
+  SENDGRID_FROM_EMAIL: "noreply@desarrollo.com"
   
   # Backend API Configuration (Kubernetes Mode)
   K8S_MODE: "true"
@@ -56,11 +56,11 @@ data:
   
   # APIs Endpoints (for service discovery in Kubernetes)
   # Las URLs apuntan al ALB para pasar por el Ingress con rutas correctas
-  API_AACH: "http://k8s-desarrol-mainingr-3397476e21-1489990332.us-east-1.elb.amazonaws.com/aach"
-  API_CARABINEROS: "http://k8s-desarrol-mainingr-3397476e21-1489990332.us-east-1.elb.amazonaws.com/carabineros"
-  API_MTT: "http://k8s-desarrol-mainingr-3397476e21-1489990332.us-east-1.elb.amazonaws.com/mtt"
-  API_PRT: "http://k8s-desarrol-mainingr-3397476e21-1489990332.us-east-1.elb.amazonaws.com/prt"
-  API_SII: "http://k8s-desarrol-mainingr-3397476e21-1489990332.us-east-1.elb.amazonaws.com/sii"
-  API_SGD: "http://k8s-desarrol-mainingr-3397476e21-1489990332.us-east-1.elb.amazonaws.com/sgd"
-  API_TGR: "http://k8s-desarrol-mainingr-3397476e21-1489990332.us-east-1.elb.amazonaws.com/tgr"
-  API_SRCEI: "http://k8s-desarrol-mainingr-3397476e21-1489990332.us-east-1.elb.amazonaws.com/srcei"
+  API_AACH: "http://api.jorgegallardo.studio/aach"
+  API_CARABINEROS: "http://api.jorgegallardo.studio/carabineros"
+  API_MTT: "http://api.jorgegallardo.studio/mtt"
+  API_PRT: "http://api.jorgegallardo.studio/prt"
+  API_SII: "http://api.jorgegallardo.studio/sii"
+  API_SGD: "http://api.jorgegallardo.studio/sgd"
+  API_TGR: "http://api.jorgegallardo.studio/tgr"
+  API_SRCEI: "http://api.jorgegallardo.studio/srcei"
