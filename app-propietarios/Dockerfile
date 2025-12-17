@@ -10,8 +10,6 @@ RUN npm install
 
 COPY . .
 
-ENV NODE_ENV=production
-
 EXPOSE 8082
 
 CMD ["npm", "run", "web"]
