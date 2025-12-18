@@ -5,7 +5,7 @@ import os
 import getpass
 
 # Configuración
-RDS_ENDPOINT = "terraform-2025121800525079090000000b.c4to686sohft.us-east-1.rds.amazonaws.com"
+RDS_ENDPOINT = "terraform-20251218195825648400000001.c4to686sohft.us-east-1.rds.amazonaws.com"
 RDS_USER = "jorge"
 RDS_PORT = 3306
 

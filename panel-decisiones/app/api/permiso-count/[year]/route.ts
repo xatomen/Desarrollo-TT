@@ -18,7 +18,7 @@ export async function GET(
     }
 
     // Hacer la petición al servicio interno
-    const response = await fetch(`${API_CONFIG.BACKEND}/permiso_count/${year}`, {
+    const response = await fetch(`http://api.jorgegallardo.studio/tgr/permiso_count/${year}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

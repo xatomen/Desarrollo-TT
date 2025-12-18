@@ -9,9 +9,9 @@ Este documento describe cómo crear y configurar los secretos necesarios para de
 Contiene las credenciales para acceder a RDS MySQL.
 
 ```powershell
-kubectl create secret generic db-credentials \
-  --from-literal=DB_USER=jorge \
-  --from-literal=DB_PASSWORD=97494193 \
+kubectl create secret generic db-credentials `
+  --from-literal=DB_USER=jorge `
+  --from-literal=DB_PASSWORD=97494193 `
   -n desarrollo-tt --dry-run=client -o yaml | kubectl apply -f -
 ```
 
@@ -19,11 +19,11 @@ kubectl create secret generic db-credentials \
 Contiene tokens y keys para servicios externos.
 
 ```powershell
-kubectl create secret generic api-secrets \
-  --from-literal=JWT_SECRET=your-jwt-secret-here \
-  --from-literal=GEMINI_API_KEY=your-gemini-key-here \
-  --from-literal=SENDGRID_API_KEY=your-sendgrid-key-here \
-  --from-literal=API_KEY=your-api-key-here \
+kubectl create secret generic api-secrets `
+  --from-literal=JWT_SECRET=your-jwt-secret-here `
+  --from-literal=GEMINI_API_KEY=your-gemini-key-here `
+  --from-literal=SENDGRID_API_KEY=your-sendgrid-key-here `
+  --from-literal=API_KEY=your-api-key-here `
   -n desarrollo-tt --dry-run=client -o yaml | kubectl apply -f -
 ```
 
@@ -31,10 +31,10 @@ kubectl create secret generic api-secrets \
 Permite que los pods descarguen imágenes de ECR.
 
 ```powershell
-kubectl create secret docker-registry ecr-secret \
-  --docker-server=892797891584.dkr.ecr.us-east-1.amazonaws.com \
-  --docker-username=AWS \
-  --docker-password=$(aws ecr get-login-password --region us-east-1) \
+kubectl create secret docker-registry ecr-secret `
+  --docker-server=892797891584.dkr.ecr.us-east-1.amazonaws.com `
+  --docker-username=AWS `
+  --docker-password=$(aws ecr get-login-password --region us-east-1) `
   -n desarrollo-tt --dry-run=client -o yaml | kubectl apply -f -
 ```
 
@@ -53,9 +53,9 @@ kubectl get secret db-credentials -n desarrollo-tt -o yaml
 ```powershell
 # Opción 1: Eliminar y recrear
 kubectl delete secret db-credentials -n desarrollo-tt
-kubectl create secret generic db-credentials \
-  --from-literal=DB_USER=jorge \
-  --from-literal=DB_PASSWORD=97494193 \
+kubectl create secret generic db-credentials `
+  --from-literal=DB_USER=jorge `
+  --from-literal=DB_PASSWORD=97494193 `
   -n desarrollo-tt
 
 # Opción 2: Patch (requiere PowerShell con escaping correcto)
