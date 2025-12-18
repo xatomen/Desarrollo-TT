@@ -53,6 +53,10 @@ export default function VehicleDetailsScreen() {
   const [encargoVin, setEncargoVin] = useState('');
   const [encargoMotor, setEncargoMotor] = useState('');
 
+  // Multas de tránsito
+  const [multasTransito, setMultasTransito] = useState('');
+  const [totalMultas, setTotalMultas] = useState(0);
+
   // Estado vehículo
 	const [estadoVehiculo, setEstadoVehiculo] = useState('');
 
@@ -66,11 +70,13 @@ export default function VehicleDetailsScreen() {
   // useEffect para setear el estado del vehículo cuando cambien los valores
   useEffect(() => {
     // Solo proceder si todos los valores necesarios están definidos y no están vacíos
-    if (encargoRobo && vigenciaPermiso && revisionTecnica && soap && 
-        encargoRobo !== '' && vigenciaPermiso !== '' && revisionTecnica !== '' && soap !== '') {
-      console.log('###### Calculando estado del vehículo con:', { encargoRobo, vigenciaPermiso, revisionTecnica, soap });
+    if (encargoRobo && vigenciaPermiso && revisionTecnica && soap && multasTransito &&
+        encargoRobo !== '' && vigenciaPermiso !== '' && revisionTecnica !== '' && soap !== '' && multasTransito !== '') {
+      console.log('###### Calculando estado del vehículo con:', { encargoRobo, vigenciaPermiso, revisionTecnica, soap, multasTransito });
       if (encargoRobo === 'Sí') {
         setEstadoVehiculo('Posee Encargo por Robo');
+      } else if (multasTransito === 'Sí') {
+        setEstadoVehiculo('Posee Multas de Tránsito');
       } else if (vigenciaPermiso.toLowerCase() === 'vencido' || revisionTecnica.toLowerCase() === 'no vigente' || soap.toLowerCase() === 'no vigente') {
         setEstadoVehiculo('Documentos Vencidos');
       } else {
@@ -80,7 +86,7 @@ export default function VehicleDetailsScreen() {
       // Solo marcar como completo cuando todos los datos estén realmente cargados
       setDatosCompletos(true);
     }
-  }, [encargoRobo, vigenciaPermiso, revisionTecnica, soap]);
+  }, [encargoRobo, vigenciaPermiso, revisionTecnica, soap, multasTransito]);
 
   // Enviar log
   const enviarLogFiscalizacion = async () => {
@@ -248,6 +254,13 @@ export default function VehicleDetailsScreen() {
       setEncargoVin(robo_data.vin);
       setEncargoMotor(robo_data.motor);
 
+      
+      // Obtener Multas de tránsito
+      const multas_response = await fetch(`${API_CONFIG.BACKEND}consultar_multas/${params.ppu}`);
+      const multas_data = await multas_response.json();
+      setTotalMultas(multas_data.total_multas || 0);
+      setMultasTransito(multas_data.total_multas > 0 ? 'Sí' : 'No');
+      
     } catch (error) {
       console.error('Error al obtener información del vehículo:', error);
     } finally {
@@ -383,6 +396,16 @@ export default function VehicleDetailsScreen() {
 								<Text style={encargoRobo === 'No' ? styles.chipPrimaryGreen : styles.chipPrimaryRed}>{encargoRobo}</Text>
 							</View>
 						</View>
+
+            <View style={styles.tableRow}>
+              <View style={styles.tableCell}>
+								<Text style={styles.tableLabel}>Multas de tránsito</Text>
+							</View>
+							<View style={styles.tableCell}>
+								<Text style={multasTransito === 'No' ? styles.chipPrimaryGreen : styles.chipPrimaryRed}>{multasTransito}</Text>
+							</View>
+            </View>
+
 					</View>
 				</View>
 

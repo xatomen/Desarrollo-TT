@@ -45,6 +45,12 @@ variable "eks_max_size" {
   default     = 4
 }
 
+variable "eks_disk_size" {
+  type        = number
+  description = "EKS node disk size in GB"
+  default     = 50
+}
+
 variable "rds_instance_class" {
   type        = string
   description = "RDS instance class"

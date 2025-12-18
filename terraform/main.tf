@@ -5,11 +5,11 @@ module "vpc" {
   name = "${var.project_name}-vpc"
   cidr = var.vpc_cidr
 
-  azs             = slice(data.aws_availability_zones.available.names, 0, 2)
-  private_subnets = [for i, az in slice(data.aws_availability_zones.available.names, 0, 2) : cidrsubnet(var.vpc_cidr, 4, i)]
-  public_subnets  = [for i, az in slice(data.aws_availability_zones.available.names, 0, 2) : cidrsubnet(var.vpc_cidr, 4, i + 10)]
+  azs            = slice(data.aws_availability_zones.available.names, 0, 2)
+  public_subnets = [for i, az in slice(data.aws_availability_zones.available.names, 0, 2) : cidrsubnet(var.vpc_cidr, 4, i)]
 
-  enable_nat_gateway   = true
+  enable_nat_gateway        = false
+  map_public_ip_on_launch   = true
   single_nat_gateway   = true
   enable_dns_hostnames = true
   enable_dns_support   = true
@@ -25,13 +25,13 @@ module "eks" {
   version = "19.16.0"
 
   cluster_name    = "${var.project_name}-eks-cluster"
-  cluster_version = "1.29"
+  cluster_version = "1.30"
 
   cluster_endpoint_public_access  = true
   cluster_endpoint_private_access = true
 
   vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
+  subnet_ids = module.vpc.public_subnets
 
   eks_managed_node_groups = {
     default = {
@@ -42,7 +42,7 @@ module "eks" {
       min_size     = var.eks_min_size
       max_size     = var.eks_max_size
 
-      disk_size = 30
+      disk_size = var.eks_disk_size
 
       tags = {
         Environment = var.environment
@@ -97,14 +97,6 @@ resource "aws_security_group" "rds" {
   }
 }
 
-resource "aws_db_subnet_group" "main" {
-  name       = "${var.project_name}-db-subnet-group"
-  subnet_ids = module.vpc.private_subnets
-
-  tags = {
-    Name = "${var.project_name}-db-subnet-group"
-  }
-}
 
 resource "aws_db_subnet_group" "public" {
   name       = "${var.project_name}-db-subnet-group-public"
@@ -155,6 +147,7 @@ resource "aws_ecr_repository" "main" {
 
   name                 = "${var.project_name}/${each.value}"
   image_tag_mutability = "MUTABLE"
+  force_delete         = true
   
   image_scanning_configuration {
     scan_on_push = true

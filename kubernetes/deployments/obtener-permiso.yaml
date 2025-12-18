@@ -26,6 +26,8 @@ spec:
         - containerPort: 8002
           name: http
         env:
+        - name: NEXT_PUBLIC_API_BASE_URL
+          value: "http://api.jorgegallardo.studio"
         - name: ENVIRONMENT
           valueFrom:
             configMapKeyRef:

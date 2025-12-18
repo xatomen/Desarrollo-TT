@@ -26,12 +26,8 @@ spec:
         - containerPort: 8081
           name: http
         env:
-        # NEXT_PUBLIC_API_BASE_URL es opcional - por defecto usa window.location.origin
-        # - name: NEXT_PUBLIC_API_BASE_URL
-        #   valueFrom:
-        #     configMapKeyRef:
-        #       name: app-config
-        #       key: API_BASE_URL  # Debe estar en ConfigMap si se usa
+        - name: NEXT_PUBLIC_API_BASE_URL
+          value: "http://api.jorgegallardo.studio"
         - name: ENVIRONMENT
           valueFrom:
             configMapKeyRef:

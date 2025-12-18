@@ -31,6 +31,28 @@ spec:
             port:
               number: 80
 
+  - host: fiscalizadores.jorgegallardo.studio
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: fiscalizadores-app
+            port:
+              number: 80
+
+  - host: propietarios.jorgegallardo.studio
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: propietarios-app
+            port:
+              number: 80
+
   - host: api.jorgegallardo.studio
     http:
       paths:

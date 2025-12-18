@@ -11,7 +11,7 @@ metadata:
   namespace: desarrollo-tt
 data:
   # RDS Configuration
-  DB_HOST: "terraform-20251213230555521900000001.c4to686sohft.us-east-1.rds.amazonaws.com"
+  DB_HOST: "terraform-2025121800525079090000000b.c4to686sohft.us-east-1.rds.amazonaws.com"
   DB_PORT: "3306"
   
   # API Configuration
@@ -29,7 +29,7 @@ data:
   ENVIRONMENT: "production"
   
   # SendGrid Configuration
-  SENDGRID_FROM_EMAIL: "noreply@desarrollo.com"
+  SENDGRID_FROM_EMAIL: "no-reply@jorgegallardo.studio"
   
   # Backend API Configuration (Kubernetes Mode)
   K8S_MODE: "true"
