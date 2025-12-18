@@ -476,7 +476,6 @@ export default function VerVehiculos() {
   // Obtener vehículos por rut
   const fetchVehiclesByRut = async (rut: string) => {
     try {
-      setLoading(true);
       setError(null);
 
       const response = await fetch(`${API_CONFIG.BACKEND}vehiculos_rut/${rut}`);
@@ -497,8 +496,6 @@ export default function VerVehiculos() {
       // console.error('Error al obtener vehículos:', error);
       setError(error instanceof Error ? error.message : 'Error desconocido');
       return [];
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -520,17 +517,24 @@ export default function VerVehiculos() {
   useEffect(() => {
     if (!isLoading && isAuthenticated && rut) {
       const loadVehicles = async () => {
-        const data = await fetchVehiclesByRut(rut);
-        if (data && data.length > 0) {
-          const mappedVehicles = data.map(mapApiToVehiculo);
-          // Consultar estado de cada vehículo
-          const vehiclesWithEstado = await Promise.all(
-            mappedVehicles.map(async (veh) => {
-              const estadoVehiculo = await getVehicleStatus(veh.plate || '', rut);
-              return { ...veh, estadoVehiculo };
-            })
-          );
-          setVehicles(vehiclesWithEstado);
+        setLoading(true);
+        try {
+          const data = await fetchVehiclesByRut(rut);
+          if (data && data.length > 0) {
+            const mappedVehicles = data.map(mapApiToVehiculo);
+            // Consultar estado de cada vehículo
+            const vehiclesWithEstado = await Promise.all(
+              mappedVehicles.map(async (veh) => {
+                const estadoVehiculo = await getVehicleStatus(veh.plate || '', rut);
+                return { ...veh, estadoVehiculo };
+              })
+            );
+            setVehicles(vehiclesWithEstado);
+          }
+        } catch (error) {
+          console.error('Error cargando vehículos:', error);
+        } finally {
+          setLoading(false);
         }
       };
 
@@ -740,9 +744,7 @@ export default function VerVehiculos() {
         </div>
         <div className="section-body p-4 text-center">
           <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Cargando...</span>
           </div>
-          <p className="mt-2">Cargando vehículos...</p>
         </div>
       </section>
     );

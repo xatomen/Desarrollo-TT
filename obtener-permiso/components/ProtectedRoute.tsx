@@ -16,7 +16,6 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Cargando...</span>
           </div>
-          <p className="mt-2">Verificando autenticación...</p>
         </div>
       </div>
     );

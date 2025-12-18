@@ -28,7 +28,7 @@ export default function LoginPageLayout({
       <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <nav className="navbar navbar-light navbar-expand-lg">
           <div className="container">
-            <a className="navbar-brand" href="/obtener-permiso">
+            <a className="navbar-brand" href="/">
               <i className="fa fa-spinner fa-spin page-loading-icon"></i>
               <img src="img/gob-header.svg" alt="Gobierno de Chile" />
             </a>

@@ -9,11 +9,11 @@ const getApiBase = (): string => {
   
   // En browser y desarrollo local
   if (typeof window !== 'undefined') {
-    return 'http://localhost:3000';
+    return 'http://api.jorgegallardo.studio';
   }
   
   // Fallback
-  return 'http://localhost:3000';
+  return 'http://api.jorgegallardo.studio';
 };
 
 const API_BASE = getApiBase();

@@ -135,9 +135,6 @@ export default function LoginBancoPage() {
           <div className="spinner-border" style={{ width: 60, height: 60, color: '#6D2077' }} role="status">
             <span className="visually-hidden">Cargando banco...</span>
           </div>
-          <div className="mt-3" style={{ color: '#6D2077', fontWeight: 600, fontSize: '1.2rem' }}>
-            Cargando banco...
-          </div>
         </div>
       ) : (
         <div className="card-like p-4 m-4 row" style={{ maxWidth: '500px', margin: 'auto', borderRadius: '30px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
