@@ -52,7 +52,7 @@ spec:
             cpu: "500m"
         livenessProbe:
           httpGet:
-            path: /panel-decisiones/
+            path: /
             port: 8001
           initialDelaySeconds: 90
           timeoutSeconds: 5
@@ -60,7 +60,7 @@ spec:
           failureThreshold: 8
         readinessProbe:
           httpGet:
-            path: /panel-decisiones/
+            path: /
             port: 8001
           initialDelaySeconds: 45
           timeoutSeconds: 5

@@ -18,16 +18,28 @@ export default function HomePage() {
   const [showWelcome, setShowWelcome] = useState(false); // Cambia a false por defecto
 
   useEffect(() => {
-    const cookieValue = document.cookie.split('user_data=')[1]?.split(';')[0];
-    if (cookieValue) {
-      const decodedValue = decodeURIComponent(cookieValue);
-      const userData = JSON.parse(decodedValue);
-      setUser({
-        rut: userData.rut || '',
-        name: userData.nombre || '',
-        email: userData.email || ''
-      });
+    // Validar localStorage
+    const userDataString = localStorage.getItem('user_data');
+    console.log('=== VALIDACIÓN DE USER_DATA ===');
+    console.log('user_data en localStorage:', userDataString);
+    
+    if (userDataString) {
+      try {
+        const userData = JSON.parse(userDataString);
+        console.log('user_data parseado correctamente:', userData);
+        setUser({
+          rut: userData.rut || '',
+          name: userData.nombre || '',
+          email: userData.email || ''
+        });
+      } catch (error) {
+        console.error('Error parsing user_data from localStorage:', error);
+      }
+    } else {
+      console.warn('⚠️ No se encontró user_data en localStorage');
+      console.log('Contenido completo de localStorage:', { ...localStorage });
     }
+    
     // Verifica sessionStorage
     if (!sessionStorage.getItem('hasSeenWelcomeHome')) {
       setShowWelcome(true);
