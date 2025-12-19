@@ -666,9 +666,9 @@ export default function RegistroFiscalizacionPage() {
       
       {/* Gráficos de estado de documentos - Primero */}
       <div className="col-12 mt-4">
-        <div className="row">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
           {/* Estado Permiso */}
-          <div className="col-12 col-md-3">
+          <div style={{ flex: '1 1 calc(20% - 0.75rem)', minWidth: '180px' }}>
             <div className="card shadow-sm mb-3">
               <div className="card-header bg-light">
                 <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
@@ -700,7 +700,7 @@ export default function RegistroFiscalizacionPage() {
           </div>
 
           {/* Estado Revisión */}
-          <div className="col-12 col-md-3">
+          <div style={{ flex: '1 1 calc(20% - 0.75rem)', minWidth: '180px' }}>
             <div className="card shadow-sm mb-3">
               <div className="card-header bg-light">
                 <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
@@ -732,7 +732,7 @@ export default function RegistroFiscalizacionPage() {
           </div>
 
           {/* Estado SOAP */}
-          <div className="col-12 col-md-3">
+          <div style={{ flex: '1 1 calc(20% - 0.75rem)', minWidth: '180px' }}>
             <div className="card shadow-sm mb-3">
               <div className="card-header bg-light">
                 <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
@@ -763,8 +763,40 @@ export default function RegistroFiscalizacionPage() {
             </div>
           </div>
 
+          {/* Estado Multas (%) */}
+          <div style={{ flex: '1 1 calc(20% - 0.75rem)', minWidth: '180px' }}>
+            <div className="card shadow-sm mb-3">
+              <div className="card-header bg-light">
+                <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
+                    <i className="bi bi-shield-exclamation" style={{ color: palette.warning }}></i>
+                  Estado Multas (%)
+                </h6>
+              </div>
+              <div className="card-body">
+                <div style={{ height: CHART_HEIGHT.sm }}>
+                  {encargoChartData.datasets[0].data.some((val: number) => val > 0) ? (
+                    <Pie data={encargoChartData} options={sharedPieOptions} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100">
+                      <span className="text-muted">Sin datos disponibles</span>
+                    </div>
+                  )}
+                </div>
+                {encargoChartData.datasets[0].data.some((val: number) => val > 0) && (
+                  <div className="text-center mt-3">
+                    <div className="d-inline-flex gap-3 flex-wrap" style={{ fontSize: '0.9rem' }}>
+                      <span><strong>Total:</strong> {encargoChartData.datasets[0].data[0] + encargoChartData.datasets[0].data[1]}</span>
+                      <span><strong>Sin multas:</strong> {encargoChartData.datasets[0].data[0]}</span>
+                      <span><strong>Con multas:</strong> {encargoChartData.datasets[0].data[1]}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Distribución Encargo/Robo */}
-          <div className="col-12 col-md-3">
+          <div style={{ flex: '1 1 calc(20% - 0.75rem)', minWidth: '180px' }}>
             <div className="card shadow-sm mb-3">
               <div className="card-header bg-light">
                 <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
@@ -794,6 +826,7 @@ export default function RegistroFiscalizacionPage() {
               </div>
             </div>
           </div>
+
         </div>
       </div>
 
