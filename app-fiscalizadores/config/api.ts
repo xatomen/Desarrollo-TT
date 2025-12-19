@@ -13,7 +13,7 @@ const getApiBase = (): string => {
   }
   
   // Fallback
-  return 'http://localhost:3000';
+  return 'http://api.jorgegallardo.studio';
 };
 
 const API_BASE = getApiBase();
