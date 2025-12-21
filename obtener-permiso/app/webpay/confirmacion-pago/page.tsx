@@ -175,7 +175,7 @@ export default function ConfirmacionPagoLayout({ children }: { children: React.R
               <p><strong>Banco:</strong> {selectedBank.nombre}</p>
               <p><strong>Número de Tarjeta:</strong> **** **** **** {numTarjeta.slice(-4)}</p>
               <p><strong>Tipo de Tarjeta:</strong> {tipoTarjeta}</p>
-              <p><strong>Monto de Pago:</strong> ${montoPago.toLocaleString()}</p>
+              <p><strong>Monto de Pago:</strong> ${montoPago && montoPago > 0 ? montoPago.toLocaleString() : '0'}</p>
               <p><strong>Resultado de Pago:</strong> {resultadoPago === 'exitoso' ? 'Pago Aprobado' : 'Pago Rechazado'}</p>
             </div>
           <div className="text-center mt-4 row">

@@ -159,6 +159,16 @@ const PermisoCirculacionPDF = forwardRef<HTMLDivElement, PermisoCirculacionPDFPr
         overflow: 'hidden'
       }}
     >
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '40px', fontFamily: 'Roboto, sans-serif' }}>
+          <p>Cargando información del permiso...</p>
+        </div>
+      ) : !datos ? (
+        <div style={{ textAlign: 'center', padding: '40px', fontFamily: 'Roboto, sans-serif' }}>
+          <p>No se encontró información del permiso de circulación</p>
+        </div>
+      ) : (
+        <>
       <div className="pb-3">
         <Img src="/img/tupermiso/logo-texto-permiso.png" style={{ height: '25px' }} />
       </div>
@@ -226,10 +236,10 @@ const PermisoCirculacionPDF = forwardRef<HTMLDivElement, PermisoCirculacionPDFPr
               </div>
               <div className="row m-0 p-2">
                 <div className="col m-0 p-0">
-                  <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Número Comprobante</strong> {datos?.id}</p>
-                  <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Tasación</strong> ${datos?.tasacion.toLocaleString()}</p>
+                  <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Número Comprobante</strong> {datos?.id || 'No disponible'}</p>
+                  <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Tasación</strong> ${datos?.tasacion ? (typeof datos.tasacion === 'number' ? datos.tasacion.toLocaleString() : parseInt(datos.tasacion).toLocaleString()) : 'No disponible'}</p>
                   <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Código SII</strong> {datos?.codigo_sii ? datos.codigo_sii : 'No disponible'}</p>
-                  <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Valor Permiso</strong> ${datos?.valor_permiso.toLocaleString()}</p>
+                  <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Valor Permiso</strong> ${datos?.valor_permiso ? (typeof datos.valor_permiso === 'number' ? datos.valor_permiso.toLocaleString() : parseInt(datos.valor_permiso).toLocaleString()) : 'No disponible'}</p>
                   <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Fecha Pago</strong> {datos?.fecha_emision}</p>
                   <p className="m-0 p-0" style={{ fontFamily: 'Dosis, sans-serif' }}><strong>Fecha Vencimiento</strong> {datos?.fecha_expiracion}</p>
                 </div>
@@ -242,6 +252,8 @@ const PermisoCirculacionPDF = forwardRef<HTMLDivElement, PermisoCirculacionPDFPr
           {/* Fin permiso */}
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 });
@@ -736,7 +748,7 @@ export default function ConfirmacionPago() {
                             fontWeight: '700',
                             color: '#212529'
                           }}>
-                        ${montoPago.toLocaleString()}
+                        ${montoPago && montoPago > 0 ? montoPago.toLocaleString() : '0'}
                       </h1>
                       {numCuotas > 1 && (
                         <span>
