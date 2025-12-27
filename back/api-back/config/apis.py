@@ -51,7 +51,7 @@ def _build_url(service_name: str, port: int) -> str:
     - Desarrollo: http://localhost:port
     """
     if K8S_MODE:
-        return f"http://{service_name}:{port}"
+        return f"https://{service_name}:{port}"
     elif DOCKER_MODE:
         return f"http://host.docker.internal:{port}"
     else:
