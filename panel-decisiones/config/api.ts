@@ -7,7 +7,7 @@ const getApiBase = (): string => {
   }
   
   // Por defecto, siempre api.jorgegallardo.studio
-  return 'http://api.jorgegallardo.studio';
+  return 'https://api.jorgegallardo.studio';
 };
 
 const API_BASE = getApiBase();

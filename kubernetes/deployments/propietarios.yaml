@@ -46,7 +46,7 @@ spec:
             port: 8082
           initialDelaySeconds: 120
           timeoutSeconds: 5
-          periodSeconds: 15
+          periodSeconds: 300
           failureThreshold: 10
         readinessProbe:
           httpGet:
@@ -54,7 +54,7 @@ spec:
             port: 8082
           initialDelaySeconds: 60
           timeoutSeconds: 5
-          periodSeconds: 10
+          periodSeconds: 300
           failureThreshold: 10
 
 ---
