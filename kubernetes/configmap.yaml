@@ -19,7 +19,7 @@ data:
   API_WORKERS: "4"
   
   # Frontend Configuration
-  NEXT_PUBLIC_API_BASE_URL: "http://api.jorgegallardo.studio"
+  NEXT_PUBLIC_API_BASE_URL: "https://api.jorgegallardo.studio"
   NEXT_PUBLIC_APP_NAME: "Desarrollo TT"
   
   # Logging
@@ -56,11 +56,11 @@ data:
   
   # APIs Endpoints (for service discovery in Kubernetes)
   # Las URLs apuntan al ALB para pasar por el Ingress con rutas correctas
-  API_AACH: "http://api.jorgegallardo.studio/aach"
-  API_CARABINEROS: "http://api.jorgegallardo.studio/carabineros"
-  API_MTT: "http://api.jorgegallardo.studio/mtt"
-  API_PRT: "http://api.jorgegallardo.studio/prt"
-  API_SII: "http://api.jorgegallardo.studio/sii"
-  API_SGD: "http://api.jorgegallardo.studio/sgd"
-  API_TGR: "http://api.jorgegallardo.studio/tgr"
-  API_SRCEI: "http://api.jorgegallardo.studio/srcei"
+  API_AACH: "https://api.jorgegallardo.studio/aach"
+  API_CARABINEROS: "https://api.jorgegallardo.studio/carabineros"
+  API_MTT: "https://api.jorgegallardo.studio/mtt"
+  API_PRT: "https://api.jorgegallardo.studio/prt"
+  API_SII: "https://api.jorgegallardo.studio/sii"
+  API_SGD: "https://api.jorgegallardo.studio/sgd"
+  API_TGR: "https://api.jorgegallardo.studio/tgr"
+  API_SRCEI: "https://api.jorgegallardo.studio/srcei"

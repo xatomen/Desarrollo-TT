@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   try {
     // Hacer la petición al servicio interno
-    const response = await fetch('http://api.jorgegallardo.studio/srcei/padron_count', {
+    const response = await fetch('https://api.jorgegallardo.studio/srcei/padron_count', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
