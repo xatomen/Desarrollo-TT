@@ -49,6 +49,7 @@ class LogFiscalizacion(Base):
     vigencia_revision = Column(Boolean, nullable=False)
     vigencia_soap = Column(Boolean, nullable=False)
     encargo_robo = Column(Boolean, nullable=False)
+    multas = Column(Boolean, nullable=False)
 
 class LogConsultasPropietarios(Base):
     __tablename__ = "log_consultas_propietarios"
@@ -196,6 +197,7 @@ def _metricas_fiscalizacion(df: datetime, dt: datetime, period_type: str, db: Se
             LogFiscalizacion.vigencia_revision,
             LogFiscalizacion.vigencia_soap,
             LogFiscalizacion.encargo_robo,
+            LogFiscalizacion.multas,
             func.coalesce(PermisoCirculacion.marca, "N/A").label("marca"),
             func.coalesce(PermisoCirculacion.modelo, "N/A").label("modelo"),
             func.coalesce(PermisoCirculacion.anio, 0).label("anio"),
@@ -231,6 +233,7 @@ def _metricas_fiscalizacion(df: datetime, dt: datetime, period_type: str, db: Se
                     "vigencia_revision": bool(r.vigencia_revision),
                     "vigencia_soap": bool(r.vigencia_soap),
                     "encargo_robo": bool(r.encargo_robo),
+                    "multas": bool(r.multas),
                     "marca": r.marca,
                     "modelo": r.modelo,
                     "anio": int(r.anio or 0)

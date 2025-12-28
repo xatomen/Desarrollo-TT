@@ -11,8 +11,7 @@ CREATE TABLE IF NOT EXISTS log_fiscalizacion(
     vigencia_permiso BOOLEAN NOT NULL,
     vigencia_revision BOOLEAN NOT NULL,
     vigencia_soap BOOLEAN NOT NULL,
-    encargo_robo BOOLEAN NOT NULL,
-    multas BOOLEAN NOT NULL
+    encargo_robo BOOLEAN NOT NULL
 );
 
 -- Log consultas propietarios
@@ -186,56 +185,56 @@ INSERT INTO permiso_circulacion (
 ('HWRY70', '20595210-1', 'Luis Caro Morales', '2024-06-20 00:00:00', '2025-06-20 00:00:00', 260000, '654321', 'YV2B4B4C5MA123456', 'Camión', 'Blanco', 'Volvo', 'FH16', 2021, 16000, 'Verde', 'Diesel', 16000, 'Automática', 2, 3, 'Frenos Aire, ABS', 'CA623454', 42000000);
 
 INSERT INTO log_fiscalizacion (
-    ppu, rut_fiscalizador, fecha, vigencia_permiso, vigencia_revision, vigencia_soap, encargo_robo, multas
+    ppu, rut_fiscalizador, fecha, vigencia_permiso, vigencia_revision, vigencia_soap, encargo_robo
 ) VALUES
 
 -- Enero 2025 - Fiscalizaciones con diferentes estados
-('BYDD18', '12345678-9', '2025-01-05 09:15:00', 1, 1, 1, 0, 0),  -- Todo al día
-('DVGF33', '12345678-9', '2025-01-05 10:30:00', 1, 0, 1, 0, 1),  -- Revisión vencida
-('ZDBX97', '12345678-9', '2025-01-05 11:45:00', 0, 1, 1, 0, 1),  -- Permiso vencido
-('CVDT73', '98765432-1', '2025-01-08 08:20:00', 1, 1, 0, 0, 0),  -- SOAP vencido
-('JXPJ52', '98765432-1', '2025-01-08 14:10:00', 1, 1, 1, 1, 1),  -- Con encargo por robo
-('DI8521', '98765432-1', '2025-01-10 16:00:00', 1, 1, 1, 0, 0),  -- Todo al día
-('EA9529', '11111111-1', '2025-01-12 09:30:00', 0, 0, 1, 0, 1),  -- Permiso y revisión vencidos
-('WA9253', '11111111-1', '2025-01-15 13:20:00', 1, 1, 1, 0, 0),  -- Todo al día
-('HS6882', '11111111-1', '2025-01-18 11:15:00', 1, 0, 0, 0, 1),  -- Revisión y SOAP vencidos
-('LV3154', '22222222-2', '2025-01-20 15:45:00', 1, 1, 1, 0, 0),  -- Todo al día
+('BYDD18', '12345678-9', '2025-01-05 09:15:00', 1, 1, 1, 0),  -- Todo al día
+('DVGF33', '12345678-9', '2025-01-05 10:30:00', 1, 0, 1, 0),  -- Revisión vencida
+('ZDBX97', '12345678-9', '2025-01-05 11:45:00', 0, 1, 1, 0),  -- Permiso vencido
+('CVDT73', '98765432-1', '2025-01-08 08:20:00', 1, 1, 0, 0),  -- SOAP vencido
+('JXPJ52', '98765432-1', '2025-01-08 14:10:00', 1, 1, 1, 1),  -- Con encargo por robo
+('DI8521', '98765432-1', '2025-01-10 16:00:00', 1, 1, 1, 0),  -- Todo al día
+('EA9529', '11111111-1', '2025-01-12 09:30:00', 0, 0, 1, 0),  -- Permiso y revisión vencidos
+('WA9253', '11111111-1', '2025-01-15 13:20:00', 1, 1, 1, 0),  -- Todo al día
+('HS6882', '11111111-1', '2025-01-18 11:15:00', 1, 0, 0, 0),  -- Revisión y SOAP vencidos
+('LV3154', '22222222-2', '2025-01-20 15:45:00', 1, 1, 1, 0),  -- Todo al día
 
 -- Febrero 2025 - Mayor volumen de fiscalizaciones
-('TD124', '22222222-2', '2025-02-02 08:00:00', 1, 1, 1, 0, 0),   -- Todo al día
-('SJ598', '22222222-2', '2025-02-02 09:15:00', 1, 1, 1, 0, 1),   -- Todo al día
-('VR394', '33333333-3', '2025-02-05 10:30:00', 0, 1, 1, 0, 1),   -- Permiso vencido
-('CYSP27', '33333333-3', '2025-02-05 11:45:00', 1, 1, 1, 0, 0),  -- Todo al día
-('HVKC58', '33333333-3', '2025-02-08 14:20:00', 1, 0, 1, 0, 1),  -- Revisión vencida
-('HLZC93', '44444444-4', '2025-02-10 16:10:00', 1, 1, 1, 1, 1),  -- Con encargo por robo
-('DYZS86', '44444444-4', '2025-02-12 08:30:00', 1, 1, 0, 0, 0),  -- SOAP vencido
-('XKTP17', '44444444-4', '2025-02-15 12:45:00', 1, 1, 1, 0, 0),  -- Todo al día
-('ELCT45', '55555555-5', '2025-02-18 10:20:00', 1, 1, 1, 0, 1),  -- Todo al día
-('HYBR89', '55555555-5', '2025-02-20 15:30:00', 0, 0, 0, 0, 1),  -- Todo vencido
+('TD124', '22222222-2', '2025-02-02 08:00:00', 1, 1, 1, 0),   -- Todo al día
+('SJ598', '22222222-2', '2025-02-02 09:15:00', 1, 1, 1, 0),   -- Todo al día
+('VR394', '33333333-3', '2025-02-05 10:30:00', 0, 1, 1, 0),   -- Permiso vencido
+('CYSP27', '33333333-3', '2025-02-05 11:45:00', 1, 1, 1, 0),  -- Todo al día
+('HVKC58', '33333333-3', '2025-02-08 14:20:00', 1, 0, 1, 0),  -- Revisión vencida
+('HLZC93', '44444444-4', '2025-02-10 16:10:00', 1, 1, 1, 1),  -- Con encargo por robo
+('DYZS86', '44444444-4', '2025-02-12 08:30:00', 1, 1, 0, 0),  -- SOAP vencido
+('XKTP17', '44444444-4', '2025-02-15 12:45:00', 1, 1, 1, 0),  -- Todo al día
+('ELCT45', '55555555-5', '2025-02-18 10:20:00', 1, 1, 1, 0),  -- Todo al día
+('HYBR89', '55555555-5', '2025-02-20 15:30:00', 0, 0, 0, 0),  -- Todo vencido
 
 -- Marzo 2025 - Operativos especiales
-('HIST12', '55555555-5', '2025-03-01 07:15:00', 1, 1, 1, 0, 0),  -- Todo al día
-('HIST34', '66666666-6', '2025-03-01 08:30:00', 1, 1, 1, 0, 0),  -- Todo al día
-('BYDD18', '66666666-6', '2025-03-05 09:45:00', 1, 1, 1, 0, 1),  -- Todo al día (segunda fiscalización)
-('DVGF33', '66666666-6', '2025-03-05 11:00:00', 1, 1, 1, 0, 0),  -- Ahora al día
-('ZDBX97', '77777777-7', '2025-03-08 14:15:00', 1, 0, 1, 0, 1),  -- Revisión vencida
-('CVDT73', '77777777-7', '2025-03-08 15:30:00', 0, 1, 0, 0, 0),  -- Permiso y SOAP vencidos
-('JXPJ52', '77777777-7', '2025-03-10 16:45:00', 1, 1, 1, 0, 1),  -- Ya sin encargo por robo
-('DI8521', '88888888-8', '2025-03-12 08:20:00', 1, 1, 1, 1, 0),  -- Ahora con encargo por robo
-('EA9529', '88888888-8', '2025-03-15 10:10:00', 1, 1, 1, 0, 1),  -- Documentos al día
-('WA9253', '88888888-8', '2025-03-18 13:25:00', 0, 1, 1, 0, 0),  -- Permiso vencido
+('HIST12', '55555555-5', '2025-03-01 07:15:00', 1, 1, 1, 0),  -- Todo al día
+('HIST34', '66666666-6', '2025-03-01 08:30:00', 1, 1, 1, 0),  -- Todo al día
+('BYDD18', '66666666-6', '2025-03-05 09:45:00', 1, 1, 1, 0),  -- Todo al día (segunda fiscalización)
+('DVGF33', '66666666-6', '2025-03-05 11:00:00', 1, 1, 1, 0),  -- Ahora al día
+('ZDBX97', '77777777-7', '2025-03-08 14:15:00', 1, 0, 1, 0),  -- Revisión vencida
+('CVDT73', '77777777-7', '2025-03-08 15:30:00', 0, 1, 0, 0),  -- Permiso y SOAP vencidos
+('JXPJ52', '77777777-7', '2025-03-10 16:45:00', 1, 1, 1, 0),  -- Ya sin encargo por robo
+('DI8521', '88888888-8', '2025-03-12 08:20:00', 1, 1, 1, 1),  -- Ahora con encargo por robo
+('EA9529', '88888888-8', '2025-03-15 10:10:00', 1, 1, 1, 0),  -- Documentos al día
+('WA9253', '88888888-8', '2025-03-18 13:25:00', 0, 1, 1, 0),  -- Permiso vencido
 
 -- Abril 2025 - Tendencia actual
-('HS6882', '99999999-9', '2025-04-02 09:00:00', 1, 1, 1, 0, 1),  -- Todo al día
-('LV3154', '99999999-9', '2025-04-05 11:30:00', 1, 0, 1, 0, 0),  -- Revisión vencida
-('TD124', '99999999-9', '2025-04-08 14:45:00', 1, 1, 0, 0, 1),   -- SOAP vencido
-('SJ598', '10101010-K', '2025-04-10 16:20:00', 1, 1, 1, 0, 0),   -- Todo al día
-('VR394', '10101010-K', '2025-04-12 08:15:00', 0, 0, 1, 1, 1),   -- Permiso y revisión vencidos + encargo
-('CYSP27', '10101010-K', '2025-04-15 12:30:00', 1, 1, 1, 0, 0),  -- Todo al día
-('HVKC58', '12121212-1', '2025-04-18 15:10:00', 1, 1, 1, 0, 1),  -- Todo al día
-('HLZC93', '12121212-1', '2025-04-20 17:25:00', 1, 0, 0, 0, 0),  -- Revisión y SOAP vencidos
-('DYZS86', '12121212-1', '2025-04-22 09:40:00', 1, 1, 1, 0, 1),  -- Todo al día
-('XKTP17', '13131313-2', '2025-04-25 13:55:00', 0, 1, 1, 0, 0);  -- Permiso vencido
+('HS6882', '99999999-9', '2025-04-02 09:00:00', 1, 1, 1, 0),  -- Todo al día
+('LV3154', '99999999-9', '2025-04-05 11:30:00', 1, 0, 1, 0),  -- Revisión vencida
+('TD124', '99999999-9', '2025-04-08 14:45:00', 1, 1, 0, 0),   -- SOAP vencido
+('SJ598', '10101010-K', '2025-04-10 16:20:00', 1, 1, 1, 0),   -- Todo al día
+('VR394', '10101010-K', '2025-04-12 08:15:00', 0, 0, 1, 1),   -- Permiso y revisión vencidos + encargo
+('CYSP27', '10101010-K', '2025-04-15 12:30:00', 1, 1, 1, 0),  -- Todo al día
+('HVKC58', '12121212-1', '2025-04-18 15:10:00', 1, 1, 1, 0),  -- Todo al día
+('HLZC93', '12121212-1', '2025-04-20 17:25:00', 1, 0, 0, 0),  -- Revisión y SOAP vencidos
+('DYZS86', '12121212-1', '2025-04-22 09:40:00', 1, 1, 1, 0),  -- Todo al día
+('XKTP17', '13131313-2', '2025-04-25 13:55:00', 0, 1, 1, 0);  -- Permiso vencido
 
 -- Datos de prueba para log_consultas_propietarios
 INSERT INTO log_consultas_propietarios (
