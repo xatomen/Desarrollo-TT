@@ -67,6 +67,7 @@ type ApiResponse = {
         vigencia_revision: boolean;
         vigencia_soap: boolean;
         encargo_robo: boolean;
+        multas: boolean;
         marca: string;
         modelo: string;
         anio: number;
@@ -87,6 +88,7 @@ type Row = {
   revision: "Vigente" | "No Vigente";
   soap: "Vigente" | "No Vigente";
   encargo: "SI" | "NO";
+  multas: "SI" | "NO";
   fecha: string;
   marca: string;
   modelo: string;
@@ -213,6 +215,7 @@ export default function RegistroFiscalizacionPage() {
         revision: vehicle.vigencia_revision ? "Vigente" : "No Vigente",
         soap: vehicle.vigencia_soap ? "Vigente" : "No Vigente",
         encargo: vehicle.encargo_robo ? "SI" : "NO",
+        multas: vehicle.multas ? "SI" : "NO",
         fecha: vehicle.fecha,
         marca: vehicle.marca,
         modelo: vehicle.modelo,
@@ -331,6 +334,39 @@ export default function RegistroFiscalizacionPage() {
           borderWidth: 1,
         }],
       },
+    };
+  }, [apiData]);
+
+  // Datos para gráfico de pastel de Multas usando datos del endpoint
+  const multasChartData = useMemo(() => {
+    if (!apiData?.tables?.vehiculos) {
+      return {
+        labels: ['Sin multas', 'Con multas'],
+        datasets: [{
+          data: [0, 0],
+          backgroundColor: ['#16a34a', '#dc2626'],
+          borderColor: ['#ffffff'],
+          borderWidth: 2,
+        }],
+      };
+    }
+
+    const multasCount = { si: 0, no: 0 };
+    
+    // Usar directamente los datos del endpoint
+    apiData.tables.vehiculos.forEach(vehicle => {
+      if (vehicle.multas) multasCount.si++;
+      else multasCount.no++;
+    });
+
+    return {
+      labels: ['Sin multas', 'Con multas'],
+      datasets: [{
+        data: [multasCount.no, multasCount.si],
+        backgroundColor: ['#16a34a', '#dc2626'],
+        borderColor: ['#ffffff'],
+        borderWidth: 2,
+      }],
     };
   }, [apiData]);
 
@@ -768,26 +804,26 @@ export default function RegistroFiscalizacionPage() {
             <div className="card shadow-sm mb-3">
               <div className="card-header bg-light">
                 <h6 className="mb-0 d-flex align-items-center gap-2" style={{ fontFamily: 'Roboto', fontWeight: 'bold' }}>
-                    <i className="bi bi-shield-exclamation" style={{ color: palette.warning }}></i>
+                    <i className="bi bi-receipt" style={{ color: palette.warning }}></i>
                   Estado Multas (%)
                 </h6>
               </div>
               <div className="card-body">
                 <div style={{ height: CHART_HEIGHT.sm }}>
-                  {encargoChartData.datasets[0].data.some((val: number) => val > 0) ? (
-                    <Pie data={encargoChartData} options={sharedPieOptions} />
+                  {multasChartData.datasets[0].data.some((val: number) => val > 0) ? (
+                    <Pie data={multasChartData} options={sharedPieOptions} />
                   ) : (
                     <div className="d-flex align-items-center justify-content-center h-100">
                       <span className="text-muted">Sin datos disponibles</span>
                     </div>
                   )}
                 </div>
-                {encargoChartData.datasets[0].data.some((val: number) => val > 0) && (
+                {multasChartData.datasets[0].data.some((val: number) => val > 0) && (
                   <div className="text-center mt-3">
                     <div className="d-inline-flex gap-3 flex-wrap" style={{ fontSize: '0.9rem' }}>
-                      <span><strong>Total:</strong> {encargoChartData.datasets[0].data[0] + encargoChartData.datasets[0].data[1]}</span>
-                      <span><strong>Sin multas:</strong> {encargoChartData.datasets[0].data[0]}</span>
-                      <span><strong>Con multas:</strong> {encargoChartData.datasets[0].data[1]}</span>
+                      <span><strong>Total:</strong> {multasChartData.datasets[0].data[0] + multasChartData.datasets[0].data[1]}</span>
+                      <span><strong>Sin multas:</strong> {multasChartData.datasets[0].data[0]}</span>
+                      <span><strong>Con multas:</strong> {multasChartData.datasets[0].data[1]}</span>
                     </div>
                   </div>
                 )}
@@ -892,20 +928,21 @@ export default function RegistroFiscalizacionPage() {
                       <th>Revisión</th>
                       <th>SOAP</th>
                       <th>Encargo</th>
+                      <th>Multas</th>
                       <th>Fecha</th>
                     </tr>
                   </thead>
                   <tbody>
                     {currentRows.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="text-center py-5 text-muted">
+                        <td colSpan={7} className="text-center py-5 text-muted">
                           {loading ? 'Cargando...' : 'Sin resultados'}
                         </td>
                       </tr>
                     )}
 
                     {currentRows.map((r, i) => {
-                      const alDia = r.permiso === 'Vigente' && r.revision === 'Vigente' && r.soap === 'Vigente' && r.encargo === 'NO';
+                      const alDia = r.permiso === 'Vigente' && r.revision === 'Vigente' && r.soap === 'Vigente' && r.encargo === 'NO' && r.multas === 'NO';
                       return (
                         <tr key={`${r.ppu}-${i}`} className={alDia ? '' : 'table-warning'}>
                           <td><strong>{r.ppu}</strong></td>
@@ -927,6 +964,11 @@ export default function RegistroFiscalizacionPage() {
                           <td>
                             <span className={`badge ${r.encargo === 'NO' ? 'bg-success' : 'bg-danger'}`} style={{ borderRadius: '0.5rem', color: 'white', fontWeight: '400', width: '75px', display: 'inline-block', textAlign: 'center' }}>
                               {r.encargo}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`badge ${r.multas === 'NO' ? 'bg-success' : 'bg-danger'}`} style={{ borderRadius: '0.5rem', color: 'white', fontWeight: '400', width: '75px', display: 'inline-block', textAlign: 'center' }}>
+                              {r.multas}
                             </span>
                           </td>
                           <td>{formatDateTime(r.fecha)}</td>

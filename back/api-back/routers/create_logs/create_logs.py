@@ -49,6 +49,7 @@ class LogFiscalizacion(Base):
     vigencia_revision = Column(Integer, nullable=False)
     vigencia_soap = Column(Integer, nullable=False)
     encargo_robo = Column(Integer, nullable=False)
+    multas = Column(Integer, nullable=False)  # BOOLEAN as Integer (0/1)
 
 # Modelos Pydantic para validación de datos
 class LogConsultaPropietarioModel(BaseModel):
@@ -64,6 +65,7 @@ class LogFiscalizacionModel(BaseModel):
     vigencia_revision: int
     vigencia_soap: int
     encargo_robo: int
+    multas: int  # BOOLEAN as Integer (0/1)
 
 def get_db():
     db = SessionLocal()
@@ -95,7 +97,8 @@ def create_log_fiscalizacion(log: LogFiscalizacionModel, db: Session = Depends(g
         vigencia_permiso=log.vigencia_permiso,
         vigencia_revision=log.vigencia_revision,
         vigencia_soap=log.vigencia_soap,
-        encargo_robo=log.encargo_robo
+        encargo_robo=log.encargo_robo,
+        multas=log.multas
     )
     db.add(db_log)
     db.commit()

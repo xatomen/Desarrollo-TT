@@ -107,11 +107,13 @@ export default function VehicleDetailsScreen() {
       const vigenciaRevisionNum = revisionTecnica === 'Vigente' ? 1 : 0;
       const vigenciaSoapNum = soap === 'Vigente' ? 1 : 0;
       const encargoRoboNum = encargoRobo === 'No' ? 0 : 1; // Corregido: No = 0, Sí = 1
+      const multasNum = multasTransito === 'Sí' ? 1 : 0; // 1 = tiene multas, 0 = sin multas
 
       console.log('Vigencia Permiso:', vigenciaPermiso, '->', vigenciaPermisoNum);
       console.log('Vigencia Revisión:', revisionTecnica, '->', vigenciaRevisionNum);
       console.log('Vigencia SOAP:', soap, '->', vigenciaSoapNum);
       console.log('Encargo por Robo:', encargoRobo, '->', encargoRoboNum);
+      console.log('Multas de Tránsito:', multasTransito, '->', multasNum);
 
       const logData = {
         ppu: ppu || params.ppu,
@@ -120,7 +122,8 @@ export default function VehicleDetailsScreen() {
         vigencia_permiso: vigenciaPermisoNum,
         vigencia_revision: vigenciaRevisionNum,
         vigencia_soap: vigenciaSoapNum,
-        encargo_robo: encargoRoboNum
+        encargo_robo: encargoRoboNum,
+        multas: multasNum
       };
 
       console.log('Enviando log de auditoría:', logData);
