@@ -86,3 +86,23 @@ variable "skip_final_snapshot" {
   description = "Skip final snapshot on RDS destruction (true for dev, false for prod)"
   default     = true
 }
+
+variable "github_org" {
+  type        = string
+  description = "GitHub organization/owner (for OIDC trust policy)"
+}
+
+variable "github_repo" {
+  type        = string
+  description = "GitHub repository name (for OIDC trust policy)"
+}
+
+variable "domain_name" {
+  type        = string
+  description = "Domain name for ACM certificate (e.g., jorgegallardo.studio)"
+}
+
+variable "admin_username" {
+  type        = string
+  description = "IAM admin user username"
+}

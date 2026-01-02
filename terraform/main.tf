@@ -22,10 +22,10 @@ module "vpc" {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "19.16.0"
+  version = "~> 20.0"
 
   cluster_name    = "${var.project_name}-eks-cluster"
-  cluster_version = "1.32"
+  cluster_version = "1.34"
 
   cluster_endpoint_public_access  = true
   cluster_endpoint_private_access = true
@@ -162,3 +162,48 @@ resource "aws_ecr_repository" "main" {
 data "aws_availability_zones" "available" {
   state = "available"
 }
+# ACM Certificate for HTTPS
+resource "aws_acm_certificate" "website" {
+  domain_name       = var.domain_name
+  validation_method = "DNS"
+
+  subject_alternative_names = [
+    "*.${var.domain_name}"
+  ]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = {
+    Name        = "${var.project_name}-cert"
+    Environment = var.environment
+  }
+}
+
+# Optional: DNS validation records (if you want to manage them with Terraform)
+# Uncomment and configure your Route53 hosted zone if needed
+# resource "aws_route53_record" "cert_validation" {
+#   for_each = {
+#     for dvo in aws_acm_certificate.website.domain_validation_options : dvo.domain_name => {
+#       name   = dvo.resource_record_name
+#       record = dvo.resource_record_value
+#       type   = dvo.resource_record_type
+#     }
+#   }
+#
+#   allow_overwrite = true
+#   name            = each.value.name
+#   records         = [each.value.record]
+#   ttl             = 60
+#   type            = each.value.type
+#   zone_id         = data.aws_route53_zone.website.zone_id
+# }
+#
+# resource "aws_acm_certificate_validation" "website" {
+#   certificate_arn           = aws_acm_certificate.website.arn
+#   timeouts {
+#     create = "5m"
+#   }
+#   depends_on = [aws_route53_record.cert_validation]
+# }

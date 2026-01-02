@@ -1,9 +1,9 @@
-terraform {
-  backend "s3" {
-    bucket         = "desarrollo-tt-terraform-state"
-    key            = "prod/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
-    use_lockfile   = true
-  }
-}
+# terraform {
+#   backend "s3" {
+#     bucket         = "desarrollo-tt-terraform-state"
+#     key            = "prod/terraform.tfstate"
+#     region         = "us-east-1"
+#     encrypt        = true
+#     use_lockfile   = true
+#   }
+# }

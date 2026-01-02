@@ -46,3 +46,35 @@ output "vpc_id" {
   description = "VPC ID"
   value       = module.vpc.vpc_id
 }
+
+output "acm_certificate_arn" {
+  description = "ARN of ACM certificate for HTTPS"
+  value       = aws_acm_certificate.website.arn
+}
+
+output "acm_certificate_domain_name" {
+  description = "Domain name of ACM certificate"
+  value       = aws_acm_certificate.website.domain_name
+}
+
+output "admin_user_arn" {
+  description = "ARN of admin IAM user"
+  value       = aws_iam_user.admin.arn
+}
+
+output "admin_user_name" {
+  description = "Name of admin IAM user"
+  value       = aws_iam_user.admin.name
+}
+
+output "admin_user_access_key_id" {
+  description = "Access key ID for admin user (save this securely)"
+  value       = aws_iam_access_key.admin.id
+  sensitive   = true
+}
+
+output "admin_user_secret_access_key" {
+  description = "Secret access key for admin user (save this securely and never commit to version control)"
+  value       = aws_iam_access_key.admin.secret
+  sensitive   = true
+}

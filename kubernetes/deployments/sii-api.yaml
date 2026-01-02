@@ -20,7 +20,7 @@ spec:
       - name: ecr-secret
       containers:
       - name: sii-api
-        image: 892797891584.dkr.ecr.us-east-1.amazonaws.com/desarrollo-tt/sii-api:latest
+        image: {{AWS_ACCOUNT_ID}}.dkr.ecr.{{AWS_REGION}}.amazonaws.com/desarrollo-tt/sii-api:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
