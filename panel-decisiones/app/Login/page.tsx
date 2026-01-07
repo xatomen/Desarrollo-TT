@@ -272,7 +272,7 @@ export default function LoginPage() {
                   name="password" 
                   className={`form-control ${errors.password ? 'is-invalid' : formData.password.length >= 6 ? 'is-valid' : ''}`}
                   type="password" 
-                  placeholder="Clave Única"
+                  placeholder="Credencial"
                   value={formData.password}
                   onChange={handlePasswordChange}
                   minLength={6}
