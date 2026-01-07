@@ -49,7 +49,7 @@ export default function ConfirmacionPagoSoapPage() {
   // Crear SOAP desde endpoint
   const crearSoap = async () => {
     try {
-      const response = await fetch(`${API_CONFIG.AACH}create_soap`, {
+      const response = await fetch(`${API_CONFIG.AACH}create_soap/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
