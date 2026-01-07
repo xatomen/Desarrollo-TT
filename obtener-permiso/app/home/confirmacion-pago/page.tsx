@@ -75,6 +75,7 @@ interface DatosVehiculo {
 
 interface PermisoCirculacionPDFProps {
   ppu: string;
+  datosPermiso?: PermisoCirculacionDatos | null;
 }
 
 interface PermisoCirculacionDatos {
@@ -109,16 +110,21 @@ const PermisoCirculacionPDF = forwardRef<HTMLDivElement, PermisoCirculacionPDFPr
   // Hacer get al endpoint API_CONFIG.BACK/consultar_permiso_circulacion/{ppu} para obtener los datos del permiso
   const router = useRouter();
   const { user } = useAuth();
-  const [datos, setDatos] = useState<PermisoCirculacionDatos | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [datos, setDatos] = useState<PermisoCirculacionDatos | null>(props.datosPermiso || null);
+  const [loading, setLoading] = useState(!props.datosPermiso);
   const permisoRef = useRef<HTMLDivElement>(null);
   const [datosVehiculo, setDatosVehiculo] = useState<DatosVehiculo | null>(null);
 
   console.log("PPU recibido en props:", props.ppu);
+  console.log("Datos del permiso recibidos en props:", props.datosPermiso);
 
   useEffect(() => {
-    if (props.ppu) {
-      // Hacer get al endpoint API_CONFIG.BACK/consultar_permiso_circulacion/{ppu} para obtener los datos del permiso
+    if (props.datosPermiso) {
+      // Si los datos se proporcionan como prop, usarlos directamente
+      setDatos(props.datosPermiso);
+      setLoading(false);
+    } else if (props.ppu) {
+      // Si no hay datos en props, hacer el fetch
       const fetchData = async () => {
         try {
           const response = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${props.ppu}`);
@@ -134,7 +140,7 @@ const PermisoCirculacionPDF = forwardRef<HTMLDivElement, PermisoCirculacionPDFPr
 
       fetchData();
     }
-  }, [props.ppu]);
+  }, [props.ppu, props.datosPermiso]);
 
   const handleDownloadPDF = async () => {
     if (permisoRef.current) {
@@ -268,6 +274,7 @@ export default function ConfirmacionPago() {
   const [resultadoPago, setResultadoPago] = useState<'exitoso' | 'fallido'>('fallido');
 
   const [permisoCargado, setPermisoCargado] = useState(false);
+  const [datosPermisoObtenidos, setDatosPermisoObtenidos] = useState<PermisoCirculacionDatos | null>(null);
 
   const [montoPago, setMontoPago] = useState(0);
   const [numCuotas, setNumCuotas] = useState(1);
@@ -594,20 +601,29 @@ export default function ConfirmacionPago() {
       }
       const permisoData = await permisoResponse.json();
       console.log('Datos del permiso obtenidos:', permisoData);
+      setDatosPermisoObtenidos(permisoData);
+      
+      // Esperar un poco para que el componente PDF se actualice con los nuevos datos
+      setTimeout(() => {
+        generarPDF();
+      }, 100);
     } catch (error) {
       console.error('Error fetching permiso de circulación:', error);
     }
-    
+  };
+
+  const generarPDF = () => {
     if (!pdfRef.current) return;
-    const canvas = await html2canvas(pdfRef.current, { scale: 2 });
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'px',
-      format: [canvas.width, canvas.height]
+    const canvas = html2canvas(pdfRef.current, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`permiso_circulacion_${datosVehiculo?.ppu || 'vehiculo'}.pdf`);
     });
-    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-    pdf.save(`permiso_circulacion_${datosVehiculo?.ppu || 'vehiculo'}.pdf`);
   };
 
   if (!pagoInfo) {
@@ -892,7 +908,7 @@ export default function ConfirmacionPago() {
           </div>
           {/* Renderiza el PDF oculto para la descarga */}
           <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
-            {datosVehiculo?.ppu && permisoCargado && <PermisoCirculacionPDF ppu={datosVehiculo?.ppu ? datosVehiculo.ppu : ''} ref={pdfRef} />}
+            {datosVehiculo?.ppu && permisoCargado && <PermisoCirculacionPDF ppu={datosVehiculo?.ppu ? datosVehiculo.ppu : ''} datosPermiso={datosPermisoObtenidos} ref={pdfRef} />}
           </div>
         </div>
       </div>
