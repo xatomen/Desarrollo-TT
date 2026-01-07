@@ -584,6 +584,20 @@ export default function ConfirmacionPago() {
   const handleDescargarPDF = async () => {
     console.log('Entrando a handleDescargarPDF');
     console.log('pdfRef.current:', pdfRef.current);
+    console.log('datosVehiculo?.ppu:', datosVehiculo?.ppu);
+    
+    // Fetch del permiso de circulación
+    try {
+      const permisoResponse = await fetch(`${API_CONFIG.BACKEND}consultar_permiso_circulacion/${datosVehiculo?.ppu}`);
+      if (!permisoResponse.ok) {
+        throw new Error('Error al obtener el permiso de circulación');
+      }
+      const permisoData = await permisoResponse.json();
+      console.log('Datos del permiso obtenidos:', permisoData);
+    } catch (error) {
+      console.error('Error fetching permiso de circulación:', error);
+    }
+    
     if (!pdfRef.current) return;
     const canvas = await html2canvas(pdfRef.current, { scale: 2 });
     const imgData = canvas.toDataURL('image/png');
@@ -593,7 +607,7 @@ export default function ConfirmacionPago() {
       format: [canvas.width, canvas.height]
     });
     pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-    pdf.save(`permiso_circulacion_${pagoInfo?.ppu || 'vehiculo'}.pdf`);
+    pdf.save(`permiso_circulacion_${datosVehiculo?.ppu || 'vehiculo'}.pdf`);
   };
 
   if (!pagoInfo) {
