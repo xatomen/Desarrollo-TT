@@ -86,6 +86,7 @@ INSERT INTO soap (ppu, compania, rige_desde, rige_hasta, prima) VALUES
 ('CBKS56', 'Consorcio', '2026-01-01', '2027-03-10', 9900),
 ('BRK90', 'Consorcio', '2026-01-01', '2027-01-05', 11200),
 ('RSDY20', 'Consorcio', '2023-05-01', '2024-05-15', 9700),
+('RSDZ40', 'Consorcio', '2026-01-01', '2027-01-01', 9700),
 
 -- SOAP Vehículo Felipe Vera Andrade
 ('HRWY25', 'BCI Seguros', '2026-01-01', '2027-08-30', 9200),
