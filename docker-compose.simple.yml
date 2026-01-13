@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  # Base de Datos MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: desarrollo-tt-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root123}
+      MYSQL_DATABASE: ${DB_NAME:-desarrollo_tt}
+      MYSQL_USER: ${DB_USER:-app_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-app_password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - desarrollo-tt-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
+
+  # Reverse Proxy - Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: desarrollo-tt-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.local.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - desarrollo-tt-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  desarrollo-tt-network:
+    driver: bridge

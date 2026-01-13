@@ -1,0 +1,286 @@
+services:
+  # =========================================
+  # Base de Datos MySQL
+  # =========================================
+  mysql:
+    image: mysql:8.0
+    container_name: desarrollo-tt-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root123}
+      MYSQL_DATABASE: ${DB_NAME:-desarrollo_tt}
+      MYSQL_USER: ${DB_USER:-app_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-app_password}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-databases-local.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - desarrollo-tt-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "app_user", "-p${DB_PASSWORD:-app_password}"]
+      timeout: 20s
+      retries: 30
+      start_period: 40s
+      interval: 3s
+    restart: unless-stopped
+
+  # =========================================
+  # APIs FastAPI - Agencias Gubernamentales
+  # =========================================
+  tgr-api:
+    build:
+      context: ./api-tgr/api
+      dockerfile: Dockerfile
+    container_name: desarrollo-tt-api-tgr
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=tgr_db
+      - DB_USER=${DB_USER:-app_user}
+      - DB_PASSWORD=${DB_PASSWORD:-app_password}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - desarrollo-tt-network
+    restart: unless-stopped
+
+  aach-api:
+    build:
+      context: ./api-aach/api
+      dockerfile: Dockerfile
+    container_name: desarrollo-tt-api-aach
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=aach_db
+      - DB_USER=${DB_USER:-app_user}
+      - DB_PASSWORD=${DB_PASSWORD:-app_password}
+    ports:
+      - "8002:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - desarrollo-tt-network
+    restart: unless-stopped
+
+  carabineros-api:
+    build:
+      context: ./api-carabineros/api
+      dockerfile: Dockerfile
+    container_name: desarrollo-tt-api-carabineros
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=carabineros_db
+      - DB_USER=${DB_USER:-app_user}
+      - DB_PASSWORD=${DB_PASSWORD:-app_password}
+    ports:
+      - "8003:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - desarrollo-tt-network
+    restart: unless-stopped
+
+  mtt-api:
+    build:
+      context: ./api-mtt/api
+      dockerfile: Dockerfile
+    container_name: desarrollo-tt-api-mtt
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=mtt_db
+      - DB_USER=${DB_USER:-app_user}
+      - DB_PASSWORD=${DB_PASSWORD:-app_password}
+    ports:
+      - "8004:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - desarrollo-tt-network
+    restart: unless-stopped
+
+  prt-api:
+    build:
+      context: ./api-prt/api
+      dockerfile: Dockerfile
+    container_name: desarrollo-tt-api-prt
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=prt_db
+      - DB_USER=${DB_USER:-app_user}
+      - DB_PASSWORD=${DB_PASSWORD:-app_password}
+    ports:
+      - "8005:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - desarrollo-tt-network
+    restart: unless-stopped
+
+  sgd-api:
+    build:
+      context: ./api-sgd/api
+      dockerfile: Dockerfile
+    container_name: desarrollo-tt-api-sgd
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=sgd_db
+      - DB_USER=${DB_USER:-app_user}
+      - DB_PASSWORD=${DB_PASSWORD:-app_password}
+    ports:
+      - "8006:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - desarrollo-tt-network
+    restart: unless-stopped
+
+  sii-api:
+    build:
+      context: ./api-sii/api
+      dockerfile: Dockerfile
+    container_name: desarrollo-tt-api-sii
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=sii_db
+      - DB_USER=${DB_USER:-app_user}
+      - DB_PASSWORD=${DB_PASSWORD:-app_password}
+    ports:
+      - "8007:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - desarrollo-tt-network
+    restart: unless-stopped
+
+  srcei-api:
+    build:
+      context: ./api-srcei/api
+      dockerfile: Dockerfile
+    container_name: desarrollo-tt-api-srcei
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=srcei_db
+      - DB_USER=${DB_USER:-app_user}
+      - DB_PASSWORD=${DB_PASSWORD:-app_password}
+    ports:
+      - "8008:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - desarrollo-tt-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./back/api-back
+      dockerfile: Dockerfile
+    container_name: desarrollo-tt-backend
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=back_db
+      - DB_USER=${DB_USER:-app_user}
+      - DB_PASSWORD=${DB_PASSWORD:-app_password}
+      - K8S_MODE=true
+      - API_AACH=http://aach-api:8000/aach
+      - API_CARABINEROS=http://carabineros-api:8000/carabineros
+      - API_MTT=http://mtt-api:8000/mtt
+      - API_PRT=http://prt-api:8000/prt
+      - API_SGD=http://sgd-api:8000/sgd
+      - API_SII=http://sii-api:8000/sii
+      - API_TGR=http://tgr-api:8000/tgr
+      - API_SRCEI=http://srcei-api:8000/srcei
+    ports:
+      - "8009:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - desarrollo-tt-network
+    restart: unless-stopped
+
+  # =========================================
+  # Frontend Next.js Apps
+  # =========================================
+  obtener-permiso:
+    build:
+      context: ./obtener-permiso
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+    container_name: desarrollo-tt-obtener-permiso
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+    ports:
+      - "3001:8002"
+    depends_on:
+      - backend
+    networks:
+      - desarrollo-tt-network
+    restart: unless-stopped
+
+  panel-decisiones:
+    build:
+      context: ./panel-decisiones
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+    container_name: desarrollo-tt-panel-decisiones
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+    ports:
+      - "3002:8001"
+    depends_on:
+      - backend
+    networks:
+      - desarrollo-tt-network
+    restart: unless-stopped
+
+  # =========================================
+  # Reverse Proxy - Nginx
+  # =========================================
+  nginx:
+    image: nginx:alpine
+    container_name: desarrollo-tt-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.local.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - mysql
+      - backend
+      - tgr-api
+      - aach-api
+      - carabineros-api
+      - mtt-api
+      - prt-api
+      - sgd-api
+      - sii-api
+      - srcei-api
+    networks:
+      - desarrollo-tt-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  desarrollo-tt-network:
+    driver: bridge
