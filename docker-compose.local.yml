@@ -253,6 +253,43 @@ services:
     restart: unless-stopped
 
   # =========================================
+  # Mobile Apps - React Native
+  # =========================================
+  app-fiscalizadores:
+    build:
+      context: ./app-fiscalizadores
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+    container_name: desarrollo-tt-app-fiscalizadores
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+    ports:
+      - "8081:8081"
+    depends_on:
+      - backend
+    networks:
+      - desarrollo-tt-network
+    restart: unless-stopped
+
+  app-propietarios:
+    build:
+      context: ./app-propietarios
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+    container_name: desarrollo-tt-app-propietarios
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+    ports:
+      - "8082:8082"
+    depends_on:
+      - backend
+    networks:
+      - desarrollo-tt-network
+    restart: unless-stopped
+
+  # =========================================
   # Reverse Proxy - Nginx
   # =========================================
   nginx:
