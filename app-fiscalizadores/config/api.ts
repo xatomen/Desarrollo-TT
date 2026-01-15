@@ -9,11 +9,11 @@ const getApiBase = (): string => {
   
   // En browser, usar api.jorgegallardo.studio
   if (typeof window !== 'undefined') {
-    return 'https://api.jorgegallardo.studio';
+    return 'http://localhost:8080';
   }
   
   // Fallback
-  return 'https://api.jorgegallardo.studio';
+  return 'http://localhost:8080';
 };
 
 const API_BASE = getApiBase();
